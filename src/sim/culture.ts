@@ -33,6 +33,9 @@ function drive(w: World, t: Tribe, id: string, sh: Record<Job, number>, pop: num
     case "brickmaking": return 0.002 + sh.quarrier * 0.04 + sh.builder * 0.02;
     case "copperworking": return 0.003 + sh.miner * 0.06;
     case "bronze": return 0.002 + sh.miner * 0.03 + sh.smith * 0.05;
+    case "wheel": return 0.001 + sh.quarrier * 0.01 + sh.builder * 0.015 + sh.farmer * 0.003;
+    case "roads": return 0.001 + sh.builder * 0.02 + Math.min(0.004, living(w).filter((v) => v.tribe === t.id).length * 0.0006);
+    case "planning": return 0.001 + sh.builder * 0.02 + sh.leader * 0.04 + (pop > 600 ? 0.004 : 0);
     case "writing": return 0.001 + sh.priest * 0.03 + Math.min(0.006, d.raids * 0.0005 + t.known.length * 0.0008);
     case "granary": return 0.004 + sh.builder * 0.05 + (d.hunger > 0.5 ? 0.005 : 0);
     case "raft": return coastal && pop >= 8 ? 0.004 + sh.fisher * 0.02 + Math.min(1, d.hunger) * 0.003 + kin * 0.01 : 0;
@@ -52,7 +55,7 @@ function drive(w: World, t: Tribe, id: string, sh: Record<Job, number>, pop: num
   return 0;
 }
 
-const INVENTOR: Record<string, string> = { raft: "Boatwright", canoe: "Boatwright", outrigger: "Boatwright", sail: "Boatwright", herbs: "Doctor", stonetools: "Toolmaker", bronze: "Smith", copperworking: "Smith", masonry: "Master builder", brickmaking: "Master builder", writing: "Scribe" };
+const INVENTOR: Record<string, string> = { raft: "Boatwright", canoe: "Boatwright", outrigger: "Boatwright", sail: "Boatwright", herbs: "Doctor", stonetools: "Toolmaker", bronze: "Smith", copperworking: "Smith", masonry: "Master builder", brickmaking: "Master builder", wheel: "Cartwright", roads: "Master builder", planning: "Surveyor", writing: "Scribe" };
 
 /**
  * Inventions need the right materials in the tribe's stores. Missing materials slow research;

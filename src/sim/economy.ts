@@ -70,7 +70,7 @@ export function economy(w: World, rng: Rng): World {
 
     // construction: houses, granaries, defences and monuments all cost materials
     const pop = popOf(v);
-    const builders = (v.jobs.builder * work + (v.stage === "band" ? 0.4 : 0)) * (1 + (tools - 1) * 0.8);
+    const builders = (v.jobs.builder * work + (v.stage === "band" ? 0.4 : 0)) * (1 + (tools - 1) * 0.8) * (has(t, "wheel") ? 1.15 : 1) * (has(t, "roads") ? 1.1 : 1);
     const mat = houseMaterial(t, v.isle);
     if (v.houses < Math.ceil(pop / 5) + 1) {
       const want = builders * 0.2;
@@ -111,13 +111,15 @@ export function economy(w: World, rng: Rng): World {
   }
 
   // villages of one tribe on one island share their stores
+  // roads and carts move stores between a tribe's villages faster
   const groups = new Map<string, Village[]>();
   for (const v of living(w)) { const k = v.tribe + ":" + v.isle; groups.set(k, [...(groups.get(k) ?? []), v]); }
   for (const vs of groups.values()) {
     if (vs.length < 2) continue;
     for (const r of RES) {
       const mean = vs.reduce((s, v) => s + v.stock[r], 0) / vs.length;
-      for (const v of vs) v.stock[r] += (mean - v.stock[r]) * 0.08;
+      const rate = has(w.tribes[vs[0].tribe], "roads") ? 0.22 : has(w.tribes[vs[0].tribe], "wheel") ? 0.13 : 0.08;
+      for (const v of vs) v.stock[r] += (mean - v.stock[r]) * rate;
     }
   }
 

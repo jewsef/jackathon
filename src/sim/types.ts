@@ -11,8 +11,8 @@ export type Policy = "growth" | "defense" | "sea" | "faith" | "craft";
 export interface Faction { id: FactionId; support: number; militancy: number; head: number | null; }
 export interface Gov { type: RegimeType; ruler: number | null; rulerFaction: FactionId | null; legitimacy: number; unrest: number; since: number; policy: Policy; uprisings: number; }
 export interface Objective { kind: "feed" | "defend" | "secure" | "unite" | "reach" | "grow" | "ally"; text: string; village: number | null; res?: Res; tribe?: number; }
-export type Stage = "band" | "camp" | "village" | "town" | "chiefdom";
-export const STAGES: Stage[] = ["band", "camp", "village", "town", "chiefdom"];
+export type Stage = "band" | "camp" | "village" | "town" | "city";
+export const STAGES: Stage[] = ["band", "camp", "village", "town", "city"];
 export type PowerId = "calm" | "rain" | "wind" | "omen" | "bless" | "drought" | "revolt" | "storm" | "quake" | "plague" | "eruption";
 export type StrainId = "fever" | "cough" | "grey";
 export type BeliefKey = "awe" | "fear" | "love";

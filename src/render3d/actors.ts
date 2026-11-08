@@ -9,6 +9,8 @@ import { voyagePos } from "../sim/voyages";
 import { layoutFor, sampleCrowd, figureState, houseCount, fieldCount, type Figure, type FigureState } from "../render/crowd";
 import type { Selection } from "../render/common";
 import type { HeightField } from "./heightfield";
+import { planFor, isPlanned, roadNetwork, villageTracks, roadTier, type TownPlan } from "../render/plan";
+import { houseKit, CIVIC, PALETTE, colorOf, eraOf, type Part, type Prim, type Style, type Palette } from "./kits";
 
 type Snap = Omit<World, "chronicle">;
 const tmpQ = new THREE.Quaternion(), tmpS = new THREE.Vector3(), tmpP = new THREE.Vector3(), tmpE = new THREE.Euler(), tmpC = new THREE.Color();
@@ -140,6 +142,9 @@ export class Actors {
   private crowdCache = new Map<string, Figure[]>();
   private villageKey = "";
   private chimneys: { x: number; y: number; h: number }[] = [];
+  private K: Record<Prim, THREE.InstancedMesh> = {} as Record<Prim, THREE.InstancedMesh>;
+  private kn: Record<string, number> = {};
+  private roads: THREE.Mesh; private roadKey = "";
   named: NamedSpot[] = [];
 
   constructor(hf: HeightField, terrain: Terrain, low = false) {
@@ -175,6 +180,25 @@ export class Actors {
       step: new THREE.BoxGeometry(1, 0.3, 1).translate(0, 0.15, 0)
     };
     for (const [k, g] of Object.entries(kit)) { this.B[k] = inst(g, 8000, lambert(k === "flag" ? { side: THREE.DoubleSide } : {})); G.add(this.B[k]); }
+    // primitives for the building kits (see kits.ts): unit size, standing on y = 0
+    const gable = new THREE.BufferGeometry();
+    const gv = [-0.5, 0, -0.5, 0.5, 0, -0.5, 0.5, 1, 0, -0.5, 0, -0.5, 0.5, 1, 0, -0.5, 1, 0, // back slope
+      -0.5, 0, 0.5, -0.5, 1, 0, 0.5, 1, 0, -0.5, 0, 0.5, 0.5, 1, 0, 0.5, 0, 0.5, // front slope
+      -0.5, 0, -0.5, -0.5, 1, 0, -0.5, 0, 0.5, 0.5, 0, -0.5, 0.5, 0, 0.5, 0.5, 1, 0]; // gable ends
+    gable.setAttribute("position", new THREE.Float32BufferAttribute(gv, 3)); gable.computeVertexNormals();
+    const prims: Record<Prim, [THREE.BufferGeometry, number]> = {
+      box: [new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0), 40000],
+      cyl: [new THREE.CylinderGeometry(0.5, 0.5, 1, 10).translate(0, 0.5, 0), 12000],
+      cone: [new THREE.ConeGeometry(0.5, 1, 9).translate(0, 0.5, 0), 12000],
+      prism: [gable, 20000],
+      hip: [new THREE.ConeGeometry(Math.SQRT1_2, 1, 4).rotateY(Math.PI / 4).translate(0, 0.5, 0), 12000],
+      dome: [new THREE.SphereGeometry(0.5, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, 2, 1), 8000]
+    };
+    for (const [k, [g, max]] of Object.entries(prims)) { this.K[k as Prim] = inst(g, max, lambert({ side: k === "prism" ? THREE.DoubleSide : THREE.FrontSide })); G.add(this.K[k as Prim]); }
+    // roads and streets: one draped ribbon mesh
+    this.roads = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshLambertMaterial({ vertexColors: true, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -8 }));
+    this.roads.renderOrder = 1; this.roads.frustumCulled = false;
+    G.add(this.roads);
     this.fields = inst(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), 8000, lambert({ side: THREE.DoubleSide }));
     this.posts = inst(new THREE.CylinderGeometry(0.5, 0.5, 1, 5).translate(0, 0.5, 0), 12000, lambert());
     G.add(this.pines, this.broad, this.fields, this.posts);
@@ -245,6 +269,61 @@ export class Actors {
     finish(this.pines, ip); finish(this.broad, ib);
   }
 
+  /** Place a building kit: parts rotated with the building, coloured by role. */
+  private kit(parts: Part[], x: number, z: number, gy: number, rot: number, s: number, pal: Palette, accent: string) {
+    const c = Math.cos(rot), sn = Math.sin(rot);
+    for (const q of parts) {
+      const m = this.K[q.g], i = this.kn[q.g] ?? 0;
+      if (i >= m.instanceMatrix.count) continue;
+      this.kn[q.g] = i + 1;
+      put(m, i, x + (q.x * c + q.z * sn) * s, gy + q.y * s, z + (-q.x * sn + q.z * c) * s, rot + (q.r ?? 0), q.sx * s, q.sy * s, q.sz * s, colorOf(q.c, pal, accent));
+    }
+  }
+
+  /** Roads between villages and streets inside planned towns, draped on the ground. */
+  private buildRoads(w: Snap, live: Village[]) {
+    const key = live.filter((v) => v.stage !== "band").map((v) => `${v.id}${v.stage[0]}${roadTier(w.tribes[v.tribe])}${isPlanned(v, w.tribes[v.tribe]) ? "p" : ""}${v.jobs.quarrier > 0.01 ? "q" : ""}${v.jobs.miner > 0.01 ? "m" : ""}`).join(",");
+    if (key === this.roadKey) return;
+    this.roadKey = key;
+    const P: number[] = [], C: number[] = [];
+    const COL = [new THREE.Color("#7d6a4c"), new THREE.Color("#8f7a5a"), new THREE.Color("#948c80")];
+    const WID = [0.0028, 0.0038, 0.0048];
+    const ribbon = (pts: [number, number][], wd: number, col: THREE.Color) => {
+      // resample so the ribbon follows the ground closely
+      const rs: [number, number][] = [pts[0]];
+      for (let i = 1; i < pts.length; i++) {
+        const [x0, y0] = pts[i - 1], [x1, y1] = pts[i], d = Math.hypot(x1 - x0, y1 - y0), n = Math.max(1, Math.ceil(d / 0.006));
+        for (let k = 1; k <= n; k++) rs.push([x0 + (x1 - x0) * k / n, y0 + (y1 - y0) * k / n]);
+      }
+      let prev: [number, number, number, number] | null = null;
+      for (let i = 0; i < rs.length; i++) {
+        const [x, y] = rs[i], [xa, ya] = rs[Math.max(0, i - 1)], [xb, yb] = rs[Math.min(rs.length - 1, i + 1)];
+        const tx = xb - xa, ty = yb - ya, tl = Math.hypot(tx, ty) || 1, nx = -ty / tl * wd, ny = tx / tl * wd;
+        const cur: [number, number, number, number] = [x + nx, y + ny, x - nx, y - ny];
+        if (prev && this.hf.elevAt(x, y) > 0.001) {
+          const q = [prev[0], prev[1], prev[2], prev[3], cur[0], cur[1], cur[2], cur[3]];
+          const Y = (k: number) => this.hf.groundY(q[k * 2], q[k * 2 + 1]) + (this.low ? 0.004 : 0.0022);
+          for (const k of [0, 2, 1, 1, 2, 3]) { P.push(q[k * 2], Y(k), q[k * 2 + 1]); C.push(col.r, col.g, col.b); }
+        }
+        prev = cur;
+      }
+    };
+    for (const r of roadNetwork(this.terrain, live, w.tribes as Tribe[])) ribbon(r.pts, WID[r.tier], COL[r.tier]);
+    for (const v of live) {
+      if (v.stage === "band") continue;
+      const t = w.tribes[v.tribe], tier = roadTier(t), L = layoutFor(this.terrain, v);
+      for (const pts of villageTracks(this.terrain, v, L, { quarry: v.jobs.quarrier > 0.01, mine: v.jobs.miner > 0.01 })) ribbon(pts, WID[Math.max(0, tier - 1)], COL[tier]);
+      if (isPlanned(v, t)) {
+        const plan = planFor(this.terrain, v, L);
+        for (const st of plan.streets) ribbon([[st.ax, st.ay], [st.bx, st.by]], st.main ? 0.0045 : 0.003, COL[Math.max(1, tier)]);
+      }
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(P, 3)); g.setAttribute("color", new THREE.Float32BufferAttribute(C, 3));
+    g.computeVertexNormals();
+    this.roads.geometry.dispose(); this.roads.geometry = g;
+  }
+
   /** Rebuild villages, routes and the selected tribe's known world. Called when a snapshot arrives or the selection changes. */
   updateStatic(w: Snap, sel: Selection) {
     const live = w.villages.filter((v) => !v.lost);
@@ -256,35 +335,59 @@ export class Actors {
     const b = (k: string, x: number, y: number, z: number, rot: number, sx: number, sy: number, sz: number, c: string) => { if (n[k] < 8000) put(this.B[k], n[k]++, x, y, z, rot, sx, sy, sz, c); };
     let ifl = 0, ip = 0;
     this.chimneys = [];
+    this.kn = {};
+    this.buildRoads(w, live);
     for (const v of live) {
       const L = layoutFor(this.terrain, v), t = w.tribes[v.tribe];
       const st = STYLE[t?.home ?? "hearth"] ?? STYLE.hearth;
       const roofTint = t?.top ?? st.roof;
       const band = v.stage === "band" || (t?.age ?? 0) === 0;
-      for (let i = 0; i < houseCount(v, L); i++) {
-        const h = L.houses[i], s = 0.014 * (0.8 + h.v * 0.5), gy = this.hf.groundY(h.x, h.y), rot = h.v * 3;
-        const roof = h.v > 0.7 && (st.kind === "gable" || st.kind === "round") ? roofTint : st.roof;
-        if (band || st.kind === "tent") { b("tent", h.x, gy, h.y, rot, s, s * 1.1, s, st.kind === "tent" ? st.wall : "#9c8462"); if (st.kind === "tent") b("tentTip", h.x, gy, h.y, rot, s, s, s, st.roof); }
-        else if (st.kind === "gable" || st.kind === "long") {
-          const len = st.kind === "long" ? 1.9 : 1;
-          b("gableBody", h.x, gy, h.y, rot, s * len, s, s, st.wall); b("gableRoof", h.x, gy, h.y, rot, s * len, s, s, roof);
-        } else if (st.kind === "round") {
-          const lift = st.stilts && v.coastal ? s * 0.35 : 0;
-          if (lift) for (let k = 0; k < 4; k++) { const a = rot + k * Math.PI / 2 + 0.78; if (ip < 12000) put(this.posts, ip++, h.x + Math.cos(a) * s * 0.4, gy, h.y + Math.sin(a) * s * 0.4, 0, s * 0.06, lift, s * 0.06, "#7a6040"); }
-          b("roundBody", h.x, gy + lift, h.y, rot, s, s, s, st.wall); b("roundRoof", h.x, gy + lift, h.y, rot, s, s, s, roof);
-        } else {
-          b("stoneBody", h.x, gy, h.y, rot, s, s, s, st.wall); b("stoneRoof", h.x, gy, h.y, rot, s, s, s, roof);
-        }
-        if (i % 6 === 0 && !band) this.chimneys.push({ x: h.x, y: h.y, h: gy + s * 1.1 });
+      const planned = isPlanned(v, t), era = eraOf(v.stage, t?.age ?? 0, planned);
+      const style = ((t?.home ?? "hearth") in PALETTE ? t!.home : "hearth") as Style;
+      const pal = PALETTE[style][era], accent = t?.line ?? "#f2b257";
+      const plan: TownPlan | null = planned ? planFor(this.terrain, v, L) : null;
+      const capital = !!t && w.agents.find((a) => a.id === t.gov?.ruler)?.village === v.id;
+      // houses: organic villages face the centre; planned towns line the streets and grow upward
+      const spots = plan ? plan.plots : L.houses;
+      const nh = Math.min(spots.length, Math.max(1, Math.floor(v.houses)));
+      const levels = plan ? Math.min(3, Math.max(1, Math.ceil(v.houses / Math.max(1, spots.length)))) : 1;
+      for (let i = 0; i < nh; i++) {
+        const h = spots[i], gy = this.hf.groundY(h.x, h.y);
+        const s = plan ? 0.0155 : 0.014 * (0.8 + h.v * 0.5);
+        const rot: number = "rot" in h ? (h.rot as number) : Math.atan2(v.x - h.x, v.y - h.y) + (h.v - 0.5) * 0.6;
+        const n = plan ? Math.min(3, levels + (h.d < 0.08 && h.v > 0.5 ? 1 : 0)) : 1;
+        const hp = h.v > 0.7 && era > 0 ? { ...pal, roof: roofTint } : pal;
+        const lift = style === "kelp" && v.coastal && era >= 1 && era < 3 ? s * 0.35 : 0;
+        if (lift) for (let k = 0; k < 4; k++) { const a = rot + k * Math.PI / 2 + 0.78; if (ip < 12000) put(this.posts, ip++, h.x + Math.cos(a) * s * 0.4, gy, h.y + Math.sin(a) * s * 0.4, 0, s * 0.06, lift, s * 0.06, "#7a6040"); }
+        this.kit(houseKit(style, era, n), h.x, h.y, gy + lift, rot, s, hp, accent);
+        if (i % 6 === 0 && !band) this.chimneys.push({ x: h.x, y: h.y, h: gy + s * (0.9 + n * 0.6) });
       }
-      // landmark at the heart of a grown village
-      if (!band) {
+      // the heart of the town: a palace for the ruler, a market, a well; older villages keep their landmark
+      if (plan) {
+        const sq = (pt: { x: number; y: number }) => [pt.x, pt.y, this.hf.groundY(pt.x, pt.y)] as const;
+        { const [x, y, gy] = sq(plan.plaza); this.kit(CIVIC.plaza, x, y, gy, -plan.angle, 0.018, pal, accent); }
+        { const [x, y, gy] = sq(plan.market); this.kit(CIVIC.market, x, y, gy, -plan.angle, 0.018, pal, accent); }
+        { const [x, y, gy] = sq(plan.palace); if (capital) this.kit(CIVIC.palace, x, y, gy, -plan.angle, 0.017, { ...pal, roof: roofTint }, accent); else this.kit(CIVIC.granary2, x, y, gy, -plan.angle, 0.02, pal, accent); }
+        if (v.monument <= 0.02) { const [x, y, gy] = sq(plan.temple); this.kit(CIVIC.workshop, x - 0.008, y, gy, -plan.angle, 0.016, pal, accent); this.kit(CIVIC.workshop, x + 0.012, y + 0.01, gy, -plan.angle + Math.PI / 2, 0.014, pal, accent); }
+      } else if (!band) {
         const lx = v.x - 0.02, ly = v.y + 0.025, gy = this.hf.groundY(lx, ly), s = 0.02;
-        if (st.landmark === "barn") { b("gableBody", lx, gy, ly, 0.3, s * 1.6, s * 1.3, s * 1.2, "#9e5a3e"); b("gableRoof", lx, gy, ly, 0.3, s * 1.6, s * 1.3, s * 1.2, "#5b3a28"); }
+        if (capital && era >= 2) this.kit(CIVIC.palace, lx, ly, gy, 0.3, 0.016, { ...pal, roof: roofTint }, accent);
+        else if (st.landmark === "barn") { b("gableBody", lx, gy, ly, 0.3, s * 1.6, s * 1.3, s * 1.2, "#9e5a3e"); b("gableRoof", lx, gy, ly, 0.3, s * 1.6, s * 1.3, s * 1.2, "#5b3a28"); }
         else if (st.landmark === "hall") { b("gableBody", lx, gy, ly, 0.6, s * 3.2, s * 1.3, s * 1.3, "#7a5232"); b("gableRoof", lx, gy, ly, 0.6, s * 3.2, s * 1.4, s * 1.3, "#3f3226"); }
         else if (st.landmark === "racks") for (let k = 0; k < 3; k++) { const rx = v.px * 0.7 + v.x * 0.3 + k * 0.02, ry = v.py * 0.7 + v.y * 0.3; b("rack", rx, this.hf.surfaceY(rx, ry), ry, 0.4, s, s, s, "#a08860"); }
         else if (st.landmark === "stones") for (let k = 0; k < 9; k++) { const a = (k / 9) * Math.PI * 2, sx = lx + Math.cos(a) * 0.03, sy = ly + Math.sin(a) * 0.03; b("stone", sx, this.hf.groundY(sx, sy), sy, a, 0.011, 0.016 + (k % 3) * 0.004, 0.011, "#b4b0aa"); }
         else if (st.landmark === "totem") { b("totem", lx, gy, ly, 0, s, s * 2.2, s, "#5a3c2a"); b("totemTop", lx, gy, ly, 0.2, s, s * 2.2, s, t?.tip ?? "#f2b257"); }
+        if (era >= 2 && (v.stage === "town" || v.stage === "city")) { const wx = v.x + 0.012, wy = v.y + 0.012; this.kit(CIVIC.well, wx, wy, this.hf.groundY(wx, wy), 0, 0.016, pal, accent); }
+      }
+      // the harbour: a pier and a boat shed once the tribe builds boats
+      if (v.coastal && era >= 1 && (t?.techs.includes("canoe") || v.jobs.boatwright > 0.01)) {
+        const dx = v.px - v.x, dy = v.py - v.y, dl = Math.hypot(dx, dy) || 1, rot = Math.atan2(dx, dy);
+        const px = v.px - dx / dl * 0.01, py = v.py - dy / dl * 0.01;
+        this.kit(CIVIC.pier, px, py, Math.max(0.002, this.hf.groundY(px, py)) + 0.001, rot, era >= 2 ? 0.02 : 0.014, pal, accent);
+        if (v.jobs.boatwright > 0.01) {
+          const bx = v.x + dx * 0.86 - dy / dl * 0.03, by = v.y + dy * 0.86 + dx / dl * 0.03;
+          if (this.hf.elevAt(bx, by) > 0.002) this.kit(CIVIC.boatshed, bx, by, this.hf.groundY(bx, by), rot, 0.014, pal, accent);
+        }
       }
       // stockpiles: what the village has in store, at a glance
       const piles: [keyof Village["stock"], string, string][] = [["wood", "logs", "#8a6440"], ["stone", "heap", "#a9a59e"], ["brick", "crate", "#c35a3e"], ["clay", "heap", "#b5714a"], ["salt", "heap", "#eef2f4"], ["fiber", "crate", "#c9b77a"], ["flint", "heap", "#3b3540"], ["copper", "heap", "#c87533"], ["tin", "heap", "#b8bcc2"], ["bronze", "crate", "#e2b04f"]];
@@ -294,7 +397,10 @@ export class Actors {
         if (amt < 3) continue;
         const cnt = Math.min(3, Math.ceil(amt / 40)), size = 0.006 + Math.min(0.007, amt / 500);
         for (let j = 0; j < cnt; j++, pk++) {
-          const px = v.x + 0.04 + (pk % 4) * 0.013, py = v.y + 0.035 + Math.floor(pk / 4) * 0.012;
+          let px = v.x + 0.04 + (pk % 4) * 0.013, py = v.y + 0.035 + Math.floor(pk / 4) * 0.012;
+          if (plan) { const a = -plan.angle, u = ((pk % 4) - 1.5) * 0.01, ww = (Math.floor(pk / 4) - 1) * 0.01; px = plan.plaza.x + u * Math.cos(a) + ww * Math.sin(a); py = plan.plaza.y - u * Math.sin(a) + ww * Math.cos(a); }
+          else if (this.hf.elevAt(px, py) < 0.003) { px = v.x * 2 - px; py = v.y * 2 - py; }
+          if (this.hf.elevAt(px, py) < 0.003) continue;
           b(kitName, px, this.hf.groundY(px, py), py, pk * 0.7, size, size, size, col);
         }
       }
@@ -310,46 +416,62 @@ export class Actors {
         b("heap", L.mine.x + 0.02, gy, L.mine.y + 0.012, 0.4, 0.008, 0.008, 0.008, metal);
       }
       if (t && t.techs.includes("brickmaking") && !band) { const kx = v.x - 0.055, ky = v.y + 0.02, gy = this.hf.groundY(kx, ky); b("kiln", kx, gy, ky, 0, 0.013, 0.013, 0.013, "#9a5a3a"); this.chimneys.push({ x: kx, y: ky, h: gy + 0.012 }); }
-      if (v.jobs.smith > 0.005) { const gy = this.hf.groundY(L.forge.x, L.forge.y); b("crate", L.forge.x, gy, L.forge.y, 0.5, 0.012, 0.012, 0.012, "#3d3430"); b("crate", L.forge.x + 0.007, gy, L.forge.y, 0, 0.005, 0.004, 0.005, "#ff7a2e"); this.chimneys.push({ x: L.forge.x, y: L.forge.y, h: gy + 0.01 }); }
+      if (v.jobs.smith > 0.005) {
+        const fx = plan ? plan.temple.x + 0.004 : L.forge.x, fy = plan ? plan.temple.y - 0.012 : L.forge.y, gy = this.hf.groundY(fx, fy);
+        this.kit(CIVIC.smithy, fx, fy, gy, plan ? -plan.angle : 0.5, 0.016, pal, accent);
+        this.chimneys.push({ x: fx, y: fy, h: gy + 0.018 });
+      }
       // the tribe's flag; red when the people are close to revolt
       if (!band && t) {
-        const capital = w.agents.find((a) => a.id === t.gov?.ruler)?.village === v.id;
         const fx = v.x + 0.01, fy = v.y - 0.02, gy = this.hf.groundY(fx, fy), hgt = capital ? 0.07 : 0.045;
         b("pole", fx, gy, fy, 0, 0.012, hgt, 0.012, "#5a4430");
         b("flag", fx, gy + hgt * 0.82, fy, 0.4, capital ? 0.03 : 0.02, capital ? 0.03 : 0.02, 1, t.gov && t.gov.unrest > 0.6 ? "#d23c2c" : t.line);
       }
       // a ruler's temple or great hall rises step by step
       if (v.monument > 0.02) {
-        const mx = v.x + 0.03, my = v.y - 0.065, gy = this.hf.groundY(mx, my), steps = Math.ceil(v.monument * 3);
+        const mx = plan ? plan.temple.x : v.x + 0.03, my = plan ? plan.temple.y : v.y - 0.065, gy = this.hf.groundY(mx, my), steps = Math.ceil(v.monument * 3);
         const mcol = v.isle === "hearth" ? "#b8705a" : v.isle === "gull" ? "#b4b0aa" : "#9c8b70";
         for (let k = 0; k < steps; k++) b("step", mx, gy + k * 0.012, my, 0, 0.05 - k * 0.012, 0.04, 0.05 - k * 0.012, mcol);
         if (v.monument >= 1) { b("gableBody", mx, gy + 0.036, my, 0, 0.012, 0.012, 0.012, mcol); b("gableRoof", mx, gy + 0.036, my, 0, 0.012, 0.012, 0.012, roofTint); }
       }
       for (let i = 0; i < fieldCount(v, L); i++) {
         const f = L.fields[i];
+        if (plan && Math.hypot(f.x - v.x, (f.y - v.y) / 0.85) < L.R * 1.08) continue;
         put(this.fields, ifl++, f.x, this.hf.surfaceY(f.x, f.y) + 0.0025, f.y, -f.r, f.w, 1, f.h, CROPS[f.c]);
       }
       const def = Math.floor(v.defense);
       if (def >= 1) {
         const cnt = def >= 4 ? 36 : 56, R = 0.24, stone = def >= 4;
+        // gates where the avenues, tracks and roads leave the town
+        const dirs = plan ? plan.avenues : [Math.atan2(L.quarry.y - v.y, L.quarry.x - v.x), Math.atan2(v.py - v.y, v.px - v.x)];
+        const gates = dirs.map((d) => Math.atan2(Math.sin(d) / 0.85, Math.cos(d)));
+        const nearGate = (a: number) => gates.some((g) => Math.abs(Math.atan2(Math.sin(a - g), Math.cos(a - g))) < Math.PI / cnt * 1.2);
+        const wallPal = stone ? pal : { ...pal, stone: "#6a4a30", roof: "#4a3424" };
+        for (const g of gates) {
+          const x = v.x + Math.cos(g) * R, y = v.y + Math.sin(g) * R * 0.85;
+          if (this.hf.elevAt(x, y) < 0.002 || def < 2) continue;
+          this.kit(CIVIC.gatehouse, x, y, this.hf.groundY(x, y), -Math.atan2(Math.cos(g) * 0.85, -Math.sin(g)), stone ? 0.024 : 0.018, wallPal, accent);
+        }
         for (let k = 0; k < cnt && ip < 12000; k++) {
           const a = (k / cnt) * Math.PI * 2, x = v.x + Math.cos(a) * R, y = v.y + Math.sin(a) * R * 0.85;
-          if (this.hf.elevAt(x, y) < 0.002) continue;
+          if (this.hf.elevAt(x, y) < 0.002 || nearGate(a)) continue;
           if (stone) {
             // continuous stone wall: segments laid along the ring, with a tower every ninth
             const tan = Math.atan2(Math.cos(a) * 0.85, -Math.sin(a)), seg = (2 * Math.PI * R) / cnt * 1.08;
             b("stone", x, this.hf.groundY(x, y), y, -tan, seg / 0.3, 0.02, 0.008 / 0.22, "#9a9490");
-            if (k % 9 === 0) b("stoneBody", x, this.hf.groundY(x, y), y, 0, 0.016, 0.06, 0.016, "#8c8680");
+            if (k % 9 === 4) this.kit(CIVIC.tower, x, y, this.hf.groundY(x, y), 0, 0.022, { ...pal, stone: "#8c8680" }, accent);
           } else put(this.posts, ip++, x, this.hf.groundY(x, y), y, 0, 0.005, 0.02 + (k % 2) * 0.004, 0.005, def >= 2 ? "#6a4a30" : "#7a5a38");
         }
-        if (def >= 2 && def < 4) for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + 0.4, x = v.x + Math.cos(a) * R, y = v.y + Math.sin(a) * R * 0.85; if (this.hf.elevAt(x, y) > 0.002) put(this.posts, ip++, x, this.hf.groundY(x, y), y, 0, 0.009, 0.05, 0.009, "#5a3e28"); }
+        if (def >= 2 && def < 4) for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + 0.4, x = v.x + Math.cos(a) * R, y = v.y + Math.sin(a) * R * 0.85; if (this.hf.elevAt(x, y) > 0.002) this.kit(CIVIC.tower, x, y, this.hf.groundY(x, y), 0, 0.016, wallPal, accent); }
       }
-      if (v.granary >= 1) {
+      if (v.granary >= 1 && !plan) {
         const x = v.x + 0.05, y = v.y - 0.03, gy = this.hf.groundY(x, y);
-        b("granary", x, gy, y, 0, 0.02, 0.02, 0.02, "#c8a060"); b("granaryRoof", x, gy, y, 0, 0.02, 0.02, 0.02, "#a8803e");
+        if (era >= 2) this.kit(CIVIC.granary2, x, y, gy, 0.4, 0.018, pal, accent); else {
+        b("granary", x, gy, y, 0, 0.02, 0.02, 0.02, "#c8a060"); b("granaryRoof", x, gy, y, 0, 0.02, 0.02, 0.02, "#a8803e"); }
       }
     }
     for (const k of Object.keys(this.B)) finish(this.B[k], n[k]);
+    for (const k of Object.keys(this.K) as Prim[]) finish(this.K[k], this.kn[k] ?? 0);
     finish(this.fields, ifl); finish(this.posts, ip);
     this.crowdCache.clear();
     // trade, marriage and kin routes as dashed lines on the water
@@ -397,7 +519,7 @@ export class Actors {
         const t = w.tribes[v.tribe]; if (!t) continue;
         const key = v.id + ":" + popOf(v) + ":" + Math.round(v.jobs.farmer * 50) + ":" + Math.floor(v.houses);
         let crowd = this.crowdCache.get(key);
-        if (!crowd) { crowd = sampleCrowd(v, layoutFor(this.terrain, v), 60); this.crowdCache.set(key, crowd); }
+        if (!crowd) { const L = layoutFor(this.terrain, v), t = w.tribes[v.tribe]; crowd = sampleCrowd(v, isPlanned(v, t) ? { ...L, houses: planFor(this.terrain, v, L).plots } : L, 60); this.crowdCache.set(key, crowd); }
         for (const p of crowd) {
           if (n >= 4900) break;
           const f = figureState(p, time);
@@ -612,6 +734,6 @@ export class Actors {
   }
 
   setPeopleVisible(on: boolean) { for (const k of Object.keys(this.P)) this.P[k].visible = on; this.rings.visible = on; }
-  setVillagesVisible(on: boolean) { for (const m of [...Object.values(this.B), this.fields, this.posts]) m.visible = on; }
+  setVillagesVisible(on: boolean) { for (const m of [...Object.values(this.B), ...Object.values(this.K), this.fields, this.posts, this.roads]) m.visible = on; }
   setRoutesVisible(on: boolean) { this.routes.visible = on; }
 }

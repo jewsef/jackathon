@@ -241,5 +241,44 @@
    "clay": 10
   },
   "desc": "Marks on clay. Laws, records and the first histories."
+ },
+ {
+  "id": "wheel",
+  "name": "The wheel",
+  "group": "craft",
+  "prereq": [
+   "pottery",
+   "copperworking"
+  ],
+  "needs": {
+   "wood": 25
+  },
+  "desc": "The potter's wheel turned on its side. Carts carry stone and grain along the tracks."
+ },
+ {
+  "id": "roads",
+  "name": "Paved roads",
+  "group": "craft",
+  "prereq": [
+   "wheel",
+   "masonry",
+   "bronze"
+  ],
+  "needs": {
+   "stone": 30
+  },
+  "desc": "Stone-laid streets and roads between towns. Stores and builders move faster."
+ },
+ {
+  "id": "planning",
+  "name": "Town planning",
+  "group": "knowledge",
+  "prereq": [
+   "writing"
+  ],
+  "needs": {
+   "brick": 10
+  },
+  "desc": "Streets laid out in a grid, with a market square, a palace and a harbour. Cities become possible."
  }
 ]

@@ -19,8 +19,8 @@ export function toolFactor(w: World, t: Tribe, v?: Village) {
   return 1 + (has(t, "stonetools") ? 0.18 : 0) + (has(t, "bronze") && (!v || v.stock.bronze > 1) ? 0.15 : 0);
 }
 
-export function stageOf(pop: number): Stage {
-  return pop < 15 ? "band" : pop < 60 ? "camp" : pop < 300 ? "village" : "town";
+export function stageOf(pop: number, planned = false): Stage {
+  return pop < 15 ? "band" : pop < 60 ? "camp" : pop < 300 ? "village" : pop < 350 || !planned ? "town" : "city";
 }
 
 /** How strongly a village wants to go to sea: marriage pressure, omens, curiosity, crowding. */
@@ -107,7 +107,7 @@ export function society(w: World, rng: Rng): World {
     const t = w.tribes[v.tribe];
     let pop = popOf(v);
     const prevStage = v.stage;
-    v.stage = stageOf(pop);
+    v.stage = stageOf(pop, has(w.tribes[v.tribe], "planning"));
     if (STAGES.indexOf(v.stage) > STAGES.indexOf(prevStage) && pop > 14)
       chron(w, "village", `${v.name} grows from a ${prevStage} into a ${v.stage}.`, v.x, v.y);
     v.threat = threatOf(w, v);

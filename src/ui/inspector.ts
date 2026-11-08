@@ -11,6 +11,7 @@ import resData from "../../data/resources.json";
 import agesData from "../../data/ages.json";
 import { REGIMES, FACTION_INFO } from "../sim/politics";
 import { RES } from "../sim/types";
+import { isPlanned, roadTier } from "../render/plan";
 import { JOB_COLOR, RULER_COLOR, HEAD_COLOR } from "../render3d/actors";
 
 type Snap = Omit<World, "chronicle">;
@@ -48,6 +49,7 @@ function villageCard(w: Snap, v: Village, terrain: Terrain): string {
     <dt>Morale</dt><dd>${pct(v.morale)}${bar(v.morale, "var(--ember)")}</dd>
     <dt>Kinship</dt><dd>${v.kin > 0.35 ? "everyone is cousins; must marry out" : v.kin > 0.2 ? "closely related" : "varied families"}${bar(v.kin, "#c98fd0")}</dd>
     <dt>Bloodlines</dt><dd><div class="blood">${blood.map(([k, x]) => `<i title="${esc(w.tribes[+k]?.name ?? "")}" style="width:${x * 100}%;background:${w.tribes[+k]?.tail ?? "#888"}"></i>`).join("")}</div></dd>
+    <dt>Layout</dt><dd>${isPlanned(v, t) ? "planned streets, a market and a palace quarter" : v.stage === "band" ? "a camp of shelters" : "grown house by house"} · ${["footpaths", "cart tracks", "paved roads"][roadTier(t)]}</dd>
     <dt>Buildings</dt><dd>${Math.floor(v.houses)} houses${v.granary >= 1 ? ", granary" : ""}${Math.floor(v.defense) ? `, defences tier ${Math.floor(v.defense)}` : ""}${v.monument >= 1 ? ", a great temple" : v.monument > 0.02 ? `, temple ${pct(v.monument)} built` : ""}</dd>
     ${v.sick ? `<dt>Sickness</dt><dd style="color:var(--blight)">${STRAINS[v.sick.strain].name}, season ${v.sick.t + 1}</dd>` : v.immune > 0.2 ? `<dt>Immunity</dt><dd>${pct(v.immune)} of the village</dd>` : ""}
     ${v.threat ? `<dt>Threat</dt><dd style="color:var(--blight)">${v.threat >= 1 ? "at war" : "hostile neighbours"}</dd>` : ""}
