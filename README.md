@@ -13,7 +13,15 @@ npm run build      # static game in dist/ (open dist/index.html through any stat
 npm test           # simulation and milestone tests
 ```
 
-- **3D view** (default, desktop): scroll to zoom from the whole archipelago down to individual people, drag to pan, **right-drag or Shift-drag to orbit and tilt**, Q/E to rotate, R to reset north. **Day/night** toggles the day cycle; at night village hearths light the islands.
+- **3D view** (default, desktop). Looking around:
+  - **WASD / arrow keys** move (hold for smooth scrolling, works without clicking the map first)
+  - **Mouse wheel** zooms toward the cursor; **trackpad** two-finger scroll pans and pinch zooms
+  - **Drag** pans; **right-drag, middle-drag or Shift-drag** orbits and tilts
+  - **Q / E** rotate, **T / G** tilt, **Z / X** zoom, **R** or the compass faces north
+  - **Edge scrolling**: push the mouse to the map edge (toggle under the minimap)
+  - **Minimap**: click or drag to jump; the outline shows what the camera sees
+  - **Double-click** the ground to fly there
+- **Day/night** toggles the day cycle; at night village hearths light the islands.
 - **2D map** is still available from the top bar. For slower machines set `localStorage["bc.quality"] = "low"` in the browser console and reload.
 - **Pick a power** on the left, then click the map. Energy refills from the faith of your people.
 - **Click** villages, named people (ember rings), boats and islands to read their records in the inspector.

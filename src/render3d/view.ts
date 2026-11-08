@@ -14,6 +14,7 @@ import { popOf } from "../sim/util";
 type Snap = Omit<World, "chronicle">;
 const clamp = (v: number, a: number, b: number) => (v < a ? a : v > b ? b : v);
 const D0 = 13.5, FOV = 40;
+const MOVE_KEYS = new Set(["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright", "q", "e", "t", "g", "z", "x"]);
 
 /**
  * The 3D view. It reads world snapshots and never changes them (Rule A).
@@ -37,10 +38,15 @@ export class MapView3D implements MapLike {
   private overlay = document.createElement("canvas"); private octx!: CanvasRenderingContext2D;
   private labels = document.createElement("div"); private labelPool: HTMLDivElement[] = [];
   private W = 800; private H = 450; private dpr = 1;
-  private lastT = 0; private t = 0; private day = 1;
+  private lastT = 0; private t = 0; private frameN = 0; private day = 1;
   private fly: { x0: number; y0: number; z0: number; x1: number; y1: number; z1: number; t: number } | null = null;
   private lastMove = 0; private detailBox: { x0: number; y0: number; w: number; h: number; res: number } | null = null; private detailTex: THREE.Texture | null = null;
   private mouse: { x: number; y: number } | null = null;
+  private keys = new Set<string>();
+  private dragging: () => boolean = () => false;
+  private edgeScroll = (() => { try { return localStorage.getItem("bc.edge") !== "off"; } catch { return true; } })();
+  private mini = document.createElement("canvas"); private miniBase!: HTMLCanvasElement; private compass = document.createElement("button");
+  private trackpadUntil = 0;
   private fxList: { fx: Fx; t0: number }[] = [];
   private shake = 0; private flash = 0;
   private pickables: { x: number; y: number; r: number; sel: Selection }[] = [];
@@ -75,6 +81,7 @@ export class MapView3D implements MapLike {
     this.actors = new Actors(this.hf, this.terrain, this.low);
     this.scene.add(this.actors.group);
     this.bindInput();
+    this.buildNavUI();
     this.resize();
     new ResizeObserver(() => this.resize()).observe(this.el);
     this.renderer.setAnimationLoop(() => this.frame());
@@ -97,7 +104,7 @@ export class MapView3D implements MapLike {
 
   // ---------- camera ----------
   private dist() { return D0 / this.cam.z; }
-  private pitch() { const k = clamp(Math.log(this.cam.z) / Math.log(14), 0, 1); return clamp((62 - 30 * k + this.tilt) * Math.PI / 180, 0.25, 1.45); }
+  private pitch() { const k = clamp(Math.log(this.cam.z) / Math.log(14), 0, 1); return clamp((62 - 30 * k + this.tilt) * Math.PI / 180, 0.12, 1.45); }
   private placeCamera() {
     const d = this.dist(), p = this.pitch();
     const ty = Math.max(0, this.hf.groundY(this.cam.x, this.cam.y));
@@ -171,7 +178,11 @@ export class MapView3D implements MapLike {
     cv.addEventListener("wheel", (e) => {
       e.preventDefault();
       const r = cv.getBoundingClientRect();
-      this.zoomBy(Math.exp(-e.deltaY * (e.deltaMode === 1 ? 0.05 : 0.0016)), e.clientX - r.left, e.clientY - r.top);
+      // Trackpad two-finger scroll pans (it sends sideways deltas); pinch (ctrl+wheel) and a mouse wheel zoom.
+      if (!e.ctrlKey && e.deltaMode === 0 && Math.abs(e.deltaX) > 0.5) this.trackpadUntil = performance.now() + 400;
+      if (!e.ctrlKey && performance.now() < this.trackpadUntil) { const u = this.unitsPerPx(); this.fly = null; this.panBy(e.deltaX * u, e.deltaY * u); return; }
+      const k = e.ctrlKey ? 0.01 : e.deltaMode === 1 ? 0.05 : 0.0016;
+      this.zoomBy(Math.exp(-e.deltaY * k), e.clientX - r.left, e.clientY - r.top);
     }, { passive: false });
     cv.addEventListener("pointerdown", (e) => {
       try { cv.setPointerCapture(e.pointerId); } catch { /* ignore */ }
@@ -193,7 +204,7 @@ export class MapView3D implements MapLike {
         const [a, b] = [...ptrs.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]);
         this.zoomBy(d / pinch, (a[0] + b[0]) / 2 - r.left, (a[1] + b[1]) / 2 - r.top); pinch = d; return;
       }
-      if (orbit) { this.yaw -= dx * 0.006; this.tilt = clamp(this.tilt + dy * 0.15, -25, 25); this.moved(); return; }
+      if (orbit) { this.yaw -= dx * 0.006; this.tilt = clamp(this.tilt + dy * 0.15, -40, 25); this.moved(); return; }
       if (panFrom) {
         const now = this.groundAt(this.mouse.x, this.mouse.y);
         if (now) { this.cam.x += panFrom[0] - now[0]; this.cam.y += panFrom[1] - now[1]; this.clampCam(); this.placeCamera(); }
@@ -209,18 +220,104 @@ export class MapView3D implements MapLike {
     };
     cv.addEventListener("pointerup", end); cv.addEventListener("pointercancel", end);
     cv.addEventListener("pointerleave", () => { this.mouse = null; });
-    cv.addEventListener("keydown", (e) => {
-      const step = this.dist() * 0.08, c = Math.cos(this.yaw), s = Math.sin(this.yaw);
-      const pan = (fx: number, fy: number) => { this.cam.x += (fx * c - fy * s) * step; this.cam.y += (fx * s + fy * c) * step; };
-      if (e.key === "+" || e.key === "=") this.zoomBy(1.4);
-      else if (e.key === "-") this.zoomBy(1 / 1.4);
-      else if (e.key === "ArrowLeft") pan(-1, 0); else if (e.key === "ArrowRight") pan(1, 0);
-      else if (e.key === "ArrowUp") pan(0, -1); else if (e.key === "ArrowDown") pan(0, 1);
-      else if (e.key === "q" || e.key === "Q") this.yaw += 0.12; else if (e.key === "e" || e.key === "E") this.yaw -= 0.12;
-      else if (e.key === "r" || e.key === "R") { this.yaw = 0; this.tilt = 0; }
-      else return;
-      e.preventDefault(); this.clampCam(); this.moved();
+    cv.addEventListener("dblclick", (e) => {
+      if (this.armed) return;
+      const r = cv.getBoundingClientRect(), g = this.groundAt(e.clientX - r.left, e.clientY - r.top);
+      if (g) this.flyTo(g[0], g[1], Math.min(30, Math.max(this.cam.z * 2, 3)));
     });
+    // Keys work anywhere on the page (except while typing). Held keys move smoothly every frame.
+    window.addEventListener("keydown", (e) => {
+      const tg = e.target as HTMLElement | null;
+      if (tg && (tg.tagName === "INPUT" || tg.tagName === "TEXTAREA" || tg.isContentEditable)) return;
+      const k = e.key.toLowerCase();
+      if (MOVE_KEYS.has(k)) { this.keys.add(k); e.preventDefault(); this.fly = null; }
+      if (k === "r") { this.yaw = 0; this.tilt = 0; this.moved(); }
+      if (k === "+" || k === "=") this.zoomBy(1.4);
+      if (k === "-" || k === "_") this.zoomBy(1 / 1.4);
+    });
+    window.addEventListener("keyup", (e) => this.keys.delete(e.key.toLowerCase()));
+    window.addEventListener("blur", () => this.keys.clear());
+    this.dragging = () => ptrs.size > 0;
+  }
+
+  /** Pan in screen directions: +right / +down, in world units. */
+  private panBy(right: number, down: number) {
+    const c = Math.cos(this.yaw), s = Math.sin(this.yaw);
+    this.cam.x += right * c - down * s;
+    this.cam.y += right * s + down * c;
+    this.clampCam(); this.moved();
+  }
+  private unitsPerPx() { return (2 * this.dist() * Math.tan((FOV / 2) * Math.PI / 180)) / Math.max(1, this.H); }
+
+  /** Continuous movement: keys and edge scrolling. Speed scales with zoom so the screen moves at the same pace. */
+  private motion(dt: number) {
+    const k = this.keys, sp = this.dist() * 0.9 * dt;
+    let r = 0, d = 0;
+    if (k.has("a") || k.has("arrowleft")) r -= 1;
+    if (k.has("d") || k.has("arrowright")) r += 1;
+    if (k.has("w") || k.has("arrowup")) d -= 1;
+    if (k.has("s") || k.has("arrowdown")) d += 1;
+    if (this.edgeScroll && this.mouse && !this.dragging()) {
+      const m = 22;
+      if (this.mouse.x < m) r -= 1 - this.mouse.x / m; else if (this.mouse.x > this.W - m) r += 1 - (this.W - this.mouse.x) / m;
+      if (this.mouse.y < m) d -= 1 - this.mouse.y / m; else if (this.mouse.y > this.H - m) d += 1 - (this.H - this.mouse.y) / m;
+    }
+    if (r || d) this.panBy(r * sp, d * sp);
+    if (k.has("q")) { this.yaw += 1.6 * dt; this.moved(); }
+    if (k.has("e")) { this.yaw -= 1.6 * dt; this.moved(); }
+    if (k.has("t")) { this.tilt = clamp(this.tilt - 40 * dt, -40, 25); this.moved(); }
+    if (k.has("g")) { this.tilt = clamp(this.tilt + 40 * dt, -40, 25); this.moved(); }
+    if (k.has("z")) this.zoomBy(Math.exp(1.6 * dt));
+    if (k.has("x")) this.zoomBy(Math.exp(-1.6 * dt));
+  }
+
+  // ---------- minimap and compass ----------
+  private buildNavUI() {
+    const wrap = document.createElement("div");
+    wrap.className = "nav3d";
+    this.mini.width = 216 * 2; this.mini.height = 122 * 2; this.mini.className = "minimap";
+    this.mini.title = "Click or drag to move the camera";
+    const edge = document.createElement("button");
+    edge.type = "button"; edge.className = "edgebtn";
+    const syncEdge = () => { edge.textContent = this.edgeScroll ? "Edge scroll: on" : "Edge scroll: off"; edge.setAttribute("aria-pressed", String(this.edgeScroll)); };
+    syncEdge();
+    edge.addEventListener("click", () => { this.edgeScroll = !this.edgeScroll; try { localStorage.setItem("bc.edge", this.edgeScroll ? "on" : "off"); } catch { /* ignore */ } syncEdge(); });
+    wrap.append(this.mini, edge);
+    this.compass.type = "button"; this.compass.className = "compass"; this.compass.title = "Face north (R)";
+    this.compass.innerHTML = '<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="rgba(12,19,31,0.85)" stroke="#26344c"/><g class="needle"><path d="M20 5 L25 20 L20 18 L15 20 Z" fill="#e0725a"/><path d="M20 35 L25 20 L20 22 L15 20 Z" fill="#8d9ab0"/><text x="20" y="13" text-anchor="middle" font-size="7" fill="#fff" font-family="sans-serif">N</text></g></svg>';
+    this.compass.addEventListener("click", () => { this.yaw = 0; this.tilt = 0; this.moved(); });
+    this.el.append(wrap, this.compass);
+    const go = (e: PointerEvent) => {
+      const r = this.mini.getBoundingClientRect();
+      const x = ((e.clientX - r.left) / r.width) * (WX + 2) - 1, y = ((e.clientY - r.top) / r.height) * (WY + 1.125) - 0.5625;
+      this.fly = null; this.cam.x = x; this.cam.y = y; this.clampCam(); this.moved();
+    };
+    this.mini.addEventListener("pointerdown", (e) => { try { this.mini.setPointerCapture(e.pointerId); } catch { /* ignore */ } go(e); });
+    this.mini.addEventListener("pointermove", (e) => { if (e.buttons) go(e); });
+    this.miniBase = renderRegion(this.terrain, -1, -0.5625, WX + 2, WY + 1.125, 216, 122, false).canvas;
+  }
+  private drawMinimap() {
+    const g = this.mini.getContext("2d")!, W = this.mini.width, H = this.mini.height;
+    const mx = (x: number) => ((x + 1) / (WX + 2)) * W, my = (y: number) => ((y + 0.5625) / (WY + 1.125)) * H;
+    g.imageSmoothingEnabled = true;
+    g.drawImage(this.miniBase, 0, 0, W, H);
+    if (this.world) for (const v of this.world.villages) {
+      if (v.lost) continue;
+      g.fillStyle = this.world.tribes[v.tribe]?.line ?? "#f2b257";
+      g.beginPath(); g.arc(mx(v.x), my(v.y), 2.2 + Math.min(3, Math.sqrt(popOf(v)) / 12), 0, Math.PI * 2); g.fill();
+    }
+    const corner = (px: number, py: number): [number, number] => {
+      const p = this.seaAt(px, py);
+      const fx = Math.sin(this.yaw), fy = -Math.cos(this.yaw), far: [number, number] = [this.cam.x + fx * this.dist() * 3, this.cam.y + fy * this.dist() * 3];
+      if (!p || Math.hypot(p[0] - this.cam.x, p[1] - this.cam.y) > this.dist() * 3) return far;
+      return p;
+    };
+    const pts = [corner(0, 0), corner(this.W, 0), corner(this.W, this.H), corner(0, this.H)];
+    g.strokeStyle = "#f2f6fa"; g.lineWidth = 2; g.fillStyle = "rgba(143,208,230,0.15)";
+    g.beginPath(); pts.forEach(([x, y], i) => (i ? g.lineTo(mx(x), my(y)) : g.moveTo(mx(x), my(y)))); g.closePath(); g.fill(); g.stroke();
+    g.fillStyle = "#f2b257"; g.beginPath(); g.arc(mx(this.cam.x), my(this.cam.y), 3, 0, Math.PI * 2); g.fill();
+    const needle = this.compass.querySelector(".needle") as SVGGElement | null;
+    if (needle) needle.setAttribute("transform", `rotate(${(-this.yaw * 180) / Math.PI} 20 20)`);
   }
 
   private click(px: number, py: number) {
@@ -292,6 +389,7 @@ export class MapView3D implements MapLike {
       if (f.t >= 1) this.fly = null;
     }
     if (this.shake > 0) this.shake -= dt;
+    this.motion(dt);
     this.placeCamera();
     this.shared.time.value = this.t;
     this.day = this.skySys.update(dt, this.shared, this.scene);
@@ -310,6 +408,7 @@ export class MapView3D implements MapLike {
     }
     this.renderer.render(this.scene, this.camera);
     this.drawOverlay(dt);
+    if (this.frameN++ % 3 === 0) this.drawMinimap();
   }
 
   // ---------- overlay: rings, effects, rain, brush, labels ----------

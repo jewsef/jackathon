@@ -170,6 +170,7 @@ async function start(seed: number, fromSave: boolean) {
     if (e.target instanceof HTMLInputElement) return;
     if (e.key === "Escape") { powers.arm(null); $("logmodal").hidden = true; }
     if (e.key === " ") { e.preventDefault(); setSpeed(speed === 0 ? 1 : 0); }
+    if (e.key.startsWith("Arrow") && !(map instanceof MapView3D)) e.preventDefault();
   });
 
   // ---- selection + inspector
@@ -236,7 +237,7 @@ async function start(seed: number, fromSave: boolean) {
   // ---- tips (onboarding)
   const TIPS = [
     "Five islands, five tribes, one man and one woman on each. The first 40 years are fragile: one death can end a tribe. Gentle weather helps.",
-    "Scroll or pinch to zoom. Villages turn into houses and fields, then into people. Named people wear an ember ring.",
+    "Move with WASD or the arrow keys, zoom with the wheel, right-drag to look around. Push the mouse to the map edge to scroll, or click the minimap. Villages turn into houses, then people.",
     "Pick a power on the left, then click the map. Rain feeds them, an east wind pushes boats, storms and plague test them.",
     "Your energy refills from their faith. Sky-speakers and awe make it grow faster.",
     "The chronicle below tells their history. Click a line to fly there, double-click for the whole book. Space pauses."

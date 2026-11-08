@@ -185,3 +185,11 @@ li.k-tech span:last-child, li.k-contact span:last-child { color: #bfe4f0; }
 .lbl3d.isle.big { font-size: 20px; }
 .lbl3d.village { font-family: var(--mono); font-size: 11px; color: var(--ink); letter-spacing: 0.04em; }
 .lbl3d.agent { font-size: 12px; font-weight: 500; color: var(--ember); }
+
+/* 3D navigation: minimap, edge-scroll toggle, compass */
+.nav3d { position: absolute; top: 10px; right: 10px; display: grid; gap: 4px; justify-items: end; z-index: 2; }
+.minimap { width: 216px; height: 122px; border: 1px solid var(--rule); border-radius: 4px; cursor: crosshair; background: #0f2440; box-shadow: 0 4px 14px rgba(0,0,0,0.35); }
+.edgebtn { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--rule); background: rgba(12,19,31,0.85); color: var(--mist); cursor: pointer; }
+.edgebtn[aria-pressed="true"] { color: var(--storm); border-color: var(--storm); }
+.compass { position: absolute; right: 10px; bottom: 92px; width: 40px; height: 40px; padding: 0; border: 0; background: none; cursor: pointer; z-index: 2; }
+.compass svg { width: 40px; height: 40px; display: block; }
