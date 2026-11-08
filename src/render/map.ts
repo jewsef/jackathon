@@ -9,22 +9,15 @@ import { layoutFor, sampleCrowd, figurePos, houseCount, fieldCount, type Figure 
 import { drawCharacter } from "./sprites";
 import { voyagePos } from "../sim/voyages";
 
-export type Selection =
-  | { kind: "village"; id: number } | { kind: "agent"; id: number } | { kind: "voyage"; id: number }
-  | { kind: "isle"; id: IsleId } | { kind: "tribe"; id: number } | null;
+import { LEVELS, type Selection, type MapLike } from "./common";
+export { LEVELS, type Selection };
 
 const hex = (c: string) => parseInt(c.slice(1, 7), 16);
 const clamp = (v: number, a: number, b: number) => (v < a ? a : v > b ? b : v);
-export const LEVELS = [
-  { name: "Archipelago", z: 1, max: 2.2 },
-  { name: "Island", z: 2.8, max: 4.6 },
-  { name: "Village", z: 7, max: 10 },
-  { name: "Hearthside", z: 16, max: 99 }
-];
 
 interface ActiveFx { fx: Fx; t0: number; }
 
-export class MapView {
+export class MapView implements MapLike {
   app = new Application();
   el: HTMLElement;
   terrain: Terrain;

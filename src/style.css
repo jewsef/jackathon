@@ -177,3 +177,11 @@ li.k-tech span:last-child, li.k-contact span:last-child { color: #bfe4f0; }
   .menu { margin-left: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .meter i, #toast { transition: none; } }
+
+/* 3D view labels and loading */
+#loading { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--display); font-size: 22px; color: var(--mist); background: #0f2440; z-index: 3; }
+.lbl3d { position: absolute; left: 0; top: 0; white-space: nowrap; pointer-events: none; text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.9); will-change: transform; }
+.lbl3d.isle { font-family: var(--display); font-size: 15px; color: var(--ink); }
+.lbl3d.isle.big { font-size: 20px; }
+.lbl3d.village { font-family: var(--mono); font-size: 11px; color: var(--ink); letter-spacing: 0.04em; }
+.lbl3d.agent { font-size: 12px; font-weight: 500; color: var(--ember); }

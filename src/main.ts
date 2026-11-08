@@ -5,7 +5,9 @@ import { getTerrain } from "./sim/terrain";
 import { popOf, living } from "./sim/util";
 import { POWER } from "./sim/powers";
 import type { FromWorker, ToWorker } from "./sim/worker";
-import { MapView, LEVELS, type Selection } from "./render/map";
+import { MapView } from "./render/map";
+import { MapView3D } from "./render3d/view";
+import { LEVELS, type Selection, type MapLike } from "./render/common";
 import { portraitURL } from "./render/sprites";
 import { PowersBar } from "./ui/powers";
 import { Chronicle } from "./ui/chronicle";
@@ -69,8 +71,21 @@ function loadSaved() {
 
 async function start(seed: number, fromSave: boolean) {
   const terrain = getTerrain(seed);
-  const map = new MapView($("map"), terrain);
+  const use3D = store.get("bc.view") !== "2d";
+  $("loading").hidden = false;
+  const map: MapLike = use3D ? new MapView3D($("map"), terrain, store.get("bc.quality") === "low" ? "low" : "high") : new MapView($("map"), terrain);
   await map.init();
+  $("loading").hidden = true;
+  const viewBtn = $("btn-view"); viewBtn.textContent = use3D ? "2D map" : "3D view";
+  viewBtn.addEventListener("click", () => { store.set("bc.view", use3D ? "2d" : "3d"); location.reload(); });
+  const dayBtn = $("btn-day");
+  if (map instanceof MapView3D) {
+    const m3 = map;
+    if (store.get("bc.daycycle") === "off") m3.setDayCycle(false);
+    const sync = () => { dayBtn.textContent = m3.dayCycleOn() ? "Day/night: on" : "Day/night: off"; dayBtn.setAttribute("aria-pressed", String(m3.dayCycleOn())); };
+    sync();
+    dayBtn.addEventListener("click", () => { m3.setDayCycle(!m3.dayCycleOn()); store.set("bc.daycycle", m3.dayCycleOn() ? "on" : "off"); sync(); });
+  } else dayBtn.hidden = true;
   const sound = new Sound();
   if (store.get("bc.sound") !== "off") { sound.start(); }
   const syncSoundBtn = () => { const b = $("btn-sound"); b.setAttribute("aria-pressed", String(sound.on)); b.textContent = sound.on ? "Sound on" : "Sound off"; };

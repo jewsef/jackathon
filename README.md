@@ -13,7 +13,8 @@ npm run build      # static game in dist/ (open dist/index.html through any stat
 npm test           # simulation and milestone tests
 ```
 
-- **Zoom** with the scroll wheel, a pinch or the + and − buttons: archipelago → island → village → individual people.
+- **3D view** (default, desktop): scroll to zoom from the whole archipelago down to individual people, drag to pan, **right-drag or Shift-drag to orbit and tilt**, Q/E to rotate, R to reset north. **Day/night** toggles the day cycle; at night village hearths light the islands.
+- **2D map** is still available from the top bar. For slower machines set `localStorage["bc.quality"] = "low"` in the browser console and reload.
 - **Pick a power** on the left, then click the map. Energy refills from the faith of your people.
 - **Click** villages, named people (ember rings), boats and islands to read their records in the inspector.
 - **Space** pauses. Speeds run from 1× (a season every 2 seconds) to 64×.
@@ -48,7 +49,8 @@ The game follows the framework in [`docs/concept.html`](docs/concept.html).
 | Layer | Where | Files |
 |---|---|---|
 | Player and UI | main thread | `src/main.ts`, `src/ui/*` (powers, inspector, chronicle), `src/audio.ts` |
-| Renderer | main thread, WebGL (PixiJS) | `src/render/map.ts`, `terrainTex.ts`, `crowd.ts`, `sprites.ts` |
+| 3D renderer | main thread, WebGL (Three.js) | `src/render3d/view.ts` (camera, picking, overlay), `heightfield.ts`, `terrainMesh.ts` (painted relief shader), `water.ts`, `sky.ts`, `actors.ts` (instanced trees, houses, Tailfolk, boats, clouds) |
+| 2D renderer | main thread, WebGL (PixiJS) | `src/render/map.ts`, `terrainTex.ts`, `crowd.ts`, `sprites.ts` (shared crowd sampler and painted terrain) |
 | Simulation | Web Worker | `src/sim/worker.ts` → `tick.ts` |
 | Civilization | worker | `society.ts` (villages), `agents.ts` (named people), `culture.ts` (tech, belief, faith), `conflict.ts` (war), `plague.ts` |
 | Sea and travel | worker | `voyages.ts` |
@@ -94,3 +96,16 @@ Boat ladder: log raft → dugout canoe → outrigger → woven sail → star nav
 | 5 | Wrath: storm, quake, eruption, plague | An isolated settlement survives a plague that wipes out a connected one |
 | 6 | Kin and war: memory, alliances, raids, wars, belief | A gentle and a cruel sky give different beliefs from the same seed |
 | 7 | Polish: sound, onboarding tips, endings, URL seeds | Played in the browser |
+
+## Roadmap: 3D and the ages
+
+| Phase | Status | What |
+|---|---|---|
+| 1. 3D foundation | **done** | Three.js scene; terrain mesh from the simulation's height function with the painted Living Atlas texture and a sharper detail texture when zoomed; animated ocean with depth, foam and storm waves; sky, sun, stars and a day/night cycle; seasons (autumn gold, winter snow); powers tinting the land; instanced trees, houses (wall material by island), fields, palisades, granaries, 3D Tailfolk, boats, village lights, clouds, eruption smoke; orbit camera. Same simulation and tests. |
+| 2. 3D life | next | Walk and work animations, building variety per tribe, boat wakes, volumetric storms, follow-cam. |
+| 3. Ages foundation | planned | Island resources (grain and clay/brick on Hearth, fish and salt on Kelp Isle, hardwood on Thornholm, stone and herbs on Gull Rock, flint, copper and later coal and oil on the Far Shore); stockpiles; buildings that cost resources; resource affinity for research; depletion. Ages 1 to 3 (early humans to Bronze). |
+| 4. Building kits | planned | Procedural 3D buildings per age and tribe; cities and roads on the terrain. |
+| 5. Ages 4 to 5 | planned | Classical and Age of Sail; the world grows when ocean ships arrive. |
+| 6. Industrial | planned | Factories, coal, rail, steamships, vaccines, pollution and climate. |
+| 7. Ages 7 to 9 | planned | Electricity, computers, flight, biotech enhancements, late-game powers and endings. |
+| 8. Cinematics | planned | Age-dawn flyovers, photo mode, time-lapse replay. |

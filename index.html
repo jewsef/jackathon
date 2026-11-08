@@ -47,6 +47,8 @@
         <button type="button" id="btn-load" class="ghost">Load</button>
         <button type="button" id="btn-new" class="ghost">New world</button>
         <button type="button" id="btn-share" class="ghost" title="Copy a link to this world's seed">Share seed</button>
+        <button type="button" id="btn-view" class="ghost" title="Switch between the 3D view and the flat map">2D map</button>
+        <button type="button" id="btn-day" class="ghost" title="Run the day and night cycle">Day/night: on</button>
         <button type="button" id="btn-sound" class="ghost" aria-pressed="false" title="Sound">Sound off</button>
         <button type="button" id="btn-help" class="ghost" aria-label="How to play">?</button>
       </div>
@@ -56,6 +58,7 @@
 
     <main id="mapwrap">
       <div id="map"></div>
+      <div id="loading" hidden>Shaping the islands…</div>
       <div class="scalebar" aria-hidden="true"><span id="scale-label">10 km</span><i id="scale-bar"></i></div>
       <div class="zoomctl">
         <button type="button" id="zin" aria-label="Zoom in">+</button>
@@ -99,7 +102,7 @@
         <h1 id="intro-title">Beyond Civilization</h1>
         <p class="lede">Five islands. Five tribes, each grown from one man and one woman. You never give orders. You command the sky, the sea and the sickness, and they decide what to do about it.</p>
         <ul class="howto">
-          <li><b>Zoom</b> from the whole archipelago down to one fisher. Scroll, pinch or use + and −.</li>
+          <li><b>Zoom</b> from the whole archipelago down to one fisher with the scroll wheel. Drag to pan; right-drag (or Shift-drag) to orbit and tilt; Q and E rotate, R resets.</li>
           <li><b>Choose a power</b> on the left, then click the map to cast it. Energy refills from their faith.</li>
           <li><b>Watch</b> them marry, build boats, feud and fall sick. Click villages and named people to read their story.</li>
           <li><b>The long test:</b> can they ever reach the Far Shore, out of sight across the deep sea?</li>
