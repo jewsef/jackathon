@@ -232,6 +232,88 @@ td.myth { color: var(--ember); }
 .tree b { color: var(--ink); font-weight: 500; }
 footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var(--mist); font-size: 13px; }
 
+/* tailfolk */
+.cast { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+.figcard { border: 1px solid var(--rule); border-radius: 4px; padding: 12px 12px 14px; display: grid; gap: 6px; background: var(--deep); align-content: start; min-width: 0; }
+.figcard svg { width: 100%; height: auto; max-height: 170px; display: block; }
+.figcard .nm { font-family: var(--display); font-size: 18px; line-height: 1.2; }
+.figcard .tg { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mist); }
+.figcard p { font-size: 13px; color: var(--mist); }
+.figcard p b { color: var(--ink); font-weight: 600; }
+.pairs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+.pair { border: 1px solid var(--rule); border-radius: 4px; padding: 12px; display: grid; gap: 6px; background: var(--deep); min-width: 0; }
+.pair .two { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+.pair .two svg { width: 100%; height: auto; display: block; }
+.pair .tail-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; border: 1px solid rgba(255,255,255,0.25); }
+.pair h3 { font-size: 18px; }
+.pair p { font-size: 13px; color: var(--mist); }
+.tree3 { display: grid; gap: 8px; border: 1px solid var(--rule); border-radius: 4px; padding: 18px; background: var(--deep); }
+.gen { display: grid; grid-template-columns: 110px 1fr; gap: 14px; align-items: center; }
+.gen > * { min-width: 0; }
+.gen .gl { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mist); }
+.gen .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
+.gen .who { display: grid; justify-items: center; gap: 2px; width: 66px; }
+.gen .who svg { width: 66px; height: auto; }
+.gen .who span { font-size: 12px; color: var(--mist); text-align: center; }
+.gen .plus { font-family: var(--display); font-size: 22px; color: var(--mist); align-self: center; }
+.gen .gap { width: 12px; }
+.gen .row { gap: 6px; flex-wrap: nowrap; }
+.chartbox { border: 1px solid var(--rule); border-radius: 4px; padding: 16px; background: var(--deep); overflow-x: auto; }
+.chartbox svg { display: block; width: 100%; min-width: 520px; height: auto; }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--mist); margin-top: 10px; }
+.legend i { display: inline-block; width: 14px; height: 3px; vertical-align: middle; margin-right: 6px; border-radius: 2px; }
+.stages { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; margin-top: 28px; }
+.stage { padding: 14px; border-right: 1px solid var(--rule); display: grid; gap: 6px; align-content: start; min-width: 0; }
+.stage:last-child { border-right: 0; }
+.stage .sz { font-family: var(--mono); font-size: 11px; color: var(--storm); letter-spacing: 0.08em; }
+.stage h3 { font-size: 18px; }
+.stage p { font-size: 13px; color: var(--mist); }
+.rel { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.rel > * { min-width: 0; }
+.track { border: 1px solid var(--rule); border-radius: 4px; padding: 16px; display: grid; gap: 10px; align-content: start; }
+.track h3 { font-size: 19px; }
+.track ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.track li { display: grid; grid-template-columns: 18px 1fr; gap: 10px; padding: 8px 0; border-top: 1px solid var(--rule); font-size: 14px; color: var(--mist); }
+.track li b { color: var(--ink); font-weight: 600; display: block; }
+.track li::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--storm); margin-top: 6px; }
+.track.war li::before { background: var(--blight); }
+.track.war h3 { color: var(--blight); }
+.plague { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 0; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; background: var(--deep); }
+.plague .net { min-width: 0; border-right: 1px solid var(--rule); }
+.plague .net svg { display: block; width: 100%; height: auto; cursor: pointer; }
+.plague .side { padding: 16px; display: grid; gap: 14px; align-content: start; min-width: 0; }
+.pctrl { padding: 12px; border-top: 1px solid var(--rule); display: grid; gap: 10px; }
+.btn { border: 1px solid var(--blight); background: var(--blight); color: var(--night); border-radius: 3px; padding: 7px 14px; font-weight: 600; font-size: 14px; cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--rule); }
+.btn:disabled { opacity: 0.5; cursor: default; }
+.chip.danger[aria-pressed="true"] { background: var(--blight); border-color: var(--blight); }
+.pstats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pstats div { background: var(--panel); border-radius: 3px; padding: 8px 10px; }
+.pstats b { display: block; font-family: var(--display); font-size: 24px; font-weight: 400; font-variant-numeric: tabular-nums; }
+.pstats span { font-size: 12px; color: var(--mist); }
+.plog { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13px; color: var(--mist); max-height: 220px; overflow-y: auto; }
+.plog li { border-left: 2px solid var(--rule); padding-left: 10px; }
+.plog li.bad { border-left-color: var(--blight); color: var(--ink); }
+.plog li.good { border-left-color: var(--storm); }
+.plog .s { font-family: var(--mono); font-size: 11px; color: var(--ember); margin-right: 6px; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+.inf { animation: pulse 0.9s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .inf { animation: none; } }
+.ideas { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.idea { border: 1px solid var(--rule); border-radius: 4px; padding: 18px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.idea.top { border-color: var(--ember); }
+.idea .tg { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mist); }
+.idea.top .tg { color: var(--ember); }
+.idea p { color: var(--mist); font-size: 15px; }
+.idea p b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 1100px) {
+  .cast, .pairs { grid-template-columns: repeat(3, 1fr); }
+  .stages { grid-template-columns: 1fr 1fr; }
+  .stage { border-bottom: 1px solid var(--rule); }
+  .plague { grid-template-columns: 1fr; }
+  .plague .net { border-right: 0; border-bottom: 1px solid var(--rule); }
+}
 @media (max-width: 1100px) {
   .explorer { grid-template-columns: 1fr; }
   .inspector { border-left: 0; border-top: 1px solid var(--rule); }
@@ -253,7 +335,17 @@ footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var
   .step .lbl { display: block; margin-top: 6px; }
   .crossings { grid-template-columns: 1fr 1fr; }
 }
+@media (max-width: 900px) {
+  .rel, .ideas { grid-template-columns: 1fr; }
+  .gen { grid-template-columns: 1fr; gap: 6px; }
+}
 @media (max-width: 560px) {
+  .cast, .pairs { grid-template-columns: 1fr 1fr; }
+  .stages { grid-template-columns: 1fr; }
+  .pstats b { font-size: 20px; }
+  .gen .who { width: 56px; }
+  .gen .who svg { width: 56px; }
+  .gen .plus { font-size: 16px; }
   .grid4, .moods, .crossings { grid-template-columns: 1fr; }
   .phase { grid-template-columns: 1fr; gap: 10px; }
   .glyphs { grid-template-columns: repeat(2, 1fr); }
@@ -281,8 +373,11 @@ footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var
     <div class="brand">Firmament</div>
     <nav aria-label="Sections">
       <a href="#explore">Explore</a>
-      <a href="#hybrid">Civilization</a>
+      <a href="#tailfolk">Tailfolk</a>
+      <a href="#society">Society</a>
+      <a href="#plague">Plague</a>
       <a href="#farshore">Far Shore</a>
+      <a href="#ideas">Ideas</a>
       <a href="#framework">Framework</a>
       <a href="#roadmap">Roadmap</a>
       <a href="#art">Art</a>
@@ -294,10 +389,10 @@ footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var
   <div class="wrap hero">
     <div class="hero-head">
       <div>
-        <div class="eyebrow">Game concept · Draft 2 · Jackathon</div>
+        <div class="eyebrow">Game concept · Draft 3 · Jackathon</div>
         <h1>Firma<span>ment</span></h1>
       </div>
-      <p class="lede">A god game of <em>indirect control</em>. You command the weather over an archipelago. A civilization on the home island lives, adapts and invents under your sky, and the long test is whether it ever reaches the Far Shore.</p>
+      <p class="lede">A god game of <em>indirect control</em>. Five islands, five tribes, each grown from <em>one man and one woman</em>. You command the weather and the plague. They marry, work, feud, fight and build boats, and the long test is whether they ever reach the Far Shore.</p>
     </div>
   </div>
 
@@ -408,6 +503,162 @@ footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var
     </div>
   </section>
 
+  <section class="block" id="tailfolk">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Characters · the Tailfolk</div>
+        <h2>One look, five bloodlines</h2>
+        <p class="lede">Every islander shares one silhouette: a wide straw hat, a big fluffy two-tone tail, wrist wraps, a cloth sash, bare feet and a bare chest for men. Chunky outlines and flat cel shading keep them readable when they are 12 pixels tall at village zoom.</p>
+      </div>
+      <div class="grid3" style="margin-bottom:40px">
+        <div class="pillar"><span class="tagline">Hat</span><h3>The island mark</h3><p>Each tribe paints its own glyph on the hat brim: mountain, wave, tree, gull, sun. You can tell where someone is from at a glance.</p></div>
+        <div class="pillar ember"><span class="tagline">Tail</span><h3>The bloodline</h3><p>Tail color is inherited. Children of two islands get a blended, banded tail, so you can watch families mix across the sea.</p></div>
+        <div class="pillar"><span class="tagline">Tools and sash</span><h3>The job</h3><p>What they carry and the color of their sash show their work: a hoe, a net-spear, a mallet, a herb pouch, a sky staff.</p></div>
+      </div>
+
+      <div class="eyebrow" style="margin-bottom:14px">Year 0 · one founding pair on each island</div>
+      <div class="pairs" id="pairs"></div>
+      <p class="stage-note">Every tribe starts with exactly two people. They are generalists who gather, build and raise children together. Jobs appear as the tribe grows.</p>
+
+      <div class="grid2" style="margin-top:48px; align-items:start">
+        <div>
+          <div class="eyebrow" style="margin-bottom:12px">Bloodline · tails mix when islands marry</div>
+          <div class="tree3" id="tree3"></div>
+        </div>
+        <div>
+          <div class="eyebrow" style="margin-bottom:12px">From two people to a nation · illustrative model</div>
+          <div class="chartbox" id="popchart"></div>
+          <div class="legend" id="poplegend"></div>
+          <p class="muted" style="font-size:14px; margin-top:12px">The first 40 years are the danger zone. If one founder dies before children are grown, the tribe can end in a single season. Your gentlest weather matters most here.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="society">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Society · jobs, marriage, war</div>
+        <h2>Everyone works toward the journey</h2>
+        <p class="lede">Each settlement's record holds job shares. Every season the leader moves people toward the biggest need: more farmers in a lean year, more warriors under threat, more boatwrights when the sea is calling.</p>
+      </div>
+      <div class="cast" id="cast"></div>
+
+      <div class="stages">
+        <div class="stage"><span class="sz">2 to 15 people</span><h3>Band</h3><p>Everyone gathers and builds. The founders are leader, doctor and priest at once.</p></div>
+        <div class="stage"><span class="sz">15 to 60</span><h3>Camp</h3><p>First farmers and fishers. A builder raises the first long house.</p></div>
+        <div class="stage"><span class="sz">60 to 300</span><h3>Village</h3><p>A leader is chosen. A doctor and a sky-speaker take up their roles.</p></div>
+        <div class="stage"><span class="sz">300 to 1,500</span><h3>Town</h3><p>Warriors, boatwrights, traders. Walls if neighbours are a threat.</p></div>
+        <div class="stage"><span class="sz">1,500 and up</span><h3>Chiefdom</h3><p>Several villages under one chief. Can unite an island, or start wars across the sea.</p></div>
+      </div>
+
+      <div class="grid2" style="margin-top:48px">
+        <div class="track">
+          <h3>Marriage and repopulation</h3>
+          <ol>
+            <li><span><b>Pairing</b>Adults pair from age 16. Couples have a child every 2 to 4 years while food stores stay above half.</span></li>
+            <li><span><b>Kinship limit</b>After three generations everyone on a small island is related. Couples must marry out, so tribes seek other islands.</span></li>
+            <li><span><b>Marriage alliances</b>A marriage between two tribes cuts the chance of war between them for a generation and shares a technology.</span></li>
+            <li><span><b>Splitting</b>When a village grows past its land, a young family leaves to found a new settlement on the same island.</span></li>
+          </ol>
+        </div>
+        <div class="track">
+          <h3>What pushes them to fight</h3>
+          <ol>
+            <li><span><b>Scarcity</b>Your drought empties the granary; the next village over still has grain.</span></li>
+            <li><span><b>Blame</b>A plague arrived on their boats. The sickness is remembered as theirs.</span></li>
+            <li><span><b>Crowding</b>Two growing villages want the same river valley.</span></li>
+            <li><span><b>Ambition</b>A named leader wants to unite the island, or a rival heir splits the village.</span></li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="rel" style="margin-top:20px">
+        <div class="track">
+          <h3>Toward peace</h3>
+          <ol>
+            <li><span><b>Strangers</b>They know nothing about each other. First contact is tense.</span></li>
+            <li><span><b>Gift exchange</b>A go-between learns a few words. Fish for obsidian.</span></li>
+            <li><span><b>Trade route</b>Regular canoes. Ideas and technologies spread.</span></li>
+            <li><span><b>Marriage alliance</b>Families are joined. Tails start to mix.</span></li>
+            <li><span><b>Federation</b>Islands share a council and defend each other.</span></li>
+          </ol>
+        </div>
+        <div class="track war">
+          <h3>Toward war</h3>
+          <ol>
+            <li><span><b>Grudge</b>An insult, a theft or a plague goes into memory.</span></li>
+            <li><span><b>Raid</b>Young warriors steal food or burn a field.</span></li>
+            <li><span><b>Arming</b>Both sides make weapons and raise defences. Builders leave the fields.</span></li>
+            <li><span><b>War</b>Battles cost lives on both sides. Villages can be burned or captured.</span></li>
+            <li><span><b>Ending</b>Truce, conquest, exile to another island, or a marriage that ends the feud.</span></li>
+          </ol>
+        </div>
+      </div>
+
+      <h3 style="margin:48px 0 16px">Weapons and defences · built only when threatened</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Tier</th><th>Weapons</th><th>Defences</th><th>Built when</th></tr></thead>
+          <tbody>
+            <tr><td>Hunting tools</td><td>Fishing spear, sling, club</td><td>Hilltop camp, watch fire</td><td>The first raid on the settlement</td></tr>
+            <tr><td>Obsidian</td><td>Bow, obsidian-edged club</td><td>Wooden palisade, ditch</td><td>A rival village on the same island</td></tr>
+            <tr><td>Shield wall</td><td>Woven shields, long spears</td><td>Watchtower, double palisade</td><td>Repeated raids, a named war leader</td></tr>
+            <tr><td>War canoe</td><td>War canoes, fire arrows</td><td>Beach stakes, signal fires across islands</td><td>A rival island with boats</td></tr>
+            <tr><td>Stone fort</td><td>Trained war bands</td><td>Stone walls, sea gate, lookout network</td><td>A long war between chiefdoms</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="stage-note">Every warrior is a person not farming. Arming costs food, so a tribe that arms too early can starve, and one that arms too late can burn.</p>
+    </div>
+  </section>
+
+  <section class="block" id="plague">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">God power · plague</div>
+        <h2>Sickness travels on every boat</h2>
+        <p class="lede">The plague spreads only through contact: shared paths on an island, trade canoes, marriages and wars. An isolated village is safe. A well-connected one can lose everyone. Pick a settlement, choose a strain and release it.</p>
+      </div>
+      <div class="plague">
+        <div class="net">
+          <div id="pnet"></div>
+          <div class="pctrl">
+            <div class="ctrlrow" role="group" aria-label="Strain">
+              <span class="label">Strain</span>
+              <button type="button" class="chip danger pstrain" data-s="fever" aria-pressed="false">Marsh fever</button>
+              <button type="button" class="chip danger pstrain" data-s="cough" aria-pressed="false">Red cough</button>
+              <button type="button" class="chip danger pstrain" data-s="grey" aria-pressed="true">Grey death</button>
+            </div>
+            <div class="ctrlrow" role="group" aria-label="Conditions">
+              <span class="label">Their world</span>
+              <button type="button" class="chip ptog" data-t="doctors" aria-pressed="false">Doctors</button>
+              <button type="button" class="chip ptog" data-t="quarantine" aria-pressed="false">Quarantine custom</button>
+              <button type="button" class="chip ptog" data-t="far" aria-pressed="true">Far Shore contact</button>
+            </div>
+            <div class="ctrlrow">
+              <span class="label">Act</span>
+              <button type="button" class="btn" id="prelease">Release at Aldmouth</button>
+              <button type="button" class="btn ghost" id="preset">Reset</button>
+            </div>
+          </div>
+        </div>
+        <div class="side">
+          <div class="pstats">
+            <div><b id="ps-season">0</b><span>Seasons</span></div>
+            <div><b id="ps-dead">0</b><span>Dead</span></div>
+            <div><b id="ps-lost">0</b><span>Settlements lost</span></div>
+          </div>
+          <div>
+            <div class="eyebrow" style="margin-bottom:8px">Chronicle</div>
+            <ul class="plog" id="plog"><li>Click a settlement on the map to choose where the plague starts.</li></ul>
+          </div>
+          <div class="levelnote"><b>Afterwards.</b> Survivors are immune for a generation. Tribes that survive learn quarantine and herb lore. Whoever brought the sickness is blamed, and that grudge can start a war 50 years later.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="block" id="farshore">
     <div class="wrap">
       <div class="sec-head">
@@ -420,7 +671,7 @@ footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var
         <div class="cross"><span class="st">Rung 1</span><h3>Kelp Isle</h3><p>About 6 km over a shallow reef. Rich fishing.</p><p class="need">Needs a raft</p></div>
         <div class="cross"><span class="st">Rung 2</span><h3>Thornholm</h3><p>About 10 km across an open channel. Good timber.</p><p class="need">Needs a dugout canoe</p></div>
         <div class="cross"><span class="st">Rung 2</span><h3>Gull Rock</h3><p>About 8 km. Cliffs, one landing beach, a lookout.</p><p class="need">Needs a canoe and a calm sea</p></div>
-        <div class="cross far"><span class="st">The test</span><h3>The Far Shore</h3><p>About 45 km of deep ocean. Larger than Hearth. Out of sight.</p><p class="need">Needs sail, outrigger and navigation</p></div>
+        <div class="cross far"><span class="st">The test</span><h3>The Far Shore</h3><p>About 45 km of deep ocean. Larger than Hearth. Out of sight. Home of the Far Folk.</p><p class="need">Needs sail, outrigger and navigation</p></div>
       </div>
 
       <div class="ladder2" role="table" aria-label="Transport technology ladder">
@@ -450,6 +701,26 @@ crew        <span class="k">0.70</span>  <span class="c">// fear of the sea afte
           <p>A lost boat raises the village's fear of the sea, but it also pushes hull and navigation research forward. Push them too hard and they stop sailing for a generation. Never test them and they never need to improve.</p>
           <p>The Far Shore can also be found by accident: a fishing canoe blown east by a storm you sent. If the crew survives and comes home, the whole archipelago knows the Far Shore exists.</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="ideas">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Ideas I would add</div>
+        <h2>Making your five features work together</h2>
+        <p class="lede">Your features share one thread: contact. Boats carry brides, trade, plague and war at the same time. These additions make that tension the heart of the game. The three outlined in amber are the ones I would build first.</p>
+      </div>
+      <div class="ideas">
+        <div class="idea top"><span class="tg">Recommended · ties pairs to voyages</span><h3>Must marry out</h3><p>One founding pair means everyone is cousins by the third generation. The tribe has to find partners on another island or slowly weaken. <b>This gives them a reason to cross the sea</b> long before they need land.</p></div>
+        <div class="idea top"><span class="tg">Recommended · the core tension</span><h3>The contact paradox</h3><p>The same canoe that brings a bride and a new tool can bring plague or a war party. <b>Isolation keeps them safe but stuck.</b> Contact makes them grow and puts them at risk. Your plague power sits right on that line.</p></div>
+        <div class="idea top"><span class="tg">Recommended · gentle power</span><h3>Signs and omens</h3><p>A cheap, harmless power: a comet, a double rainbow, a red moon. The sky-speaker interprets it, and <b>you steer belief without killing anyone.</b> Signs can call for peace, a voyage or a new leader.</p></div>
+        <div class="idea"><span class="tg">Bloodlines</span><h3>Traits travel with tails</h3><p>Each founding pair has a small trait bias: patient, bold, curious, wary. Children inherit a mix. Marrying into a bold bloodline makes a cautious tribe more likely to sail.</p></div>
+        <div class="idea"><span class="tg">Trade and war</span><h3>One unique resource per island</h3><p>Hearth has grain, Kelp Isle has fish, Thornholm has hardwood, Gull Rock has feathers and eggs, the Far Shore has obsidian. Every island needs something it lacks. That drives trade, and greed drives war.</p></div>
+        <div class="idea"><span class="tg">Memory</span><h3>Grudges and debts</h3><p>Tribes remember who brought sickness, who burned a field and who sent food in a famine. Old debts make alliances, old grudges start wars generations later.</p></div>
+        <div class="idea"><span class="tg">Leadership</span><h3>Succession crises</h3><p>When a leader dies, two heirs may claim the role. The village can split in two and found a rival settlement, so civil war grows out of the story with no extra rules.</p></div>
+        <div class="idea"><span class="tg">First contact</span><h3>Languages drift apart</h3><p>Isolated tribes slowly develop their own words. First contact needs a go-between, a named Speaker. Without one, a misunderstanding can turn a gift exchange into a raid.</p></div>
       </div>
     </div>
   </section>
@@ -579,10 +850,10 @@ crew        <span class="k">0.70</span>  <span class="c">// fear of the sea afte
         <div class="phase"><div class="num">0<small>Foundation</small></div><div class="phase-body"><div><h3>The empty clock</h3><p class="what">Repo, Vite and TypeScript, seeded RNG, the worker tick loop, pause and speed controls, a debug overlay.</p></div><div><span class="k">Builds</span><p class="proof">Tick pipeline with empty systems. Save and load of a seed plus action log.</p></div><div><span class="k">Proof</span><p class="proof p">Two runs from the same seed are identical after 1,000 ticks.</p></div></div></div>
         <div class="phase new"><div class="num">1<small>Archipelago</small></div><div class="phase-body"><div><h3>Five islands and the sea between</h3><p class="what">Hearth, three near islands and the Far Shore. Sea depth that reads at a glance. Pan and zoom with detail chunks.</p></div><div><span class="k">Builds</span><p class="proof">Terrain layer, relief shader, camera, chunked zoom from 1× to 30×.</p></div><div><span class="k">Proof</span><p class="proof p">Ten seeds all produce the island ladder: near, nearer, and one too far to see.</p></div></div></div>
         <div class="phase"><div class="num">2<small>Sky</small></div><div class="phase-body"><div><h3>Weather you can hold</h3><p class="what">Climate, drifting weather cells, seasons, and a wind field. First powers: rain, wind, calm.</p></div><div><span class="k">Builds</span><p class="proof">Climate layer, cloud rendering, power brushes, divine energy.</p></div><div><span class="k">Proof</span><p class="proof p">Painting rain on dry land turns it green within one season.</p></div></div></div>
-        <div class="phase new"><div class="num">3<small>People</small></div><div class="phase-body"><div><h3>The hybrid civilization</h3><p class="what">Village records with needs, jobs and growth. The crowd sampler draws people when you zoom in. First named agents.</p></div><div><span class="k">Builds</span><p class="proof">Village sim, crowd sampler, named agent promotion, inspector.</p></div><div><span class="k">Proof</span><p class="proof p">Zoom into any village and the people you see match its job shares.</p></div></div></div>
+        <div class="phase new"><div class="num">3<small>People</small></div><div class="phase-body"><div><h3>Founding pairs and the hybrid civilization</h3><p class="what">One man and one woman per island. Births, marriage, kinship, jobs and settlement stages. The crowd sampler and the Tailfolk sprites. First named agents.</p></div><div><span class="k">Builds</span><p class="proof">Village sim, crowd sampler, named agent promotion, inspector.</p></div><div><span class="k">Proof</span><p class="proof p">Zoom into any village and the people you see match its job shares.</p></div></div></div>
         <div class="phase new"><div class="num">4<small>Sea</small></div><div class="phase-body"><div><h3>Boats, routes and the Far Shore</h3><p class="what">Fishing boats, the transport tech ladder, routes between villages, voyages that can fail, discovery.</p></div><div><span class="k">Builds</span><p class="proof">Sea layer, voyage resolver, boat sprites, known-world map.</p></div><div><span class="k">Proof</span><p class="proof p">With no player input the Far Shore is reached on some seeds and never on others.</p></div></div></div>
-        <div class="phase"><div class="num">5<small>Wrath</small></div><div class="phase-body"><div><h3>Disasters that scar</h3><p class="what">Storm surge, earthquake, eruption and plague, each with a lasting mark on land and sea.</p></div><div><span class="k">Builds</span><p class="proof">Disaster tables in JSON, terrain scars, wrecks, flood silt.</p></div><div><span class="k">Proof</span><p class="proof p">Every disaster leaves something you can still see 100 years later.</p></div></div></div>
-        <div class="phase"><div class="num">6<small>Memory</small></div><div class="phase-body"><div><h3>A culture shaped by you</h3><p class="what">Adversity unlocks tech. Belief toward the sky drives faith, and faith refills energy. Two shores can drift apart.</p></div><div><span class="k">Builds</span><p class="proof">Tech and belief tables, the chronicle, optional Claude-written myths.</p></div><div><span class="k">Proof</span><p class="proof p">A gentle player and a cruel player get different cultures from the same seed.</p></div></div></div>
+        <div class="phase new"><div class="num">5<small>Wrath</small></div><div class="phase-body"><div><h3>Disasters and plague</h3><p class="what">Storm surge, earthquake, eruption, and a plague that spreads only along contact: paths, trade, marriage and war.</p></div><div><span class="k">Builds</span><p class="proof">Disaster tables, contact graph, plague strains, immunity, terrain scars.</p></div><div><span class="k">Proof</span><p class="proof p">An isolated settlement survives a plague that wipes out a well-connected one.</p></div></div></div>
+        <div class="phase new"><div class="num">6<small>Kin &amp; war</small></div><div class="phase-body"><div><h3>Memory, alliances and war</h3><p class="what">Grudges, marriage alliances, raids and wars between settlements, tribes and islands. Weapons and defences built under threat. Belief toward the sky.</p></div><div><span class="k">Builds</span><p class="proof">Tech and belief tables, the chronicle, optional Claude-written myths.</p></div><div><span class="k">Proof</span><p class="proof p">A gentle player and a cruel player get different cultures from the same seed.</p></div></div></div>
         <div class="phase"><div class="num">7<small>Polish</small></div><div class="phase-body"><div><h3>Ready to share</h3><p class="what">Sound, onboarding, endings, and share-a-seed links.</p></div><div><span class="k">Builds</span><p class="proof">Audio, tutorial island, endings, URL seeds.</p></div><div><span class="k">Proof</span><p class="proof p">A new player sends a first storm without reading anything.</p></div></div></div>
       </div>
     </div>
@@ -715,7 +986,7 @@ crew        <span class="k">0.70</span>  <span class="c">// fear of the sea afte
   </section>
 </main>
 
-<footer><div class="wrap">Firmament concept · draft 2 · November 2026</div></footer>
+<footer><div class="wrap">Firmament concept · draft 3 · November 2026</div></footer>
 
 <script>
 (function () {
@@ -759,7 +1030,9 @@ crew        <span class="k">0.70</span>  <span class="c">// fear of the sea afte
   ISLE.kelp.info = { crossing: "About 6 km over a shallow reef. Rich fishing grounds.", needs: "Log raft" };
   ISLE.thorn.info = { crossing: "About 10 km across an open channel. Good timber.", needs: "Dugout canoe" };
   ISLE.gull.info = { crossing: "About 8 km. Cliffs with one landing beach and a lookout over the sea.", needs: "Canoe and a calm sea" };
-  ISLE.far.info = { crossing: "About 45 km of deep ocean, out of sight of Hearth. Larger than Hearth, with obsidian and fresh forest.", needs: "Outrigger, sail and star navigation" };
+  ISLE.far.info = { crossing: "About 45 km of deep ocean, out of sight of Hearth. Larger than Hearth, rich in obsidian, and home of the Far Folk, grown from their own founding pair.", needs: "Outrigger, sail and star navigation" };
+  var TAIL = { hearth: "#7d5fae", kelp: "#3f9097", thorn: "#b45a32", gull: "#8a92a4", far: "#2f2a35" };
+  var SKIN = { hearth: "#e7b88c", kelp: "#c98e62", thorn: "#f0c9a2", gull: "#d9a77c", far: "#a8714c" };
 
   function islandBase(x, y) {
     var wx = x + (fbm(x * 0.32 + 3, y * 0.32, S + 11, 3) - 0.5) * 1.1;
@@ -886,10 +1159,11 @@ crew        <span class="k">0.70</span>  <span class="c">// fear of the sea afte
     { id: "highfold", name: "Highfold", isle: "hearth", at: [4.0, 3.6], pop: [300, 700, 1100, 1300], fish: 0, upland: true, role: "Uplands, shrine" },
     { id: "saltmere", name: "Saltmere", isle: "hearth", at: [6.3, 6.4], pop: [450, 1100, 1700, 2000], fish: 0.3, port: true, role: "South coast" },
     { id: "westreach", name: "Westreach", isle: "hearth", at: [2.4, 4.9], pop: [380, 800, 1300, 1500], fish: 0.3, port: true, role: "West coast" },
-    { id: "kelpcamp", name: "Kelp Camp", isle: "kelp", at: [8.0, 2.8], pop: [60, 420, 700, 900], fish: 0.6, port: true, role: "Fishing village" },
-    { id: "thorn", name: "Thornholm", isle: "thorn", at: [7.8, 6.9], pop: [0, 380, 800, 1000], fish: 0.4, port: true, role: "Timber and fish" },
-    { id: "gull", name: "Gull Watch", isle: "gull", at: [2.2, 1.7], pop: [0, 90, 160, 200], fish: 0.5, port: true, role: "Lookout" },
-    { id: "newlight", name: "Newlight", isle: "far", at: [12.3, 4.5], pop: [0, 0, 0, 520], fish: 0.4, port: true, role: "First colony" }
+    { id: "kelpcamp", name: "Kelp Camp", isle: "kelp", at: [8.0, 2.8], pop: [120, 420, 700, 900], fish: 0.6, port: true, role: "Kelp tribe, fishers" },
+    { id: "thorn", name: "Thornholm", isle: "thorn", at: [7.8, 6.9], pop: [150, 380, 800, 1000], fish: 0.4, port: true, role: "Thorn tribe, builders" },
+    { id: "gull", name: "Gull Watch", isle: "gull", at: [2.2, 1.7], pop: [40, 90, 160, 200], fish: 0.5, port: true, role: "Gull tribe, sky-readers" },
+    { id: "ashgrove", name: "Ashgrove", isle: "far", at: [14.7, 4.0], pop: [300, 900, 1600, 1900], fish: 0.2, port: true, role: "Far Folk, obsidian hunters" },
+    { id: "newlight", name: "Newlight", isle: "far", at: [12.3, 4.5], pop: [0, 0, 0, 520], fish: 0.4, port: true, role: "Hearth colony" }
   ];
   var TOWN = {};
   TOWNS.forEach(function (t, ti) {
@@ -921,13 +1195,13 @@ crew        <span class="k">0.70</span>  <span class="c">// fear of the sea afte
   /* ---------- eras ---------- */
   var ERAS = [
     { year: 210, name: "Age of Rafts", known: ["hearth", "kelp"], tech: "Log rafts",
-      line: "Rafts cross the reef to Kelp Isle in summer. Nobody has seen another island." },
+      line: "Five tribes, each grown from one founding pair, live apart. Hearth's first rafts have just reached Kelp Isle." },
     { year: 480, name: "Age of Canoes", known: ["hearth", "kelp", "thorn", "gull"], tech: "Dugout canoes",
-      line: "Dugout canoes link four islands. Thornholm trades timber and fish with Saltmere." },
+      line: "Canoes link the four near islands. Hearth and Kelp have married into each other for two generations." },
     { year: 760, name: "The Voyage", known: ["hearth", "kelp", "thorn", "gull"], tech: "Outriggers, first sail",
-      line: "The Long Breath sails east, following seabirds toward land nobody has seen." },
+      line: "The Long Breath sails east toward smoke on the horizon. The Far Folk have never seen a stranger." },
     { year: 900, name: "Two Shores", known: ["hearth", "kelp", "thorn", "gull", "far"], tech: "Sail and star navigation",
-      line: "Newlight has 520 people. Three ships a season cross to the Far Shore and back." }
+      line: "Newlight stands beside the Far Folk. They trade obsidian and marry, and both remember the sickness of year 788." }
   ];
   var ROUTES = [
     [{ a: "aldmouth", b: "kelpcamp", n: 1, boat: "raft" }],
@@ -949,7 +1223,8 @@ crew        <span class="k">0.70</span>  <span class="c">// fear of the sea afte
     [
       { name: "Kai", role: "Navigator", town: "aldmouth", age: 46, spot: "port", thought: "Counted the same stars for thirty calm nights. Seabirds fly east at dusk, so there is land to the east.", belief: "The sky draws maps.", why: "Star navigation only unlocks through someone like Kai." },
       { name: "Rua", role: "Sail-weaver", town: "saltmere", age: 29, spot: "center", thought: "Woven leaf mats hold the wind better than bark. She needs a season of steady wind to prove it.", belief: "The wind is a gift, if you catch it.", why: "Sail technology depends on her experiments." },
-      { name: "Lene", role: "Captain of the Long Breath", boat: true, age: 33, thought: "Nine days out. Water for four more. The birds are back.", belief: "The sky will not leave us at sea.", why: "Leads the first voyage east. If she returns, everyone learns the Far Shore exists." }
+      { name: "Lene", role: "Captain of the Long Breath", boat: true, age: 33, thought: "Nine days out. Water for four more. The birds are back.", belief: "The sky will not leave us at sea.", why: "Leads the first voyage east. If she returns, everyone learns the Far Shore exists." },
+      { name: "Sefa", role: "Far Folk lookout", town: "ashgrove", age: 22, spot: "center", thought: "The elders say strangers bring sickness and must be driven off. Sefa wants to trade with them.", belief: "The sun-father sends gifts from the west.", why: "First contact goes to war or peace depending on whether Sefa or the elders win." }
     ],
     [
       { name: "Pia", role: "Founder", town: "newlight", age: 36, spot: "port", thought: "Granddaughter of Lene. Newlight has its own sky priest now, and its own ideas.", belief: "Two shores, one sky.", why: "Leads the colony. She may break away from Hearth." },
@@ -1155,11 +1430,22 @@ crew        <span class="k">0.70</span>  <span class="c">// fear of the sea afte
     }
     g.restore();
   }
-  function drawFigure(g, x, y, u, col, walking, t, ph) {
-    var bob = walking ? Math.abs(Math.sin(t * 6 + ph)) * u * 0.35 : 0;
-    g.fillStyle = "rgba(10,14,20,0.35)"; g.beginPath(); g.ellipse(x, y + u * 0.1, u * 0.8, u * 0.3, 0, 0, 6.29); g.fill();
-    g.fillStyle = rgba(col, 1); g.fillRect(x - u * 0.45, y - u * 2.1 - bob, u * 0.9, u * 1.9);
-    g.fillStyle = "#e8c9a0"; g.beginPath(); g.arc(x, y - u * 2.6 - bob, u * 0.55, 0, 6.29); g.fill();
+  function drawFigure(g, x, y, u, col, walking, t, ph, isle) {
+    var bob = walking ? Math.abs(Math.sin(t * 6 + ph)) * u * 0.35 : 0, sway = Math.sin(t * 3 + ph) * 0.25;
+    var skin = SKIN[isle] || "#e7b88c", tail = TAIL[isle] || "#7d5fae";
+    g.fillStyle = "rgba(10,14,20,0.35)"; g.beginPath(); g.ellipse(x, y + u * 0.1, u * 0.9, u * 0.3, 0, 0, 6.29); g.fill();
+    // tail
+    g.fillStyle = tail; g.beginPath(); g.ellipse(x + u * 0.85, y - u * 0.75 - bob, u * 0.8, u * 0.42, -0.7 + sway, 0, 6.29); g.fill();
+    g.fillStyle = "#f1ece2"; g.beginPath(); g.arc(x + u * 1.42, y - u * 1.25 - bob, u * 0.32, 0, 6.29); g.fill();
+    // legs, torso, sash
+    g.fillStyle = "#2c2733"; g.fillRect(x - u * 0.45, y - u * 1.05 - bob, u * 0.9, u * 1.05);
+    g.fillStyle = skin; g.fillRect(x - u * 0.45, y - u * 2.05 - bob, u * 0.9, u * 1.0);
+    g.fillStyle = rgba(col, 1); g.fillRect(x - u * 0.47, y - u * 1.2 - bob, u * 0.94, u * 0.28);
+    // head and hat
+    g.fillStyle = skin; g.beginPath(); g.arc(x, y - u * 2.55 - bob, u * 0.55, 0, 6.29); g.fill();
+    g.fillStyle = "#e6d49a"; g.beginPath();
+    g.moveTo(x - u * 1.25, y - u * 2.75 - bob); g.lineTo(x, y - u * 3.75 - bob); g.lineTo(x + u * 1.25, y - u * 2.75 - bob); g.closePath(); g.fill();
+    g.strokeStyle = "rgba(42,34,48,0.7)"; g.lineWidth = Math.max(0.6, u * 0.12); g.stroke();
   }
   function label(g, text, x, y, font, color) {
     g.font = font; g.textAlign = "center"; g.textBaseline = "middle";
@@ -1257,7 +1543,7 @@ crew        <span class="k">0.70</span>  <span class="c">// fear of the sea afte
       var u = Math.max(1.4, 0.0058 * s);
       TOWNS.forEach(function (tw) {
         if (!popOf(tw) || !inView(tw.x, tw.y, 0.6)) return;
-        crowd(tw).forEach(function (p) { var q = personPos(p, t); if (!inView(q[0], q[1], 0.02)) return; var sp2 = toScreen(q[0], q[1]); drawFigure(g, sp2[0], sp2[1], u, p.col, q[2], t, p.ph); });
+        crowd(tw).forEach(function (p) { var q = personPos(p, t); if (!inView(q[0], q[1], 0.02)) return; var sp2 = toScreen(q[0], q[1]); drawFigure(g, sp2[0], sp2[1], u, p.col, q[2], t, p.ph, tw.isle); });
       });
     }
     TOWNS.forEach(function (tw) {
@@ -1278,7 +1564,7 @@ crew        <span class="k">0.70</span>  <span class="c">// fear of the sea afte
       var p = toScreen(q[0], q[1]);
       if (z > 4.6) {
         var u2 = Math.max(1.7, 0.0064 * s);
-        if (!a.boat) drawFigure(g, p[0], p[1], u2, [242, 178, 87], false, t, idx);
+        if (!a.boat) drawFigure(g, p[0], p[1], u2, [242, 178, 87], false, t, idx, TOWN[a.town].isle);
         g.strokeStyle = "rgba(242,178,87,0.95)"; g.lineWidth = 1.5;
         g.beginPath(); g.arc(p[0], p[1] - (a.boat ? 0 : u2 * 1.4), Math.max(7, u2 * 3.6), 0, 6.29); g.stroke();
         if (z > 7) label(g, a.name + " · " + a.role, p[0], p[1] + Math.max(14, u2 * 4.6), "500 12px Figtree, system-ui, sans-serif", "#f2b257");
@@ -1317,7 +1603,7 @@ crew        <span class="k">0.70</span>  <span class="c">// fear of the sea afte
       ISLES.forEach(function (I) {
         var p = toScreen(I.cx, I.cy - I.ry * 0.72), known = era.known.indexOf(I.id) >= 0;
         label(g, I.name, p[0], p[1], (I.id === "hearth" || I.id === "far" ? "18px" : "14px") + " Marcellus, Georgia, serif", "rgba(227,232,240," + la2 + ")");
-        var st = I.id === "far" ? (state.era === 3 ? "settled" : state.era === 2 ? "sought, not yet reached" : "unknown to them") : (known ? "" : "unknown to them");
+        var st = I.id === "far" ? (state.era === 3 ? "in contact" : state.era === 2 ? "sought, not yet reached" : "unknown to Hearth") : (known ? "" : "unknown to Hearth");
         if (st) label(g, st, p[0], p[1] + 16, "11px JetBrains Mono, monospace", I.id === "far" && state.era >= 2 ? "rgba(242,178,87," + la2 + ")" : "rgba(141,154,176," + la2 + ")");
       });
     }
@@ -1379,7 +1665,7 @@ crew        <span class="k">0.70</span>  <span class="c">// fear of the sea afte
     }
     if (sel.kind === "isle") {
       var I = ISLE[sel.id], known = e.known.indexOf(I.id) >= 0;
-      var stt = I.id === "hearth" ? "Home" : I.id === "far" && state.era === 3 ? "Settled" : known ? "Known" : "Unknown to them";
+      var stt = I.id === "hearth" ? "Home" : I.id === "far" && state.era === 3 ? "In contact" : known ? "Known to Hearth" : "Unknown to Hearth";
       c.innerHTML = '<span class="kind">Island · ' + stt + '</span><h3>' + I.name + '</h3><p class="sub">' + I.info.crossing + '</p><dl><dt>To reach it</dt><dd>' + I.info.needs + '</dd></dl>';
     }
   }
@@ -1565,5 +1851,278 @@ crew        <span class="k">0.70</span>  <span class="c">// fear of the sea afte
     clearTimeout(rt);
     rt = setTimeout(function () { resize(); seedDrops(W, H); detail = null; moodCanvases.forEach(drawMood); }, 150);
   });
+})();
+</script>
+<script>
+(function () {
+  "use strict";
+  var OUT = "#2a2230";
+  function hex(c) { c = c.replace("#", ""); return [parseInt(c.substr(0, 2), 16), parseInt(c.substr(2, 2), 16), parseInt(c.substr(4, 2), 16)]; }
+  function toHex(a) { return "#" + a.map(function (v) { v = Math.max(0, Math.min(255, Math.round(v))); return (v < 16 ? "0" : "") + v.toString(16); }).join(""); }
+  function blend(a, b, t) { var A = hex(a), B = hex(b); return toHex([A[0] + (B[0] - A[0]) * t, A[1] + (B[1] - A[1]) * t, A[2] + (B[2] - A[2]) * t]); }
+  function fmt(n) { return Math.round(n).toLocaleString("en-US"); }
+
+  /* ---------- Tailfolk character generator ---------- */
+  var GLYPH = {
+    hearth: "M-5 3 L-1.5 -3.5 L0.5 -0.5 L2.5 -2.5 L5.5 3 Z",
+    kelp: "M-5.5 -0.5 Q-3 -4 -0.5 -0.5 T4.5 -0.5 M-5 3 Q-2.5 0 0 3 T5 3",
+    thorn: "M0 -5 L4 2 L-4 2 Z M0 2 L0 5",
+    gull: "M-5.5 -0.5 Q-3 -3.5 0 0.5 Q3 -3.5 5.5 -0.5",
+    far: "M-2 0 A2 2 0 1 0 2 0 A2 2 0 1 0 -2 0 M0 -5 L0 -3.5 M0 3.5 L0 5 M-5 0 L-3.5 0 M3.5 0 L5 0"
+  };
+  var TRIBES = {
+    hearth: { name: "Hearth", tail: "#7d5fae", line: "#a98ad8", tip: "#f4f1ea", skin: "#e7b88c", cloth: "#2c2733", top: "#c4473a", sash: "#c4473a", hair: "#2b2230", m: "Toru", f: "Ama", trait: "Patient farmers. Slow to anger, slow to sail." },
+    kelp: { name: "Kelp Isle", tail: "#3f9097", line: "#5fbfc6", tip: "#f4f1ea", skin: "#c98e62", cloth: "#23384a", top: "#e0b04a", sash: "#e0b04a", hair: "#1e1a22", m: "Rook", f: "Nai", trait: "Fishers and tide-readers. Curious about the sea." },
+    thorn: { name: "Thornholm", tail: "#b45a32", line: "#d8805a", tip: "#f6e3c4", skin: "#f0c9a2", cloth: "#3a2c24", top: "#5d7a4a", sash: "#5d7a4a", hair: "#5a2e1c", m: "Bryn", f: "Senna", trait: "Builders and woodcutters. Proud, and they hold grudges." },
+    gull: { name: "Gull Rock", tail: "#8a92a4", line: "#b8c0d0", tip: "#ffffff", skin: "#d9a77c", cloth: "#2b3040", top: "#8fd0e6", sash: "#5a8fb0", hair: "#2b2230", m: "Iku", f: "Weya", trait: "Watchers and sky-readers. First to notice your signs." },
+    far: { name: "The Far Shore", tail: "#2f2a35", line: "#f2b257", tip: "#f2b257", skin: "#a8714c", cloth: "#4a2a22", top: "#e0725a", sash: "#e0725a", hair: "#151116", m: "Oro", f: "Lumi", trait: "Hunters and obsidian knappers. Bold, wary of strangers." }
+  };
+  var SW = 'stroke="' + OUT + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"';
+  function stick(d, col, w) { return '<path d="' + d + '" stroke="' + OUT + '" stroke-width="' + (w + 2.4) + '" fill="none" stroke-linecap="round"/><path d="' + d + '" stroke="' + col + '" stroke-width="' + w + '" fill="none" stroke-linecap="round"/>'; }
+  var TOOLS = {
+    gatherer: function () { return '<path d="M17 88 L36 88 L33 104 L20 104 Z" fill="#b08a52" ' + SW + '/><path d="M18.5 94 L34.5 94 M19.5 99 L33.5 99" stroke="#8a6a3a" stroke-width="1"/><circle cx="22" cy="86" r="2.6" fill="#a8325a" stroke="' + OUT + '" stroke-width="1"/><circle cx="27.5" cy="84.5" r="2.6" fill="#5a3a8a" stroke="' + OUT + '" stroke-width="1"/><circle cx="32" cy="86.5" r="2.4" fill="#a8325a" stroke="' + OUT + '" stroke-width="1"/>'; },
+    farmer: function () { return stick("M75 56 L69 120", "#8a6440", 2.6) + '<path d="M74 55 L86 58 L84 65 L73 62 Z" fill="#9aa3ad" ' + SW + '/>'; },
+    fisher: function () { return stick("M73 30 L69 122", "#8a6440", 2.6) + '<path d="M68 22 L68 31 L78 31 L78 22 M73 20 L73 31" stroke="' + OUT + '" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M14 98 Q22 90 30 98 Q22 104 14 98 Z M14 98 L9 94 L9 102 Z" fill="#8fb3c0" ' + SW + '/>'; },
+    builder: function () { return stick("M70 92 L77 64", "#8a6440", 2.6) + '<rect x="70" y="55" width="15" height="9" rx="1.5" transform="rotate(-14 77 60)" fill="#8a6440" ' + SW + '/>'; },
+    leader: function () { return '<path d="M41 68 Q50 76 59 68" stroke="#f3e7bd" stroke-width="2.6" fill="none"/><circle cx="50" cy="73" r="2.4" fill="#f2b257" stroke="' + OUT + '" stroke-width="1"/>'; },
+    doctor: function () { return '<rect x="61" y="92" width="11" height="10" rx="2" fill="#5d7a4a" ' + SW + '/>' + '<path d="M28 92 Q22 82 25 74" stroke="#4f8a4a" stroke-width="2" fill="none"/><ellipse cx="24.5" cy="76" rx="4" ry="2" fill="#6fae5c" stroke="' + OUT + '" stroke-width="1" transform="rotate(50 24.5 76)"/><ellipse cx="22" cy="83" rx="3.5" ry="1.8" fill="#6fae5c" stroke="' + OUT + '" stroke-width="1" transform="rotate(-30 22 83)"/>'; },
+    priest: function () { return stick("M73 44 L69 124", "#7a5532", 2.6) + '<circle cx="73.5" cy="38" r="7" fill="#8fd0e6" ' + SW + '/><path d="M73.5 26 L73.5 29 M73.5 47 L73.5 50 M61.5 38 L64.5 38 M82.5 38 L85.5 38" stroke="#8fd0e6" stroke-width="2" stroke-linecap="round"/>'; },
+    warrior: function () { return stick("M73 30 L69 122", "#8a6440", 2.6) + '<path d="M73 18 L78 31 L68 31 Z" fill="#2a2230" stroke="' + OUT + '" stroke-width="1.5"/><circle cx="27" cy="90" r="12.5" fill="#a8865a" ' + SW + '/><circle cx="27" cy="90" r="7" fill="none" stroke="#7a5532" stroke-width="1.5"/><path d="M27 77.5 L27 102.5 M14.5 90 L39.5 90" stroke="#7a5532" stroke-width="1.2"/>'; },
+    boatwright: function () { return stick("M74 52 L70 104", "#9a7048", 2.6) + '<ellipse cx="69" cy="112" rx="4.5" ry="10" fill="#9a7048" ' + SW + '/>'; },
+    elder: function () { return stick("M76 52 Q81 57 76 61 L71 124", "#7a5532", 2.8); }
+  };
+  function charSVG(o) {
+    var T = TRIBES[o.tribe], skin = T.skin, tail = o.tail || T.tail, tip = o.tip || T.tip, f = o.sex === "f", job = o.job || "";
+    var hair = o.age === "elder" ? "#cfc8bf" : T.hair, sash = job === "doctor" ? "#5d7a4a" : job === "priest" ? "#5a8fb0" : T.sash;
+    var s = '<ellipse cx="50" cy="132" rx="27" ry="4.5" fill="rgba(0,0,0,0.3)"/>';
+    if (job === "leader") s += '<path d="M35 66 L25 110 L75 110 L65 66 Z" fill="#8f2f2a" ' + SW + '/>';
+    s += '<path d="M58 98 C 82 96, 97 114, 88 128 C 82 137, 67 135, 69 125 C 71 116, 64 107, 56 104 Z" fill="' + tail + '" ' + SW + '/>';
+    if (o.stripe) s += '<path d="M71 102 C 79 106, 84 112, 85 118 L 77 121 C 76 115, 73 110, 67 106 Z" fill="' + o.stripe + '"/>';
+    s += '<path d="M88 128 C 82 137, 67 135, 69 125 C 74 128, 82 127, 89 121 Z" fill="' + tip + '" ' + SW + '/>';
+    s += '<path d="M38 96 L36 124 L46 124 L49 105 L51 105 L54 124 L64 124 L62 96 Z" fill="' + T.cloth + '" ' + SW + '/>';
+    s += '<ellipse cx="41" cy="127" rx="6.5" ry="3.2" fill="' + skin + '" ' + SW + '/><ellipse cx="59" cy="127" rx="6.5" ry="3.2" fill="' + skin + '" ' + SW + '/>';
+    s += '<path d="M36 67 Q50 61 64 67 L63 96 L37 96 Z" fill="' + skin + '" ' + SW + '/>';
+    if (f) s += '<path d="M37 72 Q50 68 63 72 L63 82 Q50 85 37 82 Z" fill="' + T.top + '" ' + SW + '/>';
+    else s += '<path d="M44 76 Q47 78 49 76 M51 76 Q53 78 56 76 M50 84 L50 89" stroke="' + blend(skin, "#000000", 0.25) + '" stroke-width="1.3" fill="none" stroke-linecap="round"/>';
+    s += '<path d="M36 89 L64 89 L64 97 L36 97 Z" fill="' + sash + '" ' + SW + '/><path d="M58 95 L64 108 L57 105 Z" fill="' + sash + '" ' + SW + '/>';
+    s += stick("M36 68 Q27 79 29 92", skin, 6) + stick("M64 68 Q73 79 71 92", skin, 6);
+    s += '<rect x="25.5" y="84" width="7.5" height="5.5" rx="1.5" fill="#c4473a" ' + SW + '/><rect x="67" y="84" width="7.5" height="5.5" rx="1.5" fill="#c4473a" ' + SW + '/>';
+    if (TOOLS[job]) s += TOOLS[job]();
+    s += '<ellipse cx="50" cy="49" rx="15" ry="14" fill="' + skin + '" ' + SW + '/>';
+    s += '<path d="M35.5 45 Q38 53 42 47 Q46 54 50 47 Q54 54 58 47 Q62 53 64.5 45 Z" fill="' + hair + '"/>';
+    if (f) s += stick("M63 50 Q71 62 65 78", hair, 4) + '<circle cx="65" cy="79.5" r="2.4" fill="' + T.top + '" stroke="' + OUT + '" stroke-width="1.2"/>';
+    s += '<ellipse cx="44.5" cy="52.5" rx="1.9" ry="2.5" fill="' + OUT + '"/><ellipse cx="55.5" cy="52.5" rx="1.9" ry="2.5" fill="' + OUT + '"/>';
+    s += '<path d="M47.5 58 Q50 60 52.5 58" stroke="' + OUT + '" stroke-width="1.4" fill="none" stroke-linecap="round"/>';
+    if (job === "warrior" || job === "priest") s += '<path d="M38.5 54.5 L42 55.5 M38.5 57 L42 58 M58 55.5 L61.5 54.5 M58 58 L61.5 57" stroke="' + (job === "priest" ? "#8fd0e6" : "#c4473a") + '" stroke-width="1.5" stroke-linecap="round"/>';
+    if (o.age === "elder" && !f) s += '<path d="M43 59 Q50 70 57 59 Q50 63 43 59 Z" fill="' + hair + '" stroke="' + OUT + '" stroke-width="1.2"/>';
+    s += '<path d="M13 43 L50 14 L87 43 Q50 51 13 43 Z" fill="#e6d49a" ' + SW + '/>';
+    s += '<path d="M50 15 L31 45 M50 15 L69 45 M50 15 L50 48 M50 15 L22 44 M50 15 L78 44" stroke="#c8b273" stroke-width="0.9" fill="none"/>';
+    s += '<g transform="translate(50 34)"><circle r="6.5" fill="#f3e7bd" stroke="#8a7440" stroke-width="1"/><path d="' + GLYPH[o.tribe] + '" transform="scale(0.85)" fill="none" stroke="#3b2f22" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>';
+    if (job === "leader") s += '<path d="M52 16 Q57 2 67 3 Q60 8 55 18 Z" fill="#c4473a" ' + SW + '/><path d="M50 16 Q50 4 57 0 Q54 8 53 17 Z" fill="#f2b257" ' + SW + '/>';
+    if (o.age === "child") s = '<g transform="translate(11 29) scale(0.78)">' + s + "</g>";
+    return '<svg viewBox="0 0 100 140" role="img" aria-label="' + (o.label || "") + '">' + s + "</svg>";
+  }
+
+  // founding pairs
+  var order = ["hearth", "kelp", "thorn", "gull", "far"];
+  document.getElementById("pairs").innerHTML = order.map(function (k) {
+    var T = TRIBES[k];
+    return '<div class="pair"><div class="two">' + charSVG({ tribe: k, sex: "m", label: T.m + " of " + T.name }) + charSVG({ tribe: k, sex: "f", label: T.f + " of " + T.name }) + '</div>' +
+      '<h3>' + T.name + '</h3><p><span class="tail-dot" style="background:' + T.tail + '"></span>' + T.m + ' and ' + T.f + '</p><p>' + T.trait + '</p></div>';
+  }).join("");
+
+  // bloodline tree
+  var mixTail = blend(TRIBES.hearth.tail, TRIBES.kelp.tail, 0.5);
+  function who(o, name) { return '<div class="who">' + charSVG(o) + '<span>' + name + '</span></div>'; }
+  document.getElementById("tree3").innerHTML =
+    '<div class="gen"><span class="gl">Founders</span><div class="row">' + who({ tribe: "hearth", sex: "m", age: "elder", label: "Toru" }, "Toru · Hearth") + '<span class="plus">+</span>' + who({ tribe: "hearth", sex: "f", age: "elder", label: "Ama" }, "Ama · Hearth") + '<span class="gap"></span>' + who({ tribe: "kelp", sex: "m", age: "elder", label: "Rook" }, "Rook · Kelp") + '<span class="plus">+</span>' + who({ tribe: "kelp", sex: "f", age: "elder", label: "Nai" }, "Nai · Kelp") + '</div></div>' +
+    '<div class="gen"><span class="gl">Their children marry across the reef</span><div class="row">' + who({ tribe: "hearth", sex: "m", job: "fisher", label: "Pell" }, "Pell · Hearth") + '<span class="plus">+</span>' + who({ tribe: "kelp", sex: "f", job: "gatherer", label: "Wren" }, "Wren · Kelp") + '</div></div>' +
+    '<div class="gen"><span class="gl">Grandchildren with mixed tails</span><div class="row">' + who({ tribe: "hearth", sex: "f", age: "child", tail: mixTail, stripe: TRIBES.kelp.tail, label: "Isa" }, "Isa") + who({ tribe: "kelp", sex: "m", age: "child", tail: mixTail, stripe: TRIBES.hearth.tail, label: "Teo" }, "Teo") + '</div></div>';
+
+  // jobs
+  var JOBS = [
+    { job: "gatherer", name: "Gatherer", tribe: "kelp", sex: "f", produces: "Berries, roots, shellfish, fibre", why: "Feeds the founding band before farming exists. Finds herbs for the doctor." },
+    { job: "farmer", name: "Farmer", tribe: "hearth", sex: "m", produces: "Grain, roots, stored food", why: "Turns a camp into a village. Rain and drought hit farmers first." },
+    { job: "fisher", name: "Fisher", tribe: "kelp", sex: "m", produces: "Fish, knowledge of the sea", why: "Learns currents and boats. Most voyages start with a fisher." },
+    { job: "builder", name: "Builder", tribe: "thorn", sex: "m", produces: "Houses, granaries, walls, docks", why: "Shelter raises births. Walls only go up when there is a threat." },
+    { job: "leader", name: "Leader", tribe: "hearth", sex: "f", produces: "Decisions, job shifts, diplomacy", why: "Moves people toward the biggest need. Declares war or marries into peace." },
+    { job: "doctor", name: "Doctor", tribe: "thorn", sex: "f", produces: "Healing, herb lore", why: "Halves deaths in a plague. Herb lore can be traded between islands." },
+    { job: "priest", name: "Sky-speaker", tribe: "gull", sex: "m", produces: "Faith, rituals, reading omens", why: "Explains your weather to the tribe. Faith refills your divine energy." },
+    { job: "warrior", name: "Warrior", tribe: "far", sex: "m", produces: "Defence, raids, war", why: "Protects the village but does not farm. Too many and the village starves." },
+    { job: "boatwright", name: "Boatwright", tribe: "hearth", sex: "f", produces: "Rafts, canoes, outriggers, sails", why: "The key to the Far Shore. Unlocks each rung of the boat ladder." },
+    { job: "elder", name: "Elder", tribe: "gull", sex: "f", age: "elder", produces: "Teaching, memory, the chronicle", why: "Passes skills to children. An elder who dies untaught takes knowledge with them." }
+  ];
+  document.getElementById("cast").innerHTML = JOBS.map(function (j) {
+    return '<div class="figcard">' + charSVG({ tribe: j.tribe, sex: j.sex, job: j.job, age: j.age, label: j.name }) +
+      '<span class="nm">' + j.name + '</span><span class="tg">' + TRIBES[j.tribe].name + '</span><p><b>Makes:</b> ' + j.produces + '</p><p>' + j.why + '</p></div>';
+  }).join("");
+
+  /* ---------- population chart ---------- */
+  (function () {
+    var K0 = { hearth: 9000, far: 6500, thorn: 1500, kelp: 1300, gull: 350 }, R = { hearth: 0.035, kelp: 0.033, thorn: 0.034, gull: 0.03, far: 0.036 };
+    var Wc = 600, Hc = 260, ml = 52, mr = 16, mt = 16, mb = 34, Y = 300;
+    function xs(t) { return ml + t / Y * (Wc - ml - mr); }
+    function ys(n) { var a = Math.log10(2), b = Math.log10(20000); return mt + (1 - (Math.log10(Math.max(2, n)) - a) / (b - a)) * (Hc - mt - mb); }
+    var s = '<svg viewBox="0 0 ' + Wc + ' ' + Hc + '" role="img" aria-label="Projected population of each tribe over 300 years on a log scale, starting from two people">';
+    s += '<rect x="' + xs(0) + '" y="' + mt + '" width="' + (xs(40) - xs(0)) + '" height="' + (Hc - mt - mb) + '" fill="rgba(224,114,90,0.12)"/>';
+    s += '<text x="' + (xs(20)) + '" y="' + (mt + 14) + '" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#e0725a">DANGER</text>';
+    [2, 10, 100, 1000, 10000].forEach(function (v) {
+      s += '<line x1="' + ml + '" x2="' + (Wc - mr) + '" y1="' + ys(v) + '" y2="' + ys(v) + '" stroke="#26344c" stroke-width="1"/>';
+      s += '<text x="' + (ml - 8) + '" y="' + (ys(v) + 4) + '" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11" fill="#8d9ab0">' + fmt(v) + '</text>';
+    });
+    [0, 50, 100, 150, 200, 250, 300].forEach(function (t) {
+      s += '<text x="' + xs(t) + '" y="' + (Hc - 12) + '" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#8d9ab0">Y' + t + '</text>';
+    });
+    s += '<line x1="' + xs(210) + '" x2="' + xs(210) + '" y1="' + mt + '" y2="' + (Hc - mb) + '" stroke="#8d9ab0" stroke-dasharray="3 4"/>';
+    s += '<text x="' + (xs(210) - 6) + '" y="' + (mt + 14) + '" text-anchor="end" font-family="Figtree, system-ui, sans-serif" font-size="11" fill="#8d9ab0">Rafts reach Kelp Isle</text>';
+    var leg = "";
+    order.forEach(function (k) {
+      var n = 2, pts = [];
+      for (var t = 0; t <= Y; t++) {
+        pts.push(xs(t).toFixed(1) + "," + ys(n).toFixed(1));
+        var K = K0[k] * (0.25 + 0.75 * Math.min(1, t / 260));
+        n += R[k] * n * (1 - n / K);
+      }
+      s += '<polyline points="' + pts.join(" ") + '" fill="none" stroke="' + TRIBES[k].line + '" stroke-width="2"/>';
+      s += '<circle cx="' + xs(Y) + '" cy="' + ys(n) + '" r="3.5" fill="' + TRIBES[k].line + '"/>';
+      leg += '<span><i style="background:' + TRIBES[k].line + '"></i>' + TRIBES[k].name + ' · ' + fmt(n) + ' by Y300</span>';
+    });
+    s += "</svg>";
+    document.getElementById("popchart").innerHTML = s;
+    document.getElementById("poplegend").innerHTML = leg;
+  })();
+
+  /* ---------- plague contact simulation ---------- */
+  var NODES = [
+    { id: "ald", name: "Aldmouth", x: 430, y: 215, pop: 2600 }, { id: "high", name: "Highfold", x: 290, y: 165, pop: 1100 },
+    { id: "vell", name: "Vell", x: 300, y: 300, pop: 2800 }, { id: "salt", name: "Saltmere", x: 410, y: 320, pop: 1700 },
+    { id: "west", name: "Westreach", x: 175, y: 235, pop: 1300 }, { id: "kelp", name: "Kelp Camp", x: 590, y: 95, pop: 700 },
+    { id: "thorn", name: "Thornholm", x: 595, y: 365, pop: 800 }, { id: "gull", name: "Gull Watch", x: 120, y: 78, pop: 160 },
+    { id: "ash", name: "Ashgrove", x: 735, y: 205, pop: 1600 }, { id: "red", name: "Redcliff", x: 728, y: 335, pop: 600 }
+  ];
+  var EDGES = [
+    ["ald", "high", "land", 0.5], ["ald", "salt", "land", 0.55], ["high", "west", "land", 0.4], ["high", "vell", "land", 0.45],
+    ["vell", "salt", "land", 0.55], ["vell", "west", "land", 0.45],
+    ["ald", "kelp", "sea", 0.45, "a trade canoe"], ["salt", "thorn", "sea", 0.4, "a trade canoe"], ["west", "gull", "sea", 0.3, "a wedding canoe"],
+    ["ald", "ash", "sea", 0.35, "the Long Breath", true], ["ash", "red", "land", 0.55]
+  ];
+  var ISL = [["Hearth", 300, 245, 175, 115], ["Kelp Isle", 590, 95, 54, 38], ["Thornholm", 595, 365, 58, 40], ["Gull Rock", 120, 78, 42, 32], ["The Far Shore", 732, 272, 58, 122]];
+  var STRAINS = { fever: { name: "Marsh fever", mort: 0.06, spread: 0.55 }, cough: { name: "Red cough", mort: 0.22, spread: 0.7 }, grey: { name: "Grey death", mort: 0.62, spread: 0.85 } };
+  var NM = {}; NODES.forEach(function (n) { NM[n.id] = n; });
+  var P = { strain: "grey", doctors: false, quarantine: false, far: true, sel: "ald", running: false, season: 0, timer: null, tx: [], runs: 0, log: [] };
+  function rngFrom(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  var rng = rngFrom(11);
+  function resetSim() {
+    clearInterval(P.timer); P.running = false; P.season = 0; P.tx = []; P.log = [];
+    NODES.forEach(function (n) { n.st = "S"; n.alive = n.pop; n.days = 0; });
+    stats(); render(); logRender(); btns();
+  }
+  function edgesOf(id) { return EDGES.filter(function (e) { return (e[0] === id || e[1] === id) && (!e[5] || P.far); }); }
+  function addLog(text, cls) { P.log.unshift({ s: P.season, t: text, c: cls || "" }); logRender(); }
+  function stepSim() {
+    var S = STRAINS[P.strain], newly = [];
+    P.season++; P.tx = [];
+    NODES.forEach(function (n) {
+      if (n.st !== "I") return;
+      edgesOf(n.id).forEach(function (e) {
+        var other = NM[e[0] === n.id ? e[1] : e[0]];
+        if (other.st !== "S" || newly.indexOf(other) >= 0) return;
+        var p = S.spread * e[3] * (P.quarantine ? 0.25 : 1) * (e[2] === "sea" ? 0.85 : 1);
+        if (rng() < p) { newly.push(other); P.tx.push(e); other.from = n; other.via = e[2] === "sea" ? "by " + e[4] : "along the island paths"; }
+      });
+    });
+    NODES.forEach(function (n) {
+      if (n.st !== "I") return;
+      var d = Math.round(n.alive * S.mort * (P.doctors ? 0.5 : 1));
+      n.alive -= d; n.days++;
+      if (n.days >= 3) {
+        if (n.alive < n.pop * 0.08) { n.alive = 0; n.st = "L"; addLog(n.name + " is gone. No one is left to bury the dead.", "bad"); }
+        else { n.st = "R"; addLog(n.name + " recovers. " + fmt(n.pop - n.alive) + " dead; survivors are immune.", "good"); }
+      }
+    });
+    newly.forEach(function (n) { n.st = "I"; n.days = 0; addLog(S.name + " reaches " + n.name + " " + n.via + " from " + n.from.name + ".", "bad"); });
+    stats(); render();
+    if (!NODES.some(function (n) { return n.st === "I"; })) {
+      clearInterval(P.timer); P.running = false;
+      var safe = NODES.filter(function (n) { return n.st === "S"; }).map(function (n) { return n.name; });
+      addLog("The plague burns out after " + P.season + " seasons." + (safe.length ? " Never reached: " + safe.join(", ") + "." : " No settlement escaped it."), "");
+      btns();
+    }
+  }
+  function release() {
+    if (P.running) return;
+    resetSimKeepSel();
+    P.runs++; rng = rngFrom(P.runs * 7919 + 13);
+    var n = NM[P.sel]; n.st = "I"; n.days = 0; P.running = true;
+    addLog("You send " + STRAINS[P.strain].name + " to " + n.name + ".", "bad");
+    render(); btns();
+    P.timer = setInterval(stepSim, 850);
+  }
+  function resetSimKeepSel() { var s = P.sel; resetSim(); P.sel = s; }
+  function stats() {
+    var dead = 0, lost = 0;
+    NODES.forEach(function (n) { dead += n.pop - n.alive; if (n.st === "L") lost++; });
+    document.getElementById("ps-season").textContent = P.season;
+    document.getElementById("ps-dead").textContent = fmt(dead);
+    document.getElementById("ps-lost").textContent = lost;
+  }
+  function btns() {
+    var b = document.getElementById("prelease");
+    b.disabled = P.running; b.textContent = P.running ? "Spreading…" : "Release at " + NM[P.sel].name;
+  }
+  function logRender() {
+    var el = document.getElementById("plog");
+    if (!P.log.length) { el.innerHTML = "<li>Click a settlement on the map to choose where the plague starts.</li>"; return; }
+    el.innerHTML = P.log.slice(0, 14).map(function (l) { return '<li class="' + l.c + '"><span class="s">S' + l.s + '</span>' + l.t + '</li>'; }).join("");
+  }
+  function render() {
+    var s = '<svg viewBox="0 0 800 440" role="img" aria-label="Contact map of ten settlements on five islands. Click one to choose where the plague starts.">';
+    s += '<rect width="800" height="440" fill="#0f2440"/>';
+    ISL.forEach(function (i) {
+      s += '<ellipse cx="' + i[1] + '" cy="' + i[2] + '" rx="' + i[3] + '" ry="' + i[4] + '" fill="#2b4636" stroke="#4d6d52" stroke-width="1.5"/>';
+      s += '<text x="' + i[1] + '" y="' + (i[2] - i[4] - 8) + '" text-anchor="middle" font-family="Marcellus, Georgia, serif" font-size="14" fill="#8d9ab0">' + i[0] + '</text>';
+    });
+    EDGES.forEach(function (e) {
+      var a = NM[e[0]], b = NM[e[1]], hot = P.tx.indexOf(e) >= 0, off = e[5] && !P.far;
+      var col = hot ? "#e0725a" : e[5] ? "#f2b257" : e[2] === "sea" ? "#8fd0e6" : "#7d90aa";
+      s += '<line x1="' + a.x + '" y1="' + a.y + '" x2="' + b.x + '" y2="' + b.y + '" stroke="' + col + '" stroke-width="' + (hot ? 4 : 1.8) + '" ' + (e[2] === "sea" ? 'stroke-dasharray="5 6"' : "") + ' opacity="' + (off ? 0.12 : hot ? 1 : 0.7) + '"/>';
+      if (e[2] === "sea" && !off) s += '<text x="' + ((a.x + b.x) / 2) + '" y="' + ((a.y + b.y) / 2 - 6) + '" text-anchor="middle" font-family="Figtree, system-ui, sans-serif" font-size="10" fill="#8d9ab0">' + e[4] + '</text>';
+    });
+    NODES.forEach(function (n) {
+      var r = 7 + Math.sqrt(n.pop) / 5, fill = n.st === "I" ? "#e0725a" : n.st === "R" ? "#8fd0e6" : n.st === "L" ? "#5c5856" : "#f2b257";
+      s += '<g data-id="' + n.id + '" style="cursor:pointer">';
+      s += '<circle cx="' + n.x + '" cy="' + n.y + '" r="' + (r + 14) + '" fill="transparent"/>';
+      if (P.sel === n.id && !P.running && P.season === 0) s += '<circle cx="' + n.x + '" cy="' + n.y + '" r="' + (r + 6) + '" fill="none" stroke="#e3e8f0" stroke-width="1.5" stroke-dasharray="4 3"/>';
+      s += '<circle cx="' + n.x + '" cy="' + n.y + '" r="' + r + '" fill="' + fill + '" stroke="#0c131f" stroke-width="2"' + (n.st === "I" ? ' class="inf"' : "") + '/>';
+      if (n.st === "L") s += '<path d="M' + (n.x - r * 0.6) + ' ' + (n.y - r * 0.6) + ' L' + (n.x + r * 0.6) + ' ' + (n.y + r * 0.6) + ' M' + (n.x + r * 0.6) + ' ' + (n.y - r * 0.6) + ' L' + (n.x - r * 0.6) + ' ' + (n.y + r * 0.6) + '" stroke="#e3e8f0" stroke-width="2"/>';
+      s += '<text x="' + n.x + '" y="' + (n.y + r + 15) + '" text-anchor="middle" font-family="Figtree, system-ui, sans-serif" font-size="13" font-weight="600" fill="#e3e8f0">' + n.name + '</text>';
+      s += '<text x="' + n.x + '" y="' + (n.y + r + 29) + '" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="' + (n.st === "L" ? "#e0725a" : "#8d9ab0") + '">' + fmt(n.alive) + '</text>';
+      s += "</g>";
+    });
+    s += "</svg>";
+    document.getElementById("pnet").innerHTML = s;
+  }
+  document.getElementById("pnet").addEventListener("click", function (e) {
+    var g = e.target.closest && e.target.closest("[data-id]");
+    if (!g || P.running) return;
+    if (P.season > 0) resetSim();
+    P.sel = g.getAttribute("data-id"); render(); btns();
+  });
+  document.querySelectorAll(".pstrain").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (P.running) return;
+      P.strain = b.dataset.s;
+      document.querySelectorAll(".pstrain").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+    });
+  });
+  document.querySelectorAll(".ptog").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (P.running) return;
+      var k = b.dataset.t; P[k] = !P[k]; b.setAttribute("aria-pressed", String(P[k])); render();
+    });
+  });
+  document.getElementById("prelease").addEventListener("click", release);
+  document.getElementById("preset").addEventListener("click", resetSim);
+  resetSim();
 })();
 </script>
