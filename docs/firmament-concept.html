@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: a night-sky survey document. Full-bleed live world up top, then a single 1120px column of framework, roadmap and art direction sections. Deliberately single dark theme. */
+/* Layout: a night-sky survey document. A wide live archipelago explorer up top, then a 1120px column of systems, framework, roadmap and art direction. Deliberately single dark theme. */
 :root {
   --night: #0c131f;
   --deep: #121b2a;
@@ -23,37 +23,21 @@
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-body {
-  background: var(--night);
-  color: var(--ink);
-  font-family: var(--body);
-  font-size: 16px;
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-}
-.wrap {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-}
+body { background: var(--night); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.wrap.wide { max-width: 1400px; }
 h1, h2, h3 { font-family: var(--display); font-weight: 400; text-wrap: balance; margin: 0; letter-spacing: 0.01em; }
 h2 { font-size: clamp(30px, 4.4vw, 44px); line-height: 1.1; }
 h3 { font-size: 21px; line-height: 1.25; }
 p { margin: 0; }
 a { color: var(--storm); }
-.eyebrow {
-  font-family: var(--mono);
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--mist);
-}
+code, pre { font-family: var(--mono); }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mist); }
 .lede { font-size: 18px; color: var(--mist); max-width: 62ch; }
 .muted { color: var(--mist); }
-code, pre { font-family: var(--mono); }
+button { font: inherit; }
+:focus-visible { outline: 2px solid var(--storm); outline-offset: 2px; }
 
-/* nav */
 .topnav { border-bottom: 1px solid var(--rule); }
 .topnav .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 14px; flex-wrap: wrap; }
 .brand { font-family: var(--display); font-size: 18px; letter-spacing: 0.24em; text-transform: uppercase; }
@@ -61,84 +45,121 @@ code, pre { font-family: var(--mono); }
 .topnav nav a { color: var(--mist); text-decoration: none; font-size: 14px; }
 .topnav nav a:hover, .topnav nav a:focus-visible { color: var(--ink); }
 
-/* hero */
-.hero { padding-block: 48px 64px; }
-.hero-head { display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; align-items: end; margin-bottom: 28px; }
+.hero { padding-block: 44px 28px; }
+.hero-head { display: grid; grid-template-columns: 1.2fr 1fr; gap: 32px; align-items: end; }
 .hero h1 { font-size: clamp(56px, 10vw, 112px); line-height: 0.92; letter-spacing: 0.06em; text-transform: uppercase; margin-top: 10px; }
 .hero h1 span { color: var(--storm); }
 .hero-head .lede { font-size: 19px; color: var(--ink); }
 .hero-head .lede em { font-style: normal; color: var(--ember); }
-.stage {
-  position: relative;
-  border: 1px solid var(--rule);
-  border-radius: 4px;
-  overflow: hidden;
-  background: var(--deep);
-}
-.stage canvas { display: block; width: 100%; aspect-ratio: 16 / 9; max-width: 100%; }
-.hud {
-  position: absolute; left: 0; right: 0; top: 0;
-  display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
-  padding: 12px 14px;
-  font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em;
-  background: linear-gradient(rgba(8,13,22,0.72), rgba(8,13,22,0));
-  pointer-events: none;
-}
+
+/* explorer */
+.explorer { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 0; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; background: var(--deep); }
+.mapcol { min-width: 0; display: grid; }
+.mapbox { position: relative; }
+.mapbox canvas { display: block; width: 100%; aspect-ratio: 16 / 9; max-width: 100%; touch-action: none; cursor: grab; background: #0f2440; }
+.mapbox canvas.dragging { cursor: grabbing; }
+.hud { position: absolute; left: 0; right: 0; top: 0; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 10px 12px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.05em; background: linear-gradient(rgba(8,13,22,0.75), rgba(8,13,22,0)); pointer-events: none; }
 .hud b { font-weight: 500; color: var(--ember); }
-.powers {
-  display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
-  padding: 12px 14px; border-top: 1px solid var(--rule); background: var(--deep);
-}
-.powers .label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mist); margin-right: 6px; }
-.power {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: transparent; color: var(--ink);
-  border: 1px solid var(--rule); border-radius: 999px;
-  padding: 7px 14px 7px 10px; font: 500 14px var(--body); cursor: pointer;
-  transition: border-color .15s, background .15s, color .15s;
-}
-.power svg { width: 20px; height: 20px; }
-.power:hover { border-color: var(--mist); }
-.power:focus-visible { outline: 2px solid var(--storm); outline-offset: 2px; }
-.power[aria-pressed="true"] { background: var(--storm); color: var(--night); border-color: var(--storm); }
-.chronicle-line {
-  padding: 14px; border-top: 1px solid var(--rule);
-  font-family: var(--display); font-size: 18px; line-height: 1.45; min-height: 3.2em;
-}
+.zoomctl { position: absolute; right: 12px; bottom: 12px; display: grid; gap: 4px; }
+.zoomctl button { width: 34px; height: 34px; border-radius: 3px; border: 1px solid var(--rule); background: rgba(12,19,31,0.85); color: var(--ink); font-size: 18px; line-height: 1; cursor: pointer; }
+.zoomctl button:hover { border-color: var(--mist); }
+.scalebar { position: absolute; left: 12px; bottom: 12px; font-family: var(--mono); font-size: 11px; color: var(--ink); pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+.scalebar i { display: block; height: 5px; border: 1.5px solid var(--ink); border-top: 0; margin-top: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.6); }
+.controls { display: grid; gap: 10px; padding: 12px; border-top: 1px solid var(--rule); }
+.ctrlrow { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.ctrlrow .label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mist); width: 62px; flex: none; }
+.chip { display: inline-flex; align-items: center; gap: 7px; background: transparent; color: var(--ink); border: 1px solid var(--rule); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 500; cursor: pointer; transition: border-color .15s, background .15s, color .15s; }
+.chip svg { width: 18px; height: 18px; }
+.chip:hover { border-color: var(--mist); }
+.chip[aria-pressed="true"] { background: var(--storm); color: var(--night); border-color: var(--storm); }
+.chip.era[aria-pressed="true"] { background: var(--ember); border-color: var(--ember); }
+.chip .y { font-family: var(--mono); font-size: 11px; opacity: 0.8; }
+.chronicle-line { padding: 12px 14px; border-top: 1px solid var(--rule); font-family: var(--display); font-size: 18px; line-height: 1.45; }
 .chronicle-line .yr { font-family: var(--mono); font-size: 12px; color: var(--ember); letter-spacing: 0.08em; margin-right: 10px; }
+
+.inspector { border-left: 1px solid var(--rule); padding: 16px; display: grid; gap: 18px; align-content: start; min-width: 0; background: var(--night); }
+.ladder { display: grid; gap: 2px; }
+.rung { display: grid; grid-template-columns: 14px 1fr auto; gap: 10px; align-items: baseline; padding: 6px 8px; border-radius: 3px; color: var(--mist); font-size: 14px; cursor: pointer; border: 0; background: transparent; text-align: left; width: 100%; }
+.rung:hover { background: var(--panel); }
+.rung .dot { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--mist); align-self: center; }
+.rung .zz { font-family: var(--mono); font-size: 11px; }
+.rung.on { color: var(--ink); background: var(--panel); }
+.rung.on .dot { background: var(--storm); border-color: var(--storm); }
+.levelnote { font-size: 14px; color: var(--mist); }
+.levelnote b { color: var(--ink); font-weight: 600; }
+.card { border-top: 1px solid var(--rule); padding-top: 16px; display: grid; gap: 10px; }
+.card .kind { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--storm); }
+.card .kind.person { color: var(--ember); }
+.card h3 { font-size: 24px; }
+.card .sub { color: var(--mist); font-size: 14px; }
+.card .quote { font-family: var(--display); font-size: 17px; line-height: 1.45; border-left: 2px solid var(--ember); padding-left: 12px; }
+.card dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 0; font-size: 14px; }
+.card dt { color: var(--mist); }
+.card dd { margin: 0; font-variant-numeric: tabular-nums; }
+.card .why { font-size: 13px; color: var(--mist); }
+.card .why b { color: var(--ink); font-weight: 600; }
+.bar { height: 5px; background: var(--rule); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+.bar i { display: block; height: 100%; background: var(--storm); }
+.hint { font-size: 13px; color: var(--mist); }
+.hint kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--rule); border-radius: 3px; padding: 0 5px; }
 .stage-note { margin-top: 10px; font-size: 13px; color: var(--mist); }
 
-/* sections */
 section.block { padding-block: 72px; border-top: 1px solid var(--rule); }
 .sec-head { display: grid; gap: 14px; margin-bottom: 40px; max-width: 760px; }
 .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
 .grid2 > *, .grid3 > *, .grid4 > * { min-width: 0; }
-.pillar { display: grid; gap: 10px; padding-top: 18px; border-top: 2px solid var(--storm); }
+.pillar { display: grid; gap: 10px; padding-top: 18px; border-top: 2px solid var(--storm); align-content: start; }
 .pillar.ember { border-top-color: var(--ember); }
 .pillar p { color: var(--mist); }
+.pillar ul { margin: 0; padding-left: 18px; color: var(--mist); font-size: 15px; display: grid; gap: 4px; }
+.pillar .tagline { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--storm); }
+.pillar.ember .tagline { color: var(--ember); }
+.callout { margin-top: 32px; background: var(--panel); border-radius: 4px; padding: 20px 22px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.callout > * { min-width: 0; }
+.callout ul { margin: 6px 0 0; padding-left: 18px; color: var(--mist); font-size: 15px; display: grid; gap: 4px; }
+.callout h3 { font-size: 18px; }
 
-/* loop */
+/* far shore */
+.ladder2 { display: grid; gap: 0; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+.step { display: grid; grid-template-columns: 56px 1.1fr 1fr 1fr 1.1fr; gap: 18px; padding: 16px; border-bottom: 1px solid var(--rule); align-items: start; }
+.step > * { min-width: 0; }
+.step:last-child { border-bottom: 0; }
+.step.head { background: var(--deep); padding-block: 10px; }
+.step.head span { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mist); }
+.step .n { font-family: var(--display); font-size: 30px; line-height: 1; color: var(--storm); }
+.step h3 { font-size: 19px; }
+.step p { font-size: 14px; color: var(--mist); }
+.step .reach { color: var(--ink); }
+.step .lever { color: var(--ember); }
+.step .lbl { display: none; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mist); }
+.crossings { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 40px; }
+.cross { border: 1px solid var(--rule); border-radius: 4px; padding: 16px; display: grid; gap: 6px; align-content: start; }
+.cross .st { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mist); }
+.cross h3 { font-size: 19px; }
+.cross p { font-size: 14px; color: var(--mist); }
+.cross .need { font-size: 13px; color: var(--ink); border-top: 1px solid var(--rule); padding-top: 8px; margin-top: 4px; }
+.cross.far { border-color: var(--ember); }
+.cross.far .st { color: var(--ember); }
+.formula { margin-top: 32px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 28px; align-items: start; }
+.formula > * { min-width: 0; }
+.formula p { color: var(--mist); }
+
 .loop-wrap { display: grid; grid-template-columns: minmax(0, 420px) 1fr; gap: 48px; align-items: center; }
 .loop-wrap svg { width: 100%; height: auto; max-width: 420px; }
-.loop-steps { display: grid; gap: 18px; }
-.loop-steps li { display: grid; grid-template-columns: 34px 1fr; gap: 12px; }
 .loop-steps ol { list-style: none; padding: 0; margin: 0; display: grid; gap: 20px; }
+.loop-steps li { display: grid; grid-template-columns: 34px 1fr; gap: 12px; }
 .loop-steps .n { font-family: var(--mono); font-size: 13px; color: var(--storm); padding-top: 3px; }
 .loop-steps h3 { font-size: 19px; margin-bottom: 4px; }
 .loop-steps p { color: var(--mist); }
 
-/* framework */
 .principles { margin-bottom: 56px; }
 .principle { background: var(--panel); border-radius: 4px; padding: 20px; display: grid; gap: 8px; align-content: start; }
 .principle .tag { font-family: var(--mono); font-size: 11px; color: var(--storm); letter-spacing: 0.12em; text-transform: uppercase; }
 .principle p { color: var(--mist); font-size: 15px; }
 .stack { display: grid; gap: 6px; margin-bottom: 14px; }
-.layer {
-  display: grid; grid-template-columns: 170px 1fr 130px; gap: 16px; align-items: center;
-  padding: 14px 16px; border: 1px solid var(--rule); border-radius: 3px; background: var(--deep);
-}
+.layer { display: grid; grid-template-columns: 170px 1fr 130px; gap: 16px; align-items: center; padding: 14px 16px; border: 1px solid var(--rule); border-radius: 3px; background: var(--deep); }
 .layer .lname { font-family: var(--display); font-size: 18px; }
 .layer .mods { display: flex; flex-wrap: wrap; gap: 6px; }
 .layer .mods span { font-family: var(--mono); font-size: 12px; padding: 2px 8px; border-radius: 2px; background: var(--panel); color: var(--ink); }
@@ -163,8 +184,6 @@ td.myth { color: var(--ember); }
 .tech td:nth-child(2) { font-family: var(--mono); font-size: 13px; color: var(--storm); white-space: nowrap; }
 .tech td:last-child { color: var(--mist); }
 
-/* roadmap */
-.road { display: grid; gap: 0; position: relative; }
 .phase { display: grid; grid-template-columns: 90px 1fr; gap: 24px; padding-block: 22px; border-bottom: 1px solid var(--rule); }
 .phase:last-child { border-bottom: 0; }
 .phase .num { font-family: var(--display); font-size: 44px; line-height: 1; color: var(--storm); }
@@ -176,8 +195,8 @@ td.myth { color: var(--ember); }
 .phase .k { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mist); display: block; margin-bottom: 4px; }
 .phase .proof { font-size: 15px; }
 .phase .proof.p { border-left: 2px solid var(--ember); padding-left: 12px; }
+.phase.new .num { color: var(--ember); }
 
-/* art */
 .manifesto { font-family: var(--display); font-size: clamp(24px, 3.2vw, 34px); line-height: 1.3; max-width: 30ch; margin-bottom: 48px; text-wrap: balance; }
 .manifesto em { font-style: normal; color: var(--ember); }
 .palette { display: grid; gap: 28px; margin-block: 56px; }
@@ -193,35 +212,33 @@ td.myth { color: var(--ember); }
 .mood figcaption { margin-top: 10px; display: grid; gap: 2px; }
 .mood figcaption b { font-family: var(--display); font-weight: 400; font-size: 19px; }
 .mood figcaption span { color: var(--mist); font-size: 14px; }
-.zooms { margin-top: 56px; }
-.zoom { border: 1px solid var(--rule); border-radius: 4px; padding: 20px; display: grid; gap: 10px; align-content: start; }
-.zoom .lvl { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; color: var(--storm); text-transform: uppercase; }
-.zoom p { color: var(--mist); font-size: 15px; }
-.zoom ul { margin: 0; padding-left: 18px; color: var(--ink); font-size: 14px; display: grid; gap: 4px; }
 .glyphs { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin-top: 18px; }
 .glyph { display: grid; justify-items: center; gap: 8px; padding: 18px 8px; border: 1px solid var(--rule); border-radius: 4px; text-align: center; }
 .glyph svg { width: 36px; height: 36px; color: var(--storm); }
 .glyph.hot svg { color: var(--ember); }
 .glyph b { font-size: 14px; font-weight: 600; }
 .glyph span { font-family: var(--mono); font-size: 11px; color: var(--mist); }
-.scroll {
-  background: #1a2233; border: 1px solid var(--rule); border-radius: 4px; padding: 26px 28px;
-  display: grid; gap: 14px;
-}
+.scroll { background: #1a2233; border: 1px solid var(--rule); border-radius: 4px; padding: 26px 28px; display: grid; gap: 14px; }
 .scroll .entry { display: grid; grid-template-columns: 92px 1fr; gap: 14px; }
 .scroll .entry > * { min-width: 0; }
 .scroll .when { font-family: var(--mono); font-size: 12px; color: var(--ember); padding-top: 4px; }
 .scroll p { font-family: var(--display); font-size: 18px; line-height: 1.5; }
 .scroll .voice { color: var(--mist); font-family: var(--body); font-size: 14px; font-style: italic; }
 .next { display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; align-items: start; }
+.next > * { min-width: 0; }
 .next ol { margin: 0; padding-left: 20px; display: grid; gap: 10px; }
 .next li::marker { font-family: var(--mono); color: var(--storm); }
 .tree { font-family: var(--mono); font-size: 13px; line-height: 1.7; color: var(--mist); }
 .tree b { color: var(--ink); font-weight: 500; }
 footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var(--mist); font-size: 13px; }
 
+@media (max-width: 1100px) {
+  .explorer { grid-template-columns: 1fr; }
+  .inspector { border-left: 0; border-top: 1px solid var(--rule); }
+  .crossings { grid-template-columns: repeat(3, 1fr); }
+}
 @media (max-width: 900px) {
-  .hero-head, .loop-wrap, .grid2, .next { grid-template-columns: 1fr; }
+  .hero-head, .loop-wrap, .grid2, .next, .callout, .formula { grid-template-columns: 1fr; }
   .grid4 { grid-template-columns: 1fr 1fr; }
   .grid3 { grid-template-columns: 1fr; }
   .phase-body { grid-template-columns: 1fr; gap: 12px; }
@@ -230,14 +247,20 @@ footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var
   .swatches { grid-template-columns: repeat(4, 1fr); }
   .swatches.sky { max-width: 100%; }
   .glyphs { grid-template-columns: repeat(4, 1fr); }
+  .step { grid-template-columns: 44px 1fr; gap: 6px 14px; }
+  .step > *:not(.n):not(:nth-child(2)) { grid-column: 2; }
+  .step.head { display: none; }
+  .step .lbl { display: block; margin-top: 6px; }
+  .crossings { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 560px) {
-  .grid4, .moods { grid-template-columns: 1fr; }
+  .grid4, .moods, .crossings { grid-template-columns: 1fr; }
   .phase { grid-template-columns: 1fr; gap: 10px; }
   .glyphs { grid-template-columns: repeat(2, 1fr); }
   .scroll { padding: 20px 18px; }
   .scroll .entry { grid-template-columns: 1fr; gap: 4px; }
   .hud { font-size: 11px; }
+  .ctrlrow .label { width: 100%; }
 }
 </style>
 
@@ -257,10 +280,12 @@ footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var
   <div class="wrap">
     <div class="brand">Firmament</div>
     <nav aria-label="Sections">
-      <a href="#loop">Core loop</a>
+      <a href="#explore">Explore</a>
+      <a href="#hybrid">Civilization</a>
+      <a href="#farshore">Far Shore</a>
       <a href="#framework">Framework</a>
       <a href="#roadmap">Roadmap</a>
-      <a href="#art">Art direction</a>
+      <a href="#art">Art</a>
     </nav>
   </div>
 </header>
@@ -269,49 +294,161 @@ footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var
   <div class="wrap hero">
     <div class="hero-head">
       <div>
-        <div class="eyebrow">Game concept · Draft 1 · Jackathon</div>
+        <div class="eyebrow">Game concept · Draft 2 · Jackathon</div>
         <h1>Firma<span>ment</span></h1>
       </div>
-      <p class="lede">A god game where you never touch the people. You command the <em>sky and the ground</em>: rain, drought, storm, fire. A civilization lives under it, adapts to it, and writes its history about you.</p>
+      <p class="lede">A god game of <em>indirect control</em>. You command the weather over an archipelago. A civilization on the home island lives, adapts and invents under your sky, and the long test is whether it ever reaches the Far Shore.</p>
     </div>
-
-    <div class="stage" id="stage">
-      <canvas id="hero" aria-label="Live map of a generated island with drifting weather and glowing settlements"></canvas>
-      <div class="hud" aria-live="polite">
-        <span id="hud-date">Year 212 · Spring</span>
-        <span>Villages <b id="hud-towns">0</b> · People <b id="hud-pop">0</b></span>
-      </div>
-      <div class="powers" role="group" aria-label="Divine powers">
-        <span class="label">Powers</span>
-        <button class="power" data-mode="calm" aria-pressed="true"><svg><use href="#g-calm"/></svg>Calm</button>
-        <button class="power" data-mode="rain" aria-pressed="false"><svg><use href="#g-rain"/></svg>Rain</button>
-        <button class="power" data-mode="storm" aria-pressed="false"><svg><use href="#g-storm"/></svg>Storm surge</button>
-        <button class="power" data-mode="drought" aria-pressed="false"><svg><use href="#g-drought"/></svg>Drought</button>
-        <button class="power" data-mode="erupt" aria-pressed="false"><svg><use href="#g-erupt"/></svg>Eruption</button>
-      </div>
-      <p class="chronicle-line" id="chron"><span class="yr">Y212</span><span id="chron-text">A quiet age.</span></p>
-    </div>
-    <p class="stage-note">Working sketch of the art direction. The island, weather and villages are procedurally generated from seed 4127 in this page. Pick a power to see the world and the villages react.</p>
   </div>
 
-  <section class="block" id="pitch">
+  <div class="wrap wide" id="explore">
+    <div class="explorer">
+      <div class="mapcol">
+        <div class="mapbox">
+          <canvas id="map" tabindex="0" aria-label="Zoomable map of the archipelago. Drag to pan, scroll or pinch to zoom, click villages and people for details."></canvas>
+          <div class="hud" aria-live="polite">
+            <span id="hud-date">Year 760 · The Voyage</span>
+            <span>Known islands <b id="hud-known">4</b>/5 · People <b id="hud-pop">0</b></span>
+          </div>
+          <div class="scalebar" id="scalebar"><span id="scale-label">10 km</span><i id="scale-bar" style="width:80px"></i></div>
+          <div class="zoomctl">
+            <button type="button" id="zin" aria-label="Zoom in">+</button>
+            <button type="button" id="zout" aria-label="Zoom out">−</button>
+          </div>
+        </div>
+        <div class="controls">
+          <div class="ctrlrow" role="group" aria-label="Era">
+            <span class="label">Era</span>
+            <button type="button" class="chip era" data-era="0" aria-pressed="false"><span class="y">Y210</span>Rafts</button>
+            <button type="button" class="chip era" data-era="1" aria-pressed="false"><span class="y">Y480</span>Canoes</button>
+            <button type="button" class="chip era" data-era="2" aria-pressed="true"><span class="y">Y760</span>The Voyage</button>
+            <button type="button" class="chip era" data-era="3" aria-pressed="false"><span class="y">Y900</span>Two Shores</button>
+          </div>
+          <div class="ctrlrow" role="group" aria-label="Weather powers">
+            <span class="label">Sky</span>
+            <button type="button" class="chip pw" data-mode="calm" aria-pressed="true"><svg><use href="#g-calm"/></svg>Calm</button>
+            <button type="button" class="chip pw" data-mode="rain" aria-pressed="false"><svg><use href="#g-rain"/></svg>Rain</button>
+            <button type="button" class="chip pw" data-mode="wind" aria-pressed="false"><svg><use href="#g-wind"/></svg>East wind</button>
+            <button type="button" class="chip pw" data-mode="storm" aria-pressed="false"><svg><use href="#g-storm"/></svg>Storm</button>
+            <button type="button" class="chip pw" data-mode="drought" aria-pressed="false"><svg><use href="#g-drought"/></svg>Drought</button>
+          </div>
+          <div class="ctrlrow" role="group" aria-label="Go to">
+            <span class="label">Go to</span>
+            <button type="button" class="chip go" data-go="world">Archipelago</button>
+            <button type="button" class="chip go" data-go="hearth">Hearth island</button>
+            <button type="button" class="chip go" data-go="aldmouth">Aldmouth village</button>
+            <button type="button" class="chip go" data-go="person">A named person</button>
+          </div>
+        </div>
+        <p class="chronicle-line"><span class="yr" id="chron-yr">Y760</span><span id="chron-text"></span></p>
+      </div>
+      <aside class="inspector" aria-label="Inspector">
+        <div>
+          <div class="eyebrow" style="margin-bottom:8px">Zoom level</div>
+          <div class="ladder" id="ladder">
+            <button type="button" class="rung" data-z="1"><span class="dot"></span><span>Archipelago</span><span class="zz">1×</span></button>
+            <button type="button" class="rung" data-z="2.6"><span class="dot"></span><span>Island</span><span class="zz">3×</span></button>
+            <button type="button" class="rung" data-z="7"><span class="dot"></span><span>Village</span><span class="zz">7×</span></button>
+            <button type="button" class="rung" data-z="16"><span class="dot"></span><span>Hearthside</span><span class="zz">16×</span></button>
+          </div>
+        </div>
+        <p class="levelnote" id="levelnote"></p>
+        <div class="card" id="card"></div>
+        <p class="hint">Drag to pan. Scroll, pinch or use <kbd>+</kbd> <kbd>−</kbd> to zoom. Click a village, a person or a boat.</p>
+      </aside>
+    </div>
+    <p class="stage-note">Interactive concept sketch, not the game. The archipelago, villages, people and boats are generated in this page from seed 4127. Eras are fixed snapshots of one possible history.</p>
+  </div>
+
+  <section class="block" id="hybrid" style="margin-top:56px">
     <div class="wrap">
       <div class="sec-head">
-        <div class="eyebrow">Design pillars</div>
-        <h2>Three rules the whole game is built on</h2>
+        <div class="eyebrow">Hybrid civilization</div>
+        <h2>A crowd of numbers, and a few real people</h2>
+        <p class="lede">Simulating every person in a 10,000-strong civilization for a thousand years is slow and hard to tune. Simulating only numbers loses the stories. Firmament does both, at three levels of detail.</p>
       </div>
       <div class="grid3">
         <div class="pillar">
-          <h3>Indirect control</h3>
-          <p>You have no units, no build menu and no orders. Every power acts on terrain or weather. People decide for themselves what to do about it.</p>
+          <span class="tagline">Stored · always simulated</span>
+          <h3>The crowd</h3>
+          <p>Each village is one record: population, food, jobs, tech, belief and memory. This is what the simulation ticks every season.</p>
+          <ul><li>Cheap to run at 100× speed</li><li>Easy to balance in data tables</li><li>Drives every decision a village makes</li></ul>
         </div>
         <div class="pillar">
-          <h3>Every act echoes</h3>
-          <p>Each power has a short-term effect and a long-term one, and they usually point in opposite directions. A volcano burns a city and leaves the best farmland on the island.</p>
+          <span class="tagline">Drawn · only when zoomed in</span>
+          <h3>The sample</h3>
+          <p>When you zoom into a village, the game draws people from its numbers. If 30% of Aldmouth fishes, 30% of the figures walk to the boats.</p>
+          <ul><li>Never saved, rebuilt on demand</li><li>Shows the record honestly</li><li>Costs nothing when you zoom out</li></ul>
         </div>
         <div class="pillar ember">
-          <h3>They interpret you</h3>
-          <p>The civilization builds a belief about the sky from what you have done to it. Kindness, cruelty and silence each produce a different culture, and that culture is your score.</p>
+          <span class="tagline">Stored · individual agents</span>
+          <h3>The named few</h3>
+          <p>A handful of people are real agents with a name, age, goal, belief and memory. They are the faces of history: the raft-binder, the navigator, the captain.</p>
+          <ul><li>About 3 per village, 30 in the world</li><li>Their choices can tip a village</li><li>They write the chronicle</li></ul>
+        </div>
+      </div>
+      <div class="callout">
+        <div>
+          <h3>When someone is promoted to a named agent</h3>
+          <ul>
+            <li>They are the first to do something: first crossing, first sail, first shrine.</li>
+            <li>The story needs a role filled: navigator, priest, founder, rebel.</li>
+            <li>They survive an event the village will remember.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>What named agents can change</h3>
+          <ul>
+            <li>Speed up a tech: a navigator makes star navigation possible.</li>
+            <li>Shift belief: a priest teaches the village how to read your weather.</li>
+            <li>When they die they become a memory and a line in the chronicle.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="farshore">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">The Far Shore test</div>
+        <h2>Can they learn to cross the sea?</h2>
+        <p class="lede">The archipelago is built as a ladder. Each island is harder to reach than the last, and the hardest one is too far away to see. You cannot build boats for them. You can only shape the weather that makes them try, fail and improve.</p>
+      </div>
+      <div class="crossings">
+        <div class="cross"><span class="st">Home</span><h3>Hearth</h3><p>Mountains, two rivers, forests. About 27 km across.</p><p class="need">Start here</p></div>
+        <div class="cross"><span class="st">Rung 1</span><h3>Kelp Isle</h3><p>About 6 km over a shallow reef. Rich fishing.</p><p class="need">Needs a raft</p></div>
+        <div class="cross"><span class="st">Rung 2</span><h3>Thornholm</h3><p>About 10 km across an open channel. Good timber.</p><p class="need">Needs a dugout canoe</p></div>
+        <div class="cross"><span class="st">Rung 2</span><h3>Gull Rock</h3><p>About 8 km. Cliffs, one landing beach, a lookout.</p><p class="need">Needs a canoe and a calm sea</p></div>
+        <div class="cross far"><span class="st">The test</span><h3>The Far Shore</h3><p>About 45 km of deep ocean. Larger than Hearth. Out of sight.</p><p class="need">Needs sail, outrigger and navigation</p></div>
+      </div>
+
+      <div class="ladder2" role="table" aria-label="Transport technology ladder">
+        <div class="step head" role="row"><span></span><span>Technology</span><span>Pushed by</span><span>Reaches</span><span>Your lever</span></div>
+        <div class="step" role="row"><span class="n">1</span><div><h3>Log raft</h3><p>Needs fishing and rope.</p></div><div><span class="lbl">Pushed by</span><p>Hunger on the coast in a poor harvest.</p></div><div><span class="lbl">Reaches</span><p class="reach">Kelp Isle, at low tide</p></div><div><span class="lbl">Your lever</span><p class="lever">Calm seas so early crossings survive.</p></div></div>
+        <div class="step" role="row"><span class="n">2</span><div><h3>Dugout canoe</h3><p>Needs stone adzes and big trees.</p></div><div><span class="lbl">Pushed by</span><p>Rafts lost on the reef.</p></div><div><span class="lbl">Reaches</span><p class="reach">Thornholm, Gull Rock</p></div><div><span class="lbl">Your lever</span><p class="lever">Rain grows the forests; a squall sinks rafts and teaches them.</p></div></div>
+        <div class="step" role="row"><span class="n">3</span><div><h3>Outrigger</h3><p>Needs canoes and lashing.</p></div><div><span class="lbl">Pushed by</span><p>Canoes capsizing in open water.</p></div><div><span class="lbl">Reaches</span><p class="reach">Any nearby island, any season</p></div><div><span class="lbl">Your lever</span><p class="lever">Rough seas, survived, make stability a priority.</p></div></div>
+        <div class="step" role="row"><span class="n">4</span><div><h3>Woven sail</h3><p>Needs weaving and outriggers.</p></div><div><span class="lbl">Pushed by</span><p>Steady winds over many seasons.</p></div><div><span class="lbl">Reaches</span><p class="reach">Trips of several days</p></div><div><span class="lbl">Your lever</span><p class="lever">East wind, again and again.</p></div></div>
+        <div class="step" role="row"><span class="n">5</span><div><h3>Star navigation</h3><p>Needs sky priests and a calendar.</p></div><div><span class="lbl">Pushed by</span><p>Long clear seasons and seabirds flying east at dusk.</p></div><div><span class="lbl">Reaches</span><p class="reach">The Far Shore, and back</p></div><div><span class="lbl">Your lever</span><p class="lever">Calm, cloudless nights.</p></div></div>
+        <div class="step" role="row"><span class="n">6</span><div><h3>Colony fleet</h3><p>Needs one voyage that returns, and spare food.</p></div><div><span class="lbl">Pushed by</span><p>Crowding on Hearth.</p></div><div><span class="lbl">Reaches</span><p class="reach">A permanent village on the Far Shore</p></div><div><span class="lbl">Your lever</span><p class="lever">Good harvests so they can afford to leave.</p></div></div>
+      </div>
+
+      <div class="formula">
+        <div class="codecard">
+          <div class="cap">sim/voyage.ts · how a crossing is resolved</div>
+<pre><span class="f">success</span> = hull × navigation × weather × crew
+
+<span class="c">// Year 760, the Long Breath sails east</span>
+hull        <span class="k">0.80</span>  <span class="c">// outrigger + woven sail</span>
+navigation  <span class="k">0.55</span>  <span class="c">// Kai has 30 nights of star counts</span>
+weather     <span class="k">0.90</span>  <span class="c">// you held an east wind</span>
+crew        <span class="k">0.70</span>  <span class="c">// fear of the sea after year 744</span>
+<span class="f">success</span>     <span class="k">0.28</span></pre>
+        </div>
+        <div style="display:grid; gap:12px">
+          <h3>Failure is how they learn</h3>
+          <p>A lost boat raises the village's fear of the sea, but it also pushes hull and navigation research forward. Push them too hard and they stop sailing for a generation. Never test them and they never need to improve.</p>
+          <p>The Far Shore can also be found by accident: a fishing canoe blown east by a storm you sent. If the crew survives and comes home, the whole archipelago knows the Far Shore exists.</p>
         </div>
       </div>
     </div>
@@ -320,30 +457,23 @@ footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var
   <section class="block" id="loop">
     <div class="wrap">
       <div class="sec-head">
-        <div class="eyebrow">Core loop</div>
+        <div class="eyebrow">Core loop · indirect control</div>
         <h2>One turn of the world</h2>
-        <p class="lede">The game runs in real time, but the simulation thinks in seasons. Each season runs the same four beats.</p>
+        <p class="lede">You never give orders. The game runs in real time, but the simulation thinks in seasons, and each season runs the same four beats.</p>
       </div>
       <div class="loop-wrap">
         <svg viewBox="0 0 420 420" role="img" aria-label="Loop diagram: Read the world, Shape the sky, They adapt, History remembers, then back to Read the world">
-          <defs>
-            <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#8fd0e6"/></marker>
-          </defs>
+          <defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#8fd0e6"/></marker></defs>
           <circle cx="210" cy="210" r="150" fill="none" stroke="#26344c" stroke-width="1"/>
           <path d="M 246 64 A 150 150 0 0 1 356 174" fill="none" stroke="#8fd0e6" stroke-width="1.6" marker-end="url(#arr)"/>
           <path d="M 356 246 A 150 150 0 0 1 246 356" fill="none" stroke="#8fd0e6" stroke-width="1.6" marker-end="url(#arr)"/>
           <path d="M 174 356 A 150 150 0 0 1 64 246" fill="none" stroke="#8fd0e6" stroke-width="1.6" marker-end="url(#arr)"/>
           <path d="M 64 174 A 150 150 0 0 1 174 64" fill="none" stroke="#8fd0e6" stroke-width="1.6" marker-end="url(#arr)"/>
           <g font-family="Figtree, system-ui, sans-serif" font-size="14" fill="#e3e8f0" text-anchor="middle">
-            <circle cx="210" cy="60" r="7" fill="#8fd0e6"/>
-            <text x="210" y="36">Read the world</text>
-            <circle cx="360" cy="210" r="7" fill="#8fd0e6"/>
-            <text x="360" y="240">Shape the sky</text>
-            <circle cx="210" cy="360" r="7" fill="#f2b257"/>
-            <text x="210" y="392">They adapt</text>
-            <circle cx="60" cy="210" r="7" fill="#f2b257"/>
-            <text x="60" y="240">History</text>
-            <text x="60" y="257">remembers</text>
+            <circle cx="210" cy="60" r="7" fill="#8fd0e6"/><text x="210" y="36">Read the world</text>
+            <circle cx="360" cy="210" r="7" fill="#8fd0e6"/><text x="360" y="240">Shape the sky</text>
+            <circle cx="210" cy="360" r="7" fill="#f2b257"/><text x="210" y="392">They adapt</text>
+            <circle cx="60" cy="210" r="7" fill="#f2b257"/><text x="60" y="240">History</text><text x="60" y="257">remembers</text>
           </g>
           <g text-anchor="middle">
             <text x="210" y="204" font-family="Marcellus, Georgia, serif" font-size="26" fill="#e3e8f0">1 tick</text>
@@ -352,10 +482,10 @@ footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var
         </svg>
         <div class="loop-steps">
           <ol>
-            <li><span class="n">1</span><div><h3>Read the world</h3><p>Overlays show rainfall, fertility, hunger and belief. You see which village is starving before they know it.</p></div></li>
-            <li><span class="n">2</span><div><h3>Shape the sky</h3><p>Spend divine energy on a power. Paint rain with a brush, drag a storm track, or place a disaster by hand.</p></div></li>
-            <li><span class="n">3</span><div><h3>They adapt</h3><p>Villages harvest, starve, migrate, build levees or abandon the coast. The simulation decides, using needs and memory.</p></div></li>
-            <li><span class="n">4</span><div><h3>History remembers</h3><p>The event is written into the chronicle and into culture. Belief toward you shifts, and faith refills your energy.</p></div></li>
+            <li><span class="n">1</span><div><h3>Read the world</h3><p>Zoom from the whole archipelago down to one fisher. Overlays show rain, food, belief and who is planning a voyage.</p></div></li>
+            <li><span class="n">2</span><div><h3>Shape the sky</h3><p>Spend divine energy on rain, wind, storm or drought. Paint it with a brush or drag a storm track.</p></div></li>
+            <li><span class="n">3</span><div><h3>They adapt</h3><p>Villages harvest, starve, build boats or abandon the coast. Named people make their own choices inside that.</p></div></li>
+            <li><span class="n">4</span><div><h3>History remembers</h3><p>The event goes into the chronicle and into belief. Faith refills your energy, so how they see you matters.</p></div></li>
           </ol>
         </div>
       </div>
@@ -369,23 +499,23 @@ footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var
         <h2>How the game gets built</h2>
         <p class="lede">A simulation game lives or dies on whether the simulation can be trusted, tested and tuned. These four rules come before any feature work.</p>
       </div>
-
       <div class="grid4 principles">
         <div class="principle"><span class="tag">Rule A</span><h3>Simulation owns the truth</h3><p>All game state lives in one plain data object. The renderer only reads it and never changes it.</p></div>
         <div class="principle"><span class="tag">Rule B</span><h3>Systems are pure steps</h3><p>Each system takes state, events and a random source and returns new state. Every one can be unit-tested alone.</p></div>
         <div class="principle"><span class="tag">Rule C</span><h3>Seeds replay everything</h3><p>One seed plus a list of player actions rebuilds any run exactly. A bug report becomes a replay file.</p></div>
-        <div class="principle"><span class="tag">Rule D</span><h3>Tuning lives in data</h3><p>Disasters, crops, tech unlocks and beliefs are JSON tables. Balancing never needs a code change.</p></div>
+        <div class="principle"><span class="tag">Rule D</span><h3>Detail on demand</h3><p>Terrain detail and crowds are generated only for what is on screen. Zooming never changes the simulation.</p></div>
       </div>
 
       <h3 style="margin-bottom:16px">Architecture</h3>
       <div class="stack" aria-label="Layer stack, top to bottom">
-        <div class="layer ui"><span class="lname">Player &amp; UI</span><span class="mods"><span>powers</span><span>brushes</span><span>overlays</span><span>time controls</span><span>chronicle</span></span><span class="where">Main thread</span></div>
-        <div class="layer"><span class="lname">Renderer</span><span class="mods"><span>terrain mesh</span><span>contour shader</span><span>cloud layer</span><span>particles</span><span>lights</span></span><span class="where">Main thread · WebGL</span></div>
-        <div class="layer"><span class="lname">Civilization</span><span class="mods"><span>settlements</span><span>needs</span><span>migration</span><span>tech</span><span>belief</span><span>memory</span></span><span class="where">Sim worker</span></div>
+        <div class="layer ui"><span class="lname">Player &amp; UI</span><span class="mods"><span>powers</span><span>brushes</span><span>zoom + inspector</span><span>time</span><span>chronicle</span></span><span class="where">Main thread</span></div>
+        <div class="layer"><span class="lname">Renderer</span><span class="mods"><span>world map</span><span>detail chunks</span><span>crowd sampler</span><span>boats</span><span>clouds</span></span><span class="where">Main thread · WebGL</span></div>
+        <div class="layer"><span class="lname">Civilization</span><span class="mods"><span>villages</span><span>named agents</span><span>needs</span><span>tech</span><span>belief</span><span>memory</span></span><span class="where">Sim worker</span></div>
+        <div class="layer"><span class="lname">Sea &amp; travel</span><span class="mods"><span>boats</span><span>routes</span><span>voyages</span><span>navigation</span><span>discovery</span></span><span class="where">Sim worker</span></div>
         <div class="layer"><span class="lname">Climate</span><span class="mods"><span>seasons</span><span>wind field</span><span>weather cells</span><span>disasters</span></span><span class="where">Sim worker</span></div>
-        <div class="layer"><span class="lname">Terrain</span><span class="mods"><span>heightmap</span><span>biomes</span><span>rivers</span><span>soil</span><span>erosion</span></span><span class="where">Sim worker</span></div>
+        <div class="layer"><span class="lname">Terrain</span><span class="mods"><span>5 islands</span><span>sea depth</span><span>biomes</span><span>rivers</span><span>soil</span></span><span class="where">Sim worker</span></div>
       </div>
-      <p class="stack-note">Each layer reads only from the layers below it. The simulation runs in a Web Worker and posts a snapshot to the renderer after each tick, so a slow frame never slows the world and a heavy season never freezes the screen.</p>
+      <p class="stack-note">Each layer reads only from the layers below it. The simulation runs in a Web Worker and posts a snapshot after each tick. The crowd sampler on the main thread turns village records into visible people, so the worker never stores them.</p>
 
       <div class="grid2">
         <div class="codecard">
@@ -393,9 +523,11 @@ footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var
 <pre><span class="k">export function</span> <span class="f">tick</span>(w: World, acts: Action[], rng: Rng): World {
   w = <span class="f">applyPowers</span>(w, acts);  <span class="c">// player edits sky + ground</span>
   w = <span class="f">climate</span>(w, rng);        <span class="c">// season, wind, weather cells</span>
-  w = <span class="f">terrain</span>(w);             <span class="c">// floods, ash fall, erosion</span>
-  w = <span class="f">ecology</span>(w);             <span class="c">// soil, crops, forests</span>
-  w = <span class="f">society</span>(w, rng);        <span class="c">// growth, hunger, migration</span>
+  w = <span class="f">terrain</span>(w);             <span class="c">// floods, silt, erosion</span>
+  w = <span class="f">ecology</span>(w);             <span class="c">// soil, crops, forests, fish</span>
+  w = <span class="f">society</span>(w, rng);        <span class="c">// villages: growth, hunger</span>
+  w = <span class="f">agents</span>(w, rng);         <span class="c">// named people: goals, choices</span>
+  w = <span class="f">voyages</span>(w, rng);        <span class="c">// boats at sea, discovery</span>
   w = <span class="f">culture</span>(w);             <span class="c">// tech, belief, memory</span>
   w.chronicle.<span class="f">push</span>(...<span class="f">narrate</span>(w.events));
   <span class="k">return</span> w;
@@ -403,16 +535,17 @@ footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var
         </div>
         <div class="codecard">
           <div class="cap">sim/types.ts · core data model</div>
-<pre><span class="k">interface</span> Tile {
-  height: number; moisture: number;
-  temp: number;   fertility: number;
-  biome: Biome;   scars: Scar[];   <span class="c">// ash, flood silt</span>
-}
-<span class="k">interface</span> Settlement {
-  pop: number;  food: number;  morale: number;
+<pre><span class="k">interface</span> Village {             <span class="c">// the crowd</span>
+  pop: number;  food: number;
+  jobs: Record&lt;Job, number&gt;;    <span class="c">// shares, sum to 1</span>
   techs: Set&lt;TechId&gt;;
-  belief: { awe: number; fear: number; love: number };
-  memory: Event[];                 <span class="c">// what the sky did</span>
+  belief: { awe; fear; love };
+  memory: Event[];
+}
+<span class="k">interface</span> Agent {               <span class="c">// the named few</span>
+  name: string;  role: Role;  age: number;
+  home: VillageId;  goal: Goal;
+  memory: Event[];
 }</pre>
         </div>
       </div>
@@ -423,10 +556,11 @@ footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var
           <thead><tr><th>Concern</th><th>Choice</th><th>Why</th></tr></thead>
           <tbody>
             <tr><td>Language &amp; build</td><td>TypeScript + Vite</td><td>Types keep the data model honest; instant reloads keep tuning fast.</td></tr>
-            <tr><td>Rendering</td><td>PixiJS (WebGL)</td><td>Fast 2D with custom shaders for contours, water and clouds. Runs in any browser.</td></tr>
+            <tr><td>Rendering</td><td>PixiJS (WebGL)</td><td>Fast 2D with shaders for contours, water and clouds. Handles thousands of sprites for crowds.</td></tr>
+            <tr><td>Zoom</td><td>Chunked detail tiles</td><td>The world map is one texture; zoomed views render higher-detail chunks on demand.</td></tr>
             <tr><td>Simulation thread</td><td>Web Worker</td><td>Keeps the world ticking at 100× speed without dropping frames.</td></tr>
-            <tr><td>Randomness</td><td>Seeded PRNG + simplex noise</td><td>Same seed, same world. Required for replays and tests.</td></tr>
-            <tr><td>Testing</td><td>Vitest + golden runs</td><td>Unit tests per system, plus 500-year runs whose summaries must not drift.</td></tr>
+            <tr><td>Randomness</td><td>Seeded PRNG + noise</td><td>Same seed, same world. Required for replays and tests.</td></tr>
+            <tr><td>Testing</td><td>Vitest + golden runs</td><td>Unit tests per system, plus 1,000-year runs whose summaries must not drift.</td></tr>
             <tr><td>Narration</td><td>Claude API (optional)</td><td>Turns the event log into myths and chronicle entries in the civilization's voice.</td></tr>
           </tbody>
         </table>
@@ -438,66 +572,18 @@ footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var
     <div class="wrap">
       <div class="sec-head">
         <div class="eyebrow">Roadmap</div>
-        <h2>Seven milestones, each one playable</h2>
-        <p class="lede">Every milestone ends with something you can open in a browser and play. A milestone is done when its proof passes.</p>
+        <h2>Eight milestones, each one playable</h2>
+        <p class="lede">Every milestone ends with something you can open in a browser and play. A milestone is done when its proof passes. Milestones numbered in amber are new in this draft.</p>
       </div>
-      <div class="road">
-        <div class="phase">
-          <div class="num">0<small>Foundation</small></div>
-          <div class="phase-body">
-            <div><h3>The empty clock</h3><p class="what">Repo, Vite and TypeScript, seeded RNG, the worker tick loop, pause and speed controls, a debug overlay.</p></div>
-            <div><span class="k">Builds</span><p class="proof">Tick pipeline with empty systems. Save and load of a seed plus action log.</p></div>
-            <div><span class="k">Proof</span><p class="proof p">Two runs from the same seed produce byte-identical state after 1,000 ticks.</p></div>
-          </div>
-        </div>
-        <div class="phase">
-          <div class="num">1<small>Ground</small></div>
-          <div class="phase-body">
-            <div><h3>A place worth saving</h3><p class="what">Heightmap from noise, island mask, biomes, rivers that run downhill. First art pass with contour shading.</p></div>
-            <div><span class="k">Builds</span><p class="proof">Terrain layer and the relief-map shader from the art direction.</p></div>
-            <div><span class="k">Proof</span><p class="proof p">Ten random seeds all look like believable places in a screenshot.</p></div>
-          </div>
-        </div>
-        <div class="phase">
-          <div class="num">2<small>Sky</small></div>
-          <div class="phase-body">
-            <div><h3>Weather you can hold</h3><p class="what">Climate by latitude and altitude, drifting weather cells, four seasons. First three powers: rain, sun, wind.</p></div>
-            <div><span class="k">Builds</span><p class="proof">Climate layer, cloud rendering, power brushes, divine energy meter.</p></div>
-            <div><span class="k">Proof</span><p class="proof p">Painting rain on dry land turns it green within one season.</p></div>
-          </div>
-        </div>
-        <div class="phase">
-          <div class="num">3<small>People</small></div>
-          <div class="phase-body">
-            <div><h3>They live without you</h3><p class="what">Settlements with food, water, shelter and morale. Growth, founding new villages, hunger, migration.</p></div>
-            <div><span class="k">Builds</span><p class="proof">Civilization layer, settlement lights, overlays for hunger and growth.</p></div>
-            <div><span class="k">Proof</span><p class="proof p">With no player input, a civilization lasts 500 years on most seeds and collapses on some.</p></div>
-          </div>
-        </div>
-        <div class="phase">
-          <div class="num">4<small>Wrath</small></div>
-          <div class="phase-body">
-            <div><h3>Disasters that scar</h3><p class="what">Storm surge, earthquake, eruption and plague, each with a cost in energy and a lasting mark on the land.</p></div>
-            <div><span class="k">Builds</span><p class="proof">Disaster tables in JSON, terrain scars, ash and flood silt that change fertility.</p></div>
-            <div><span class="k">Proof</span><p class="proof p">Every disaster leaves something you can still see on the map 100 years later.</p></div>
-          </div>
-        </div>
-        <div class="phase">
-          <div class="num">5<small>Memory</small></div>
-          <div class="phase-body">
-            <div><h3>A culture shaped by you</h3><p class="what">Adversity unlocks tech. Villages remember events. Belief toward the sky drives faith, and faith refills energy.</p></div>
-            <div><span class="k">Builds</span><p class="proof">Tech and belief tables, the chronicle, optional Claude-written myths.</p></div>
-            <div><span class="k">Proof</span><p class="proof p">A gentle player and a cruel player get visibly different cultures from the same seed.</p></div>
-          </div>
-        </div>
-        <div class="phase">
-          <div class="num">6<small>Polish</small></div>
-          <div class="phase-body">
-            <div><h3>Ready to share</h3><p class="what">Sound, onboarding, endings, and share-a-seed links so friends can play the same world.</p></div>
-            <div><span class="k">Builds</span><p class="proof">Audio layer, tutorial island, three endings, URL seeds.</p></div>
-            <div><span class="k">Proof</span><p class="proof p">A new player reaches their first disaster without reading anything.</p></div>
-          </div>
-        </div>
+      <div>
+        <div class="phase"><div class="num">0<small>Foundation</small></div><div class="phase-body"><div><h3>The empty clock</h3><p class="what">Repo, Vite and TypeScript, seeded RNG, the worker tick loop, pause and speed controls, a debug overlay.</p></div><div><span class="k">Builds</span><p class="proof">Tick pipeline with empty systems. Save and load of a seed plus action log.</p></div><div><span class="k">Proof</span><p class="proof p">Two runs from the same seed are identical after 1,000 ticks.</p></div></div></div>
+        <div class="phase new"><div class="num">1<small>Archipelago</small></div><div class="phase-body"><div><h3>Five islands and the sea between</h3><p class="what">Hearth, three near islands and the Far Shore. Sea depth that reads at a glance. Pan and zoom with detail chunks.</p></div><div><span class="k">Builds</span><p class="proof">Terrain layer, relief shader, camera, chunked zoom from 1× to 30×.</p></div><div><span class="k">Proof</span><p class="proof p">Ten seeds all produce the island ladder: near, nearer, and one too far to see.</p></div></div></div>
+        <div class="phase"><div class="num">2<small>Sky</small></div><div class="phase-body"><div><h3>Weather you can hold</h3><p class="what">Climate, drifting weather cells, seasons, and a wind field. First powers: rain, wind, calm.</p></div><div><span class="k">Builds</span><p class="proof">Climate layer, cloud rendering, power brushes, divine energy.</p></div><div><span class="k">Proof</span><p class="proof p">Painting rain on dry land turns it green within one season.</p></div></div></div>
+        <div class="phase new"><div class="num">3<small>People</small></div><div class="phase-body"><div><h3>The hybrid civilization</h3><p class="what">Village records with needs, jobs and growth. The crowd sampler draws people when you zoom in. First named agents.</p></div><div><span class="k">Builds</span><p class="proof">Village sim, crowd sampler, named agent promotion, inspector.</p></div><div><span class="k">Proof</span><p class="proof p">Zoom into any village and the people you see match its job shares.</p></div></div></div>
+        <div class="phase new"><div class="num">4<small>Sea</small></div><div class="phase-body"><div><h3>Boats, routes and the Far Shore</h3><p class="what">Fishing boats, the transport tech ladder, routes between villages, voyages that can fail, discovery.</p></div><div><span class="k">Builds</span><p class="proof">Sea layer, voyage resolver, boat sprites, known-world map.</p></div><div><span class="k">Proof</span><p class="proof p">With no player input the Far Shore is reached on some seeds and never on others.</p></div></div></div>
+        <div class="phase"><div class="num">5<small>Wrath</small></div><div class="phase-body"><div><h3>Disasters that scar</h3><p class="what">Storm surge, earthquake, eruption and plague, each with a lasting mark on land and sea.</p></div><div><span class="k">Builds</span><p class="proof">Disaster tables in JSON, terrain scars, wrecks, flood silt.</p></div><div><span class="k">Proof</span><p class="proof p">Every disaster leaves something you can still see 100 years later.</p></div></div></div>
+        <div class="phase"><div class="num">6<small>Memory</small></div><div class="phase-body"><div><h3>A culture shaped by you</h3><p class="what">Adversity unlocks tech. Belief toward the sky drives faith, and faith refills energy. Two shores can drift apart.</p></div><div><span class="k">Builds</span><p class="proof">Tech and belief tables, the chronicle, optional Claude-written myths.</p></div><div><span class="k">Proof</span><p class="proof p">A gentle player and a cruel player get different cultures from the same seed.</p></div></div></div>
+        <div class="phase"><div class="num">7<small>Polish</small></div><div class="phase-body"><div><h3>Ready to share</h3><p class="what">Sound, onboarding, endings, and share-a-seed links.</p></div><div><span class="k">Builds</span><p class="proof">Audio, tutorial island, endings, URL seeds.</p></div><div><span class="k">Proof</span><p class="proof p">A new player sends a first storm without reading anything.</p></div></div></div>
       </div>
     </div>
   </section>
@@ -507,17 +593,17 @@ footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var
       <div class="sec-head">
         <div class="eyebrow">Consequence ledger</div>
         <h2>What each power does over time</h2>
-        <p class="lede">This table is the design target for milestones 4 and 5. Each row becomes an entry in the disaster and tech data files.</p>
+        <p class="lede">The design target for milestones 4 to 6. Each row becomes an entry in the power and tech data files.</p>
       </div>
       <div class="tablewrap">
         <table>
           <thead><tr><th>Power</th><th>Same season</th><th>Within a generation</th><th>In their memory</th></tr></thead>
           <tbody>
-            <tr><td>Rain</td><td>Harvests rise</td><td>Population boom, new villages founded</td><td class="myth">Rain festivals for "the Giver"</td></tr>
-            <tr><td>Drought</td><td>Famine, villages empty inland</td><td>Irrigation, wells and granaries</td><td class="myth">Water rites; the sky is cruel</td></tr>
-            <tr><td>Storm surge</td><td>Coastal villages drowned</td><td>Stilt houses, levees, a move uphill</td><td class="myth">Flood myth and a chosen bloodline</td></tr>
-            <tr><td>Earthquake</td><td>Buildings collapse</td><td>Better masonry, lighter roofs</td><td class="myth">Fear of the ground; earth cults</td></tr>
-            <tr><td>Eruption</td><td>Towns burned, a year without summer</td><td>Black soil, obsidian tools</td><td class="myth">The mountain becomes a god</td></tr>
+            <tr><td>Rain</td><td>Harvests rise</td><td>Population boom, forests for canoe timber</td><td class="myth">Rain festivals for "the Giver"</td></tr>
+            <tr><td>East wind</td><td>Boats drift east, some get lost</td><td>Sails, and accidental sightings of the Far Shore</td><td class="myth">"The sky's breath points the way"</td></tr>
+            <tr><td>Drought</td><td>Famine, villages empty inland</td><td>Irrigation, fishing, a push to settle new islands</td><td class="myth">Water rites; the sky is cruel</td></tr>
+            <tr><td>Storm</td><td>Boats sunk, coast flooded</td><td>Outriggers, stilt houses, a move uphill</td><td class="myth">Fear of the sea; flood myths</td></tr>
+            <tr><td>Calm</td><td>Safe crossings, clear nights</td><td>Star counting, then navigation</td><td class="myth">"The sky rests, and so do we"</td></tr>
           </tbody>
         </table>
       </div>
@@ -531,19 +617,17 @@ footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var
         <h2>Living Atlas</h2>
       </div>
       <p class="manifesto">The world looks like a hand-tinted survey map that has started to breathe. Weather is <em>ink wash</em> drifting over the paper, and people are the <em>only warm light</em> on it.</p>
-
       <div class="grid3">
-        <div class="pillar"><h3>Readable from orbit</h3><p>Contour bands and hillshade make height obvious at a glance. You can tell fertile lowland from barren rock without opening an overlay.</p></div>
-        <div class="pillar"><h3>Weather is translucent</h3><p>Clouds are soft, semi-transparent washes with a cast shadow. They never hide the land completely, so you always see what your storm is doing.</p></div>
-        <div class="pillar ember"><h3>People are light</h3><p>Villages are the only warm color on the map. When they thrive they glow; when they die the light goes out and leaves a ring.</p></div>
+        <div class="pillar"><h3>Readable from orbit</h3><p>Contour bands, hillshade and sea depth make the island ladder obvious. You can see the shallow reef to Kelp Isle and the deep water before the Far Shore.</p></div>
+        <div class="pillar"><h3>Detail grows as you zoom</h3><p>Lights become roofs and fields, then trees and walking people. Clouds thin out as you go below them, so the ground is always readable.</p></div>
+        <div class="pillar ember"><h3>People are light</h3><p>Villages, figures and boats carry the warm colors. Named people get an ember ring so they stand out from the crowd.</p></div>
       </div>
-
       <div class="palette">
         <div>
-          <div class="eyebrow" style="margin-bottom:12px">Land palette · by elevation</div>
+          <div class="eyebrow" style="margin-bottom:12px">Land and sea palette · by elevation</div>
           <div class="swatches">
-            <div class="sw"><i style="background:#122a4a"></i><b>Abyss</b><span>#122A4A</span></div>
-            <div class="sw"><i style="background:#34708c"></i><b>Shoal</b><span>#34708C</span></div>
+            <div class="sw"><i style="background:#0f2440"></i><b>Abyss</b><span>#0F2440</span></div>
+            <div class="sw"><i style="background:#56aaaa"></i><b>Reef</b><span>#56AAAA</span></div>
             <div class="sw"><i style="background:#d6c496"></i><b>Strand</b><span>#D6C496</span></div>
             <div class="sw"><i style="background:#88a85c"></i><b>Meadow</b><span>#88A85C</span></div>
             <div class="sw"><i style="background:#407048"></i><b>Grove</b><span>#407048</span></div>
@@ -563,21 +647,12 @@ footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var
         </div>
       </div>
 
-      <div class="eyebrow" style="margin-bottom:14px">Four moods · same island, same seed</div>
+      <div class="eyebrow" style="margin-bottom:14px">Four moods · same archipelago, same seed</div>
       <div class="moods">
-        <div class="mood"><figure><canvas data-mode="rain" aria-label="The island in a wet age"></canvas><figcaption><b>Age of Plenty</b><span>Saturated greens, light clouds, every village lit.</span></figcaption></figure></div>
-        <div class="mood"><figure><canvas data-mode="drought" aria-label="The island in drought"></canvas><figcaption><b>The Long Dry</b><span>Ochre land, a lower sea, inland lights dimming.</span></figcaption></figure></div>
-        <div class="mood"><figure><canvas data-mode="storm" aria-label="The island under a storm surge"></canvas><figcaption><b>The Deluge</b><span>Slate clouds and rain, a higher sea, drowned coastal rings.</span></figcaption></figure></div>
-        <div class="mood"><figure><canvas data-mode="erupt" aria-label="The island during an eruption"></canvas><figcaption><b>Ashfall</b><span>A red crater, an ash plume on the wind, burned towns.</span></figcaption></figure></div>
-      </div>
-
-      <div class="zooms">
-        <div class="eyebrow" style="margin-bottom:14px">Three zoom levels</div>
-        <div class="grid3">
-          <div class="zoom"><span class="lvl">Orbit · whole island</span><h3>The map</h3><p>Where you spend most of the game. Strategy and weather.</p><ul><li>Contour relief and biome color</li><li>Cloud washes and storm tracks</li><li>Villages as points of light</li></ul></div>
-          <div class="zoom"><span class="lvl">Province · one valley</span><h3>The diorama</h3><p>Zoom in to see what your choices built.</p><ul><li>Fields as stitched color patches</li><li>Roofs as tiny inked glyphs</li><li>Levees, terraces, ruins appear</li></ul></div>
-          <div class="zoom"><span class="lvl">Hearth · one village</span><h3>The vignette</h3><p>Short story moments, triggered by big events.</p><ul><li>Painted panel, like a book plate</li><li>Named leaders and prophets</li><li>One line of their voice</li></ul></div>
-        </div>
+        <div class="mood"><figure><canvas data-mode="rain" aria-label="The archipelago in a wet age"></canvas><figcaption><b>Age of Plenty</b><span>Saturated greens, light cloud, every village lit.</span></figcaption></figure></div>
+        <div class="mood"><figure><canvas data-mode="drought" aria-label="The archipelago in drought"></canvas><figcaption><b>The Long Dry</b><span>Ochre land, a lower sea, wider reefs, inland lights dimming.</span></figcaption></figure></div>
+        <div class="mood"><figure><canvas data-mode="storm" aria-label="The archipelago under a storm"></canvas><figcaption><b>The Deluge</b><span>Slate cloud and rain over the channels.</span></figcaption></figure></div>
+        <div class="mood"><figure><canvas data-mode="ash" aria-label="The archipelago during an eruption"></canvas><figcaption><b>Ashfall</b><span>Hearth's peak wakes. An ash plume drifts toward the Far Shore.</span></figcaption></figure></div>
       </div>
 
       <div style="margin-top:56px">
@@ -598,24 +673,15 @@ footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var
         <div>
           <div class="eyebrow" style="margin-bottom:12px">The chronicle · sample</div>
           <div class="scroll">
-            <div class="entry"><span class="when">Y 188 · Spring</span><div><p>The rains came early to the Vell valley. The granaries could not hold it all.</p></div></div>
-            <div class="entry"><span class="when">Y 203 · Autumn</span><div><p>The sea rose in one night and took Aldmouth. Those who lived climbed to the hills and did not come back down.</p></div></div>
-            <div class="entry"><span class="when">Y 211 · Winter</span><div><p>The elders of Highfold built a shrine facing the sky.</p><p class="voice">"It gives, and it takes. We will be ready for both."</p></div></div>
+            <div class="entry"><span class="when">Y 214 · Spring</span><div><p>Teva bound six logs with kelp rope and crossed the reef to Kelp Isle. He came back with more fish than Aldmouth could dry.</p></div></div>
+            <div class="entry"><span class="when">Y 402 · Autumn</span><div><p>A squall took four rafts on the reef. Ilu began hollowing a log instead.</p></div></div>
+            <div class="entry"><span class="when">Y 760 · Summer</span><div><p>The Long Breath sailed east with nine aboard, following the birds.</p><p class="voice">"The sky gave us the east wind three seasons running. It wants us to go." Kai, navigator</p></div></div>
           </div>
         </div>
         <div style="display:grid; gap:20px">
-          <div>
-            <div class="eyebrow" style="margin-bottom:8px">Type</div>
-            <p class="muted">An engraved serif for place names, chronicle text and headings, so the world reads like a carved record. A clean sans for the interface, and a monospace for dates and numbers.</p>
-          </div>
-          <div>
-            <div class="eyebrow" style="margin-bottom:8px">Sound</div>
-            <p class="muted">Low drones for the sky that change with the weather. Small wooden and bell sounds for villages. Disasters arrive with silence first, then the sound.</p>
-          </div>
-          <div>
-            <div class="eyebrow" style="margin-bottom:8px">Motion</div>
-            <p class="muted">The land never animates on its own. Only weather moves, and lights flicker. Change on the ground happens over seasons, so it feels earned.</p>
-          </div>
+          <div><div class="eyebrow" style="margin-bottom:8px">Type</div><p class="muted">An engraved serif for place names, chronicle text and headings, so the world reads like a carved record. A clean sans for the interface, and a monospace for dates and numbers.</p></div>
+          <div><div class="eyebrow" style="margin-bottom:8px">Sound</div><p class="muted">Low drones for the sky that change with the weather. Surf that grows louder as you zoom to the coast. Voices and tools at village zoom. Disasters arrive with silence first.</p></div>
+          <div><div class="eyebrow" style="margin-bottom:8px">Motion</div><p class="muted">The land never animates on its own. Weather drifts, boats sail, people walk. Change on the ground happens over seasons, so it feels earned.</p></div>
         </div>
       </div>
     </div>
@@ -624,23 +690,24 @@ footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var
   <section class="block" id="next">
     <div class="wrap next">
       <div>
-        <div class="eyebrow">First build</div>
+        <div class="eyebrow">When you approve this concept</div>
         <h2 style="margin:14px 0 20px">Milestones 0 and 1 first</h2>
         <ol>
           <li>Scaffold the TypeScript, Vite and PixiJS project in this repo.</li>
-          <li>Port the generator on this page into <code>sim/terrain.ts</code> with tests.</li>
+          <li>Port the archipelago generator on this page into <code>sim/terrain.ts</code> with tests that check the island ladder.</li>
+          <li>Build the camera with chunked zoom from the whole sea to one village.</li>
           <li>Build the tick worker, time controls and seed replay.</li>
-          <li>Write the relief shader so the real game matches the moods above.</li>
-          <li>Show ten seeds side by side and tune until every one is a place.</li>
+          <li>Generate ten seeds side by side and tune until each one passes.</li>
         </ol>
       </div>
       <div class="codecard">
         <div class="cap">Planned repo layout</div>
 <pre class="tree"><b>jackathon/</b>
-├─ <b>src/sim/</b>       tick, terrain, climate, society
-├─ <b>src/render/</b>    pixi stage, shaders, particles
-├─ <b>src/ui/</b>        powers, overlays, chronicle
-├─ <b>data/</b>          disasters, techs, beliefs (JSON)
+├─ <b>src/sim/</b>       tick, terrain, climate, villages,
+│                agents, voyages
+├─ <b>src/render/</b>    map, detail chunks, crowd, boats
+├─ <b>src/ui/</b>        powers, zoom, inspector, chronicle
+├─ <b>data/</b>          techs, powers, beliefs (JSON)
 ├─ <b>tests/</b>         system tests, golden runs
 └─ <b>docs/</b>          this concept</pre>
       </div>
@@ -648,16 +715,15 @@ footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var
   </section>
 </main>
 
-<footer>
-  <div class="wrap">Firmament concept · draft 1 · November 2026</div>
-</footer>
+<footer><div class="wrap">Firmament concept · draft 2 · November 2026</div></footer>
 
 <script>
 (function () {
   "use strict";
-  var SEED = 4127, GW = 320, GH = 180, CW = 128, CH = 72;
+  var S = 4127, WX = 16, WY = 9, SEA = 0.5, KM = 8;
   var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  /* ---------- noise ---------- */
   function hash(x, y, s) {
     var h = (x * 374761393 + y * 668265263 + s * 1442695041) | 0;
     h = Math.imul(h ^ (h >>> 13), 1274126177);
@@ -678,294 +744,826 @@ footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
   function sstep(a, b, x) { var t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); }
   function mix(c1, c2, t) { return [c1[0] + (c2[0] - c1[0]) * t, c1[1] + (c2[1] - c1[1]) * t, c1[2] + (c2[2] - c1[2]) * t]; }
+  function rgba(c, a) { return "rgba(" + (c[0] | 0) + "," + (c[1] | 0) + "," + (c[2] | 0) + "," + a + ")"; }
 
-  /* ---------- world ---------- */
-  var H = new Float32Array(GW * GH), M = new Float32Array(GW * GH);
-  var vx = 0, vy = 0, vmax = -1;
-  for (var y = 0; y < GH; y++) for (var x = 0; x < GW; x++) {
-    var nx = x / GW, ny = y / GH;
-    var e = fbm(nx * 4.2, ny * 2.4, SEED, 6);
-    var dx = (nx - 0.5) * 2, dy = (ny - 0.5) * 2;
-    var d2 = dx * dx * 0.85 + dy * dy * 1.15;
-    e = e * 1.15 + 0.1 - d2 * 0.5;
-    var i = y * GW + x;
-    H[i] = e;
-    M[i] = clamp((fbm(nx * 3 + 11, ny * 1.8 + 7, SEED + 500, 4) - 0.3) / 0.4, 0, 1);
-    if (e > vmax) { vmax = e; vx = x; vy = y; }
+  /* ---------- archipelago ---------- */
+  var ISLES = [
+    { id: "hearth", name: "Hearth", cx: 4.8, cy: 4.7, rx: 2.9, ry: 2.2, amp: 0.62, sh: 1.8 },
+    { id: "kelp", name: "Kelp Isle", cx: 8.3, cy: 2.5, rx: 1.05, ry: 0.85, amp: 0.5, sh: 2.0 },
+    { id: "thorn", name: "Thornholm", cx: 8.2, cy: 7.1, rx: 1.2, ry: 0.95, amp: 0.56, sh: 2.0 },
+    { id: "gull", name: "Gull Rock", cx: 1.9, cy: 1.35, rx: 0.85, ry: 0.72, amp: 0.62, sh: 2.0 },
+    { id: "far", name: "The Far Shore", cx: 13.9, cy: 4.4, rx: 1.95, ry: 3.1, amp: 0.66, sh: 1.35 }
+  ];
+  var ISLE = {}; ISLES.forEach(function (i) { ISLE[i.id] = i; });
+  ISLE.hearth.info = { crossing: "Two rivers, a mountain spine and the oldest villages. About 27 km across.", needs: "Start here" };
+  ISLE.kelp.info = { crossing: "About 6 km over a shallow reef. Rich fishing grounds.", needs: "Log raft" };
+  ISLE.thorn.info = { crossing: "About 10 km across an open channel. Good timber.", needs: "Dugout canoe" };
+  ISLE.gull.info = { crossing: "About 8 km. Cliffs with one landing beach and a lookout over the sea.", needs: "Canoe and a calm sea" };
+  ISLE.far.info = { crossing: "About 45 km of deep ocean, out of sight of Hearth. Larger than Hearth, with obsidian and fresh forest.", needs: "Outrigger, sail and star navigation" };
+
+  function islandBase(x, y) {
+    var wx = x + (fbm(x * 0.32 + 3, y * 0.32, S + 11, 3) - 0.5) * 1.1;
+    var wy = y + (fbm(x * 0.32, y * 0.32 + 9, S + 12, 3) - 0.5) * 1.1;
+    var land = 0, shelf = 0;
+    for (var k = 0; k < ISLES.length; k++) {
+      var I = ISLES[k], dx = (wx - I.cx) / I.rx, dy = (wy - I.cy) / I.ry, d = Math.sqrt(dx * dx + dy * dy);
+      var s = sstep(0, 1, 1 - d) * I.amp; if (s > land) land = s;
+      var sh = sstep(0, 1, 1 - d / I.sh); if (sh > shelf) shelf = sh;
+    }
+    return 0.17 + land + shelf * 0.13;
   }
-  var SEA = 0.5;
+  function detailN(x, y, oct) { return (fbm(x * 0.6, y * 0.6, S, oct) - 0.5) * 0.42; }
+  function heightAt(x, y, oct) { return islandBase(x, y) + detailN(x, y, oct || 6); }
+  function moistAt(x, y) { return clamp((fbm(x * 0.45 + 30, y * 0.45 + 4, S + 500, 3) - 0.3) / 0.4, 0, 1); }
+
+  var VOL = (function () {
+    var best = -1, bx = 0, by = 0;
+    for (var y = 3; y < 6.4; y += 0.08) for (var x = 2.5; x < 7; x += 0.08) { var h = heightAt(x, y, 5); if (h > best) { best = h; bx = x; by = y; } }
+    return { x: bx, y: by };
+  })();
+
   var MODES = {
-    calm:    { sea: 0.50, cloud: { th: 0.60, col: [250, 250, 252], a: 0.82, sp: 0.020 } },
-    rain:    { sea: 0.50, cloud: { th: 0.52, col: [218, 226, 234], a: 0.78, sp: 0.028 } },
-    storm:   { sea: 0.535, cloud: { th: 0.44, col: [78, 92, 114], a: 0.86, sp: 0.045 } },
-    drought: { sea: 0.47, cloud: { th: 0.76, col: [255, 244, 228], a: 0.45, sp: 0.012 } },
-    erupt:   { sea: 0.50, cloud: { th: 0.64, col: [128, 118, 112], a: 0.82, sp: 0.022 } }
+    calm: { sea: 0.5, cloud: { th: 0.6, col: [250, 250, 252], a: 0.8, sp: 0.05 } },
+    rain: { sea: 0.5, cloud: { th: 0.5, col: [218, 226, 234], a: 0.78, sp: 0.07 } },
+    wind: { sea: 0.5, cloud: { th: 0.6, col: [246, 248, 252], a: 0.7, sp: 0.35 } },
+    storm: { sea: 0.512, cloud: { th: 0.43, col: [78, 92, 114], a: 0.86, sp: 0.12 } },
+    drought: { sea: 0.486, cloud: { th: 0.77, col: [255, 244, 228], a: 0.45, sp: 0.03 } },
+    ash: { sea: 0.5, cloud: { th: 0.66, col: [128, 118, 112], a: 0.8, sp: 0.05 } }
   };
   var P = {
-    abyss: [18, 42, 74], shoal: [52, 112, 140], strand: [214, 196, 150], meadow: [136, 168, 92],
-    grove: [64, 112, 72], upland: [150, 140, 98], scree: [132, 124, 118], cap: [236, 238, 240],
-    dry: [198, 160, 98], ash: [92, 88, 86], lush: [96, 150, 74], foam: [205, 225, 232]
+    abyss: [15, 36, 64], shoal: [44, 104, 136], reef: [86, 170, 170], foam: [205, 228, 232],
+    strand: [214, 196, 150], meadow: [136, 168, 92], grove: [64, 112, 72], upland: [150, 140, 98],
+    scree: [132, 124, 118], cap: [236, 238, 240], dry: [198, 160, 98], ash: [92, 88, 86], lush: [96, 150, 74]
   };
 
-  var terrainCache = {};
-  function terrain(mode) {
-    if (terrainCache[mode]) return terrainCache[mode];
-    var cfg = MODES[mode], sea = cfg.sea;
-    var cv = document.createElement("canvas"); cv.width = GW; cv.height = GH;
-    var cx = cv.getContext("2d"), img = cx.createImageData(GW, GH), D = img.data;
-    for (var y = 0; y < GH; y++) for (var x = 0; x < GW; x++) {
-      var i = y * GW + x, h = H[i], m = M[i], el = h - sea, c;
-      var hl = H[y * GW + Math.max(0, x - 1)], hr = H[y * GW + Math.min(GW - 1, x + 1)];
-      var hu = H[Math.max(0, y - 1) * GW + x], hd = H[Math.min(GH - 1, y + 1) * GW + x];
+  function renderRegion(x0, y0, ww, wh, pw, ph, mode, wantTrees) {
+    var sx = ww / pw, sy = wh / ph, gw = pw + 2, gh = ph + 2;
+    var oct = clamp(Math.round(6 + Math.log2(Math.max(1, 1 / (sx * 60)))), 6, 11);
+    var C = 8, cw = Math.ceil(gw / C) + 2, ch = Math.ceil(gh / C) + 2, i, j;
+    var B = new Float32Array(cw * ch), MO = new Float32Array(cw * ch);
+    for (j = 0; j < ch; j++) for (i = 0; i < cw; i++) {
+      var qx = x0 + (i * C - 0.5) * sx, qy = y0 + (j * C - 0.5) * sy;
+      B[j * cw + i] = islandBase(qx, qy); MO[j * cw + i] = moistAt(qx, qy);
+    }
+    var G = new Float32Array(gw * gh), MM = new Float32Array(gw * gh);
+    for (j = 0; j < gh; j++) {
+      var fj = j / C, j0 = Math.floor(fj), tj = fj - j0;
+      for (i = 0; i < gw; i++) {
+        var fi = i / C, i0 = Math.floor(fi), ti = fi - i0, a = j0 * cw + i0;
+        var w00 = (1 - ti) * (1 - tj), w10 = ti * (1 - tj), w01 = (1 - ti) * tj, w11 = ti * tj;
+        var b = B[a] * w00 + B[a + 1] * w10 + B[a + cw] * w01 + B[a + cw + 1] * w11;
+        MM[j * gw + i] = MO[a] * w00 + MO[a + 1] * w10 + MO[a + cw] * w01 + MO[a + cw + 1] * w11;
+        G[j * gw + i] = b + detailN(x0 + (i - 0.5) * sx, y0 + (j - 0.5) * sy, oct);
+      }
+    }
+    var cv = document.createElement("canvas"); cv.width = pw; cv.height = ph;
+    var cx = cv.getContext("2d"), img = cx.createImageData(pw, ph), D = img.data;
+    var sea = MODES[mode].sea;
+    for (j = 1; j <= ph; j++) for (i = 1; i <= pw; i++) {
+      var k = j * gw + i, h = G[k], el = h - sea, m = MM[k], c;
+      var hl = G[k - 1], hr = G[k + 1], hu = G[k - gw], hd = G[k + gw];
       if (el < 0) {
-        c = mix(P.shoal, P.abyss, Math.min(1, -el / 0.2));
-        if (hr - sea >= 0 || hl - sea >= 0 || hu - sea >= 0 || hd - sea >= 0) c = mix(c, P.foam, 0.45);
-        if (mode === "drought") c = mix(c, [70, 120, 130], 0.2);
+        var dep = -el;
+        c = dep < 0.04 ? mix(P.reef, P.shoal, dep / 0.04) : mix(P.shoal, P.abyss, Math.pow(clamp((dep - 0.04) / 0.26, 0, 1), 0.8));
+        if (hl >= sea || hr >= sea || hu >= sea || hd >= sea) c = mix(c, P.foam, 0.5);
+        if (mode === "drought") c = mix(c, [70, 126, 134], 0.15);
       } else {
-        if (el < 0.018) c = P.strand;
-        else if (el < 0.16) c = mix(P.meadow, P.grove, clamp((m - 0.35) * 2.2, 0, 1));
-        else if (el < 0.25) c = mix(P.grove, P.upland, sstep(0.16, 0.22, el));
-        else if (el < 0.33) c = P.scree;
+        if (el < 0.015) c = P.strand;
+        else if (el < 0.15) c = mix(P.meadow, P.grove, clamp((m - 0.35) * 2.2, 0, 1));
+        else if (el < 0.24) c = mix(P.grove, P.upland, sstep(0.15, 0.21, el));
+        else if (el < 0.36) c = P.scree;
         else c = P.cap;
-        if (mode === "drought" && el < 0.25) c = mix(c, P.dry, 0.55 + (1 - m) * 0.25);
-        if (mode === "rain" && el > 0.018 && el < 0.2) c = mix(c, P.lush, 0.3);
-        var shade = clamp(1 + ((hl - hr) + (hu - hd)) * 7, 0.62, 1.32);
+        if (mode === "drought" && el < 0.24) c = mix(c, P.dry, 0.55 + (1 - m) * 0.25);
+        if (mode === "rain" && el > 0.015 && el < 0.2) c = mix(c, P.lush, 0.3);
+        var shade = clamp(1 + ((hl - hr) / sx + (hu - hd) / sy) * 0.11, 0.6, 1.35);
         c = [c[0] * shade, c[1] * shade, c[2] * shade];
         var band = Math.floor(h * 30);
-        if (band !== Math.floor(hr * 30) || band !== Math.floor(hd * 30)) c = [c[0] * 0.84, c[1] * 0.84, c[2] * 0.84];
+        if (band !== Math.floor(hr * 30) || band !== Math.floor(hd * 30)) c = [c[0] * 0.85, c[1] * 0.85, c[2] * 0.85];
       }
-      if (mode === "storm") c = mix([c[0] * 0.8, c[1] * 0.8, c[2] * 0.8], [36, 54, 82], 0.18);
-      if (mode === "erupt") {
-        c = mix(c, P.ash, 0.32);
-        var dv = Math.hypot(x - vx, (y - vy) * 1.2);
-        if (dv < 26) c = mix(c, [40, 34, 32], (1 - dv / 26) * 0.6);
-        if (dv < 7) c = mix(c, [240, 110, 50], 1 - dv / 7);
+      if (mode === "storm") c = mix([c[0] * 0.82, c[1] * 0.82, c[2] * 0.82], [36, 54, 82], 0.16);
+      if (mode === "ash") {
+        var wxp = x0 + (i - 0.5) * sx, wyp = y0 + (j - 0.5) * sy, dv = Math.hypot(wxp - VOL.x, wyp - VOL.y);
+        c = mix(c, P.ash, 0.28);
+        if (dv < 0.9) c = mix(c, [40, 34, 32], (1 - dv / 0.9) * 0.6);
+        if (dv < 0.22) c = mix(c, [240, 110, 50], 1 - dv / 0.22);
       }
-      var o = i * 4; D[o] = c[0]; D[o + 1] = c[1]; D[o + 2] = c[2]; D[o + 3] = 255;
+      var o = ((j - 1) * pw + (i - 1)) * 4;
+      D[o] = c[0]; D[o + 1] = c[1]; D[o + 2] = c[2]; D[o + 3] = 255;
     }
     cx.putImageData(img, 0, 0);
-    terrainCache[mode] = cv;
-    return cv;
+    var trees = [];
+    if (wantTrees) {
+      var cs = 0.02, gx0 = Math.floor(x0 / cs), gx1 = Math.ceil((x0 + ww) / cs), gy0 = Math.floor(y0 / cs), gy1 = Math.ceil((y0 + wh) / cs);
+      for (var gy = gy0; gy < gy1 && trees.length < 9000; gy++) for (var gx = gx0; gx < gx1; gx++) {
+        var tx = (gx + hash(gx, gy, 71)) * cs, ty = (gy + hash(gx, gy, 73)) * cs;
+        var pi = Math.floor((tx - x0) / sx) + 1, pj = Math.floor((ty - y0) / sy) + 1;
+        if (pi < 1 || pj < 1 || pi > pw || pj > ph) continue;
+        var kk = pj * gw + pi, tel = G[kk] - sea, tm = MM[kk];
+        if (tel < 0.02 || tel > 0.24) continue;
+        if (hash(gx, gy, 72) > (tm - 0.3) * 1.15) continue;
+        if (nearTown(tx, ty)) continue;
+        trees.push({ x: tx, y: ty, s: 0.7 + hash(gx, gy, 74) * 0.6, pine: tel > 0.15 });
+      }
+    }
+    return { canvas: cv, x0: x0, y0: y0, ww: ww, wh: wh, sx: sx, mode: mode, trees: trees };
   }
 
-  /* ---------- settlements ---------- */
-  var towns = [];
-  (function () {
-    var cands = [];
-    for (var y = 4; y < GH - 4; y += 2) for (var x = 4; x < GW - 4; x += 2) {
-      var i = y * GW + x, el = H[i] - SEA;
-      if (el > 0.006 && el < 0.12) cands.push({ x: x, y: y, s: M[i] * (1 - Math.abs(el - 0.045) / 0.08) + hash(x, y, 9) * 0.15, h: H[i], m: M[i] });
+  /* ---------- villages ---------- */
+  function findSpot(x, y, lo, hi) {
+    for (var r = 0; r < 1.8; r += 0.025) {
+      var steps = Math.max(1, Math.round(r * 50));
+      for (var s = 0; s < steps; s++) {
+        var a = s / steps * 6.2832 + r * 3, px = x + Math.cos(a) * r, py = y + Math.sin(a) * r;
+        var el = heightAt(px, py, 6) - SEA;
+        if (el > lo && el < hi) return [px, py];
+      }
     }
-    cands.sort(function (a, b) { return b.s - a.s; });
-    for (var k = 0; k < cands.length && towns.length < 16; k++) {
-      var c = cands[k], ok = true;
-      for (var j = 0; j < towns.length; j++) if (Math.hypot(towns[j].x - c.x, towns[j].y - c.y) < 24) { ok = false; break; }
-      if (ok) { c.pop = Math.round(300 + Math.max(0, c.s) * 2400); c.ph = hash(c.x, c.y, 3) * 6.28; towns.push(c); }
+    return [x, y];
+  }
+  var TOWNS = [
+    { id: "aldmouth", name: "Aldmouth", isle: "hearth", at: [6.9, 4.4], pop: [620, 1450, 2600, 3400], fish: 0.35, port: true, role: "Port" },
+    { id: "vell", name: "Vell", isle: "hearth", at: [4.4, 6.2], pop: [900, 1900, 2800, 3100], fish: 0.15, port: true, role: "River valley" },
+    { id: "highfold", name: "Highfold", isle: "hearth", at: [4.0, 3.6], pop: [300, 700, 1100, 1300], fish: 0, upland: true, role: "Uplands, shrine" },
+    { id: "saltmere", name: "Saltmere", isle: "hearth", at: [6.3, 6.4], pop: [450, 1100, 1700, 2000], fish: 0.3, port: true, role: "South coast" },
+    { id: "westreach", name: "Westreach", isle: "hearth", at: [2.4, 4.9], pop: [380, 800, 1300, 1500], fish: 0.3, port: true, role: "West coast" },
+    { id: "kelpcamp", name: "Kelp Camp", isle: "kelp", at: [8.0, 2.8], pop: [60, 420, 700, 900], fish: 0.6, port: true, role: "Fishing village" },
+    { id: "thorn", name: "Thornholm", isle: "thorn", at: [7.8, 6.9], pop: [0, 380, 800, 1000], fish: 0.4, port: true, role: "Timber and fish" },
+    { id: "gull", name: "Gull Watch", isle: "gull", at: [2.2, 1.7], pop: [0, 90, 160, 200], fish: 0.5, port: true, role: "Lookout" },
+    { id: "newlight", name: "Newlight", isle: "far", at: [12.3, 4.5], pop: [0, 0, 0, 520], fish: 0.4, port: true, role: "First colony" }
+  ];
+  var TOWN = {};
+  TOWNS.forEach(function (t, ti) {
+    TOWN[t.id] = t;
+    var p = t.upland ? findSpot(t.at[0], t.at[1], 0.13, 0.22) : findSpot(t.at[0], t.at[1], 0.012, 0.07);
+    t.x = p[0]; t.y = p[1];
+    var q = findSpot(t.x, t.y, -0.06, -0.012); t.px = q[0]; t.py = q[1];
+    t.rot = hash(ti, 1, 5) * 3.1;
+    var maxPop = Math.max.apply(null, t.pop), R = 0.05 + 0.17 * Math.sqrt(maxPop / 3400);
+    t.R = R; t.houses = []; t.fields = [];
+    for (var k = 0; k < 140 && t.houses.length < 90; k++) {
+      var ang = k * 2.39996 + hash(k, ti, 6), rr = R * Math.sqrt((k + 0.5) / 90) * (0.85 + hash(k, ti, 7) * 0.3);
+      var hx = t.x + Math.cos(ang) * rr, hy = t.y + Math.sin(ang) * rr * 0.85, hel = heightAt(hx, hy, 7) - SEA;
+      if (hel > 0.005 && hel < 0.27) t.houses.push({ x: hx, y: hy, d: rr, v: hash(k, ti, 8) });
     }
-  })();
-  function townState(t, mode) {
-    if (mode === "storm" && t.h < MODES.storm.sea + 0.004) return { k: "lost", pop: 0 };
-    if (mode === "erupt" && Math.hypot(t.x - vx, t.y - vy) < 48) return { k: "burned", pop: 0 };
-    if (mode === "drought") return t.m < 0.5 ? { k: "dim", pop: Math.round(t.pop * 0.35) } : { k: "live", pop: Math.round(t.pop * 0.8) };
-    if (mode === "rain") return { k: "live", pop: Math.round(t.pop * 1.3) };
-    if (mode === "storm") return { k: "live", pop: Math.round(t.pop * 0.9) };
-    return { k: "live", pop: t.pop };
+    t.houses.sort(function (a, b) { return a.d - b.d; });
+    for (k = 0; k < 70 && t.fields.length < 40; k++) {
+      var fa = k * 2.39996 + hash(k, ti, 9) * 0.8, fr = R * (1.05 + hash(k, ti, 10) * 0.9);
+      var fx = t.x + Math.cos(fa) * fr, fy = t.y + Math.sin(fa) * fr * 0.85, fel = heightAt(fx, fy, 7) - SEA;
+      if (fel > 0.006 && fel < 0.17) t.fields.push({ x: fx, y: fy, w: 0.045 + hash(k, ti, 11) * 0.035, h: 0.026 + hash(k, ti, 12) * 0.016, r: t.rot + (hash(k, ti, 13) - 0.5) * 0.5, c: Math.floor(hash(k, ti, 14) * 3), d: fr });
+    }
+    t.fields.sort(function (a, b) { return a.d - b.d; });
+  });
+  function nearTown(x, y) {
+    for (var i = 0; i < TOWNS.length; i++) { var t = TOWNS[i]; if (Math.hypot(x - t.x, y - t.y) < t.R * 2.1) return true; }
+    return false;
   }
 
-  /* ---------- clouds ---------- */
-  function makeCloudLayer() {
-    var a = document.createElement("canvas"), b = document.createElement("canvas");
+  /* ---------- eras ---------- */
+  var ERAS = [
+    { year: 210, name: "Age of Rafts", known: ["hearth", "kelp"], tech: "Log rafts",
+      line: "Rafts cross the reef to Kelp Isle in summer. Nobody has seen another island." },
+    { year: 480, name: "Age of Canoes", known: ["hearth", "kelp", "thorn", "gull"], tech: "Dugout canoes",
+      line: "Dugout canoes link four islands. Thornholm trades timber and fish with Saltmere." },
+    { year: 760, name: "The Voyage", known: ["hearth", "kelp", "thorn", "gull"], tech: "Outriggers, first sail",
+      line: "The Long Breath sails east, following seabirds toward land nobody has seen." },
+    { year: 900, name: "Two Shores", known: ["hearth", "kelp", "thorn", "gull", "far"], tech: "Sail and star navigation",
+      line: "Newlight has 520 people. Three ships a season cross to the Far Shore and back." }
+  ];
+  var ROUTES = [
+    [{ a: "aldmouth", b: "kelpcamp", n: 1, boat: "raft" }],
+    [{ a: "aldmouth", b: "kelpcamp", n: 2, boat: "canoe" }, { a: "saltmere", b: "thorn", n: 2, boat: "canoe" }, { a: "westreach", b: "gull", n: 1, boat: "canoe", via: [[2.0, 3.2]] }],
+    [{ a: "aldmouth", b: "kelpcamp", n: 2, boat: "outrigger" }, { a: "saltmere", b: "thorn", n: 2, boat: "outrigger" }, { a: "westreach", b: "gull", n: 1, boat: "outrigger", via: [[2.0, 3.2]] }, { a: "aldmouth", b: "newlight", n: 1, boat: "sail", voyage: true }],
+    [{ a: "aldmouth", b: "kelpcamp", n: 2, boat: "outrigger" }, { a: "saltmere", b: "thorn", n: 2, boat: "outrigger" }, { a: "westreach", b: "gull", n: 1, boat: "outrigger", via: [[2.0, 3.2]] }, { a: "aldmouth", b: "newlight", n: 3, boat: "sail" }, { a: "kelpcamp", b: "newlight", n: 1, boat: "sail" }]
+  ];
+  var NAMED = [
+    [
+      { name: "Teva", role: "Raft-binder", town: "aldmouth", age: 41, spot: "port", thought: "Lost two rafts on the reef this year. Thinks a hollowed log would ride higher.", belief: "The sky tests the careless.", why: "First person to cross to Kelp Isle and come back." },
+      { name: "Orin", role: "Elder", town: "vell", age: 67, spot: "center", thought: "Ties a knot in his cord for every wet season. The cord says the rains are getting kinder.", belief: "The sky keeps accounts.", why: "Holds the village memory of the flood of year 151." },
+      { name: "Mara", role: "Fisher", town: "kelpcamp", age: 24, spot: "port", thought: "Wants to stay on Kelp Isle through the winter instead of rafting home.", belief: "The sea is kinder than the sky.", why: "If she stays, she founds the first village off Hearth." }
+    ],
+    [
+      { name: "Ilu", role: "Canoe carver", town: "aldmouth", age: 38, spot: "port", thought: "Her dugouts reach Thornholm in half a day. She wants a wider hull for storms.", belief: "The sky sends squalls to teach us.", why: "Invented the dugout after the raft losses of year 402." },
+      { name: "Senn", role: "Headman", town: "thorn", age: 52, spot: "center", thought: "Thornholm has more fish than people. He sends dried fish to Saltmere for rope.", belief: "Every island owes the sky a share.", why: "Started the first trade route." },
+      { name: "Avo", role: "Sky priest", town: "highfold", age: 59, spot: "center", thought: "Teaches that the wind is the sky's breath, and can be asked for.", belief: "The sky listens.", why: "His teaching decides how villages read your powers." }
+    ],
+    [
+      { name: "Kai", role: "Navigator", town: "aldmouth", age: 46, spot: "port", thought: "Counted the same stars for thirty calm nights. Seabirds fly east at dusk, so there is land to the east.", belief: "The sky draws maps.", why: "Star navigation only unlocks through someone like Kai." },
+      { name: "Rua", role: "Sail-weaver", town: "saltmere", age: 29, spot: "center", thought: "Woven leaf mats hold the wind better than bark. She needs a season of steady wind to prove it.", belief: "The wind is a gift, if you catch it.", why: "Sail technology depends on her experiments." },
+      { name: "Lene", role: "Captain of the Long Breath", boat: true, age: 33, thought: "Nine days out. Water for four more. The birds are back.", belief: "The sky will not leave us at sea.", why: "Leads the first voyage east. If she returns, everyone learns the Far Shore exists." }
+    ],
+    [
+      { name: "Pia", role: "Founder", town: "newlight", age: 36, spot: "port", thought: "Granddaughter of Lene. Newlight has its own sky priest now, and its own ideas.", belief: "Two shores, one sky.", why: "Leads the colony. She may break away from Hearth." },
+      { name: "Haro", role: "Trade master", town: "aldmouth", age: 50, spot: "port", thought: "Obsidian from the Far Shore, grain from Vell. Three ships a season.", belief: "The sky favours those who share.", why: "Trade keeps the two shores together, or splits them." },
+      { name: "Avi", role: "Navigator", town: "kelpcamp", age: 27, spot: "port", thought: "Charting a shorter route from Kelp Isle. Kai's star cords are her teacher.", belief: "The sky draws maps.", why: "Inherited Kai's knowledge through the chronicle." }
+    ]
+  ];
+  var FOOD = [0.62, 0.78, 0.71, 0.84], AWE = [0.4, 0.55, 0.68, 0.6];
+
+  var state = { era: 2, mode: "calm", sel: null };
+  function popOf(t) { return t.pop[state.era]; }
+
+  function routePts(r) {
+    var A = TOWN[r.a], Bt = TOWN[r.b], pts = [[A.px, A.py]];
+    (r.via || []).forEach(function (v) { pts.push(v); });
+    pts.push([Bt.px, Bt.py]);
+    var L = [0];
+    for (var i = 1; i < pts.length; i++) L.push(L[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+    return { pts: pts, L: L, len: L[L.length - 1] };
+  }
+  function along(R, d) {
+    d = clamp(d, 0, R.len);
+    for (var i = 1; i < R.pts.length; i++) if (d <= R.L[i] || i === R.pts.length - 1) {
+      var seg = R.L[i] - R.L[i - 1] || 1, t = (d - R.L[i - 1]) / seg, a = R.pts[i - 1], b = R.pts[i];
+      return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, Math.atan2(b[1] - a[1], b[0] - a[0])];
+    }
+    return [R.pts[0][0], R.pts[0][1], 0];
+  }
+  var routeCache = {};
+  function routesFor(era) {
+    if (!routeCache[era]) routeCache[era] = ROUTES[era].map(function (r) { var o = routePts(r); o.r = r; return o; });
+    return routeCache[era];
+  }
+  function speedMul() { return state.mode === "wind" ? 1.9 : state.mode === "storm" ? 0.55 : 1; }
+  var fishCache = {};
+  function fishingSpots(tw, ti) {
+    var key = tw.id;
+    if (fishCache[key]) return fishCache[key];
+    var out = [], ox = tw.px - tw.x, oy = tw.py - tw.y;
+    for (var k = 0; k < 4; k++) {
+      var ang = Math.atan2(oy, ox) + (hash(k, ti, 20) - 0.5) * 1.6, dist = 0.05 + hash(k, ti, 21) * 0.16;
+      var bx = tw.px + Math.cos(ang) * dist, by = tw.py + Math.sin(ang) * dist;
+      if (heightAt(bx, by, 5) - SEA < -0.008) out.push({ x: bx, y: by, a: ang, k: k });
+    }
+    fishCache[key] = out;
+    return out;
+  }
+  function boatsNow(t) {
+    var out = [], rs = routesFor(state.era), sm = speedMul();
+    rs.forEach(function (R, ri) {
+      var r = R.r;
+      for (var k = 0; k < r.n; k++) {
+        var spd = (r.boat === "sail" ? 0.16 : r.boat === "raft" ? 0.05 : 0.09) * sm, p, dir;
+        if (r.voyage) {
+          var u = (t * 0.01 * sm + 0.1) % 1; p = (0.32 + 0.33 * (u < 0.5 ? u * 2 : 2 - u * 2)) * R.len; dir = 1;
+        } else {
+          var cyc = (t * spd / R.len + k / r.n + ri * 0.17) % 2; dir = cyc < 1 ? 1 : -1; p = (cyc < 1 ? cyc : 2 - cyc) * R.len;
+        }
+        var q = along(R, p), wob = Math.sin(t * 1.7 + k * 2 + ri) * 0.012;
+        out.push({ x: q[0] - Math.sin(q[2]) * wob, y: q[1] + Math.cos(q[2]) * wob, a: dir > 0 ? q[2] : q[2] + Math.PI, type: r.boat, voyage: !!r.voyage });
+      }
+    });
+    TOWNS.forEach(function (tw, ti) {
+      if (!popOf(tw) || !tw.port) return;
+      var n = Math.min(4, Math.round(popOf(tw) * tw.fish / 250)), spots = fishingSpots(tw, ti);
+      for (var k = 0; k < Math.min(n, spots.length); k++) {
+        var sp = spots[k];
+        out.push({ x: sp.x + Math.sin(t * 0.3 + k) * 0.01, y: sp.y + Math.cos(t * 0.27 + k) * 0.008, a: sp.a + Math.sin(t * 0.5 + k) * 0.4, type: state.era === 0 ? "raft" : "canoe" });
+      }
+    });
+    return out;
+  }
+
+  /* crowd sampler: people drawn from the village record */
+  var crowdCache = {};
+  function crowd(t) {
+    var key = t.id + "-" + state.era;
+    if (crowdCache[key]) return crowdCache[key];
+    var pop = popOf(t), n = clamp(Math.round(pop / 45), pop ? 4 : 0, 44), ppl = [];
+    var nh = Math.min(t.houses.length, Math.max(1, Math.round(pop / 40))), nf = Math.min(t.fields.length, Math.round(pop / 70));
+    var cols = [[217, 160, 102], [180, 199, 217], [201, 143, 122], [232, 220, 192], [143, 179, 160], [190, 150, 200]];
+    var seed = Math.round(t.x * 100);
+    for (var k = 0; k < n; k++) {
+      var h = t.houses[Math.floor(hash(k, 3, seed) * nh)] || { x: t.x, y: t.y }, job, to;
+      var r = hash(k, 4, seed);
+      if (t.port && r < t.fish) { job = "fisher"; to = [t.x + (t.px - t.x) * 0.85, t.y + (t.py - t.y) * 0.85]; }
+      else if (nf && r < t.fish + 0.5) { var f = t.fields[Math.floor(hash(k, 5, seed) * nf)]; job = "farmer"; to = [f.x, f.y]; }
+      else { var h2 = t.houses[Math.floor(hash(k, 6, seed) * nh)] || h; job = "home"; to = [h2.x, h2.y]; }
+      ppl.push({ hx: h.x, hy: h.y, tx: to[0], ty: to[1], job: job, ph: hash(k, 7, seed) * 10, sp: 0.06 + hash(k, 8, seed) * 0.05, col: cols[Math.floor(hash(k, 9, seed) * cols.length)] });
+    }
+    crowdCache[key] = ppl;
+    return ppl;
+  }
+  function personPos(p, t) {
+    var cyc = (t * p.sp + p.ph) % 4, u;
+    if (cyc < 1) u = 0; else if (cyc < 2) u = cyc - 1; else if (cyc < 3) u = 1; else u = 4 - cyc;
+    u = u * u * (3 - 2 * u);
+    var wx = p.hx + (p.tx - p.hx) * u, wy = p.hy + (p.ty - p.hy) * u;
+    var idle = (cyc < 1 || (cyc >= 2 && cyc < 3));
+    if (idle) { wx += Math.sin(t * 0.8 + p.ph) * 0.004; wy += Math.cos(t * 0.6 + p.ph) * 0.003; }
+    return [wx, wy, !idle];
+  }
+  function namedPos(a, t, boats) {
+    if (a.boat) { for (var i = 0; i < boats.length; i++) if (boats[i].voyage) return [boats[i].x, boats[i].y]; return null; }
+    var tw = TOWN[a.town];
+    if (a.spot === "port") return [tw.x + (tw.px - tw.x) * 0.8 + Math.sin(t * 0.4) * 0.006, tw.y + (tw.py - tw.y) * 0.8];
+    return [tw.x + 0.012 + Math.sin(t * 0.3) * 0.004, tw.y - 0.01];
+  }
+
+  /* ---------- map canvas ---------- */
+  var cv = document.getElementById("map"), ctx = cv.getContext("2d");
+  var W = 800, H = 450, DPR = 1, dirty = true;
+  var cam = { x: WX / 2, y: WY / 2, z: 1 }, fly = null, lastMove = 0, detail = null;
+  var baseCache = {};
+  function base(mode) { if (!baseCache[mode]) baseCache[mode] = renderRegion(0, 0, WX, WY, 1280, 720, mode, false); return baseCache[mode]; }
+  function sc() { return (W / WX) * cam.z; }
+  function toScreen(x, y) { var s = sc(); return [(x - cam.x) * s + W / 2, (y - cam.y) * s + H / 2]; }
+  function toWorld(px, py) { var s = sc(); return [cam.x + (px - W / 2) / s, cam.y + (py - H / 2) / s]; }
+  function clampCam() {
+    cam.z = clamp(cam.z, 1, 30);
+    var s = sc(), hw = W / 2 / s, hh = H / 2 / s;
+    cam.x = clamp(cam.x, hw, WX - hw); cam.y = clamp(cam.y, hh, WY - hh);
+  }
+  function resize() {
+    var r = cv.getBoundingClientRect(); DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = Math.max(280, r.width); H = W * 9 / 16;
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    clampCam(); lastMove = performance.now(); dirty = true;
+  }
+  function needDetail() {
+    if (cam.z < 1.45) return false;
+    var s = sc(), vw = W / s, vh = H / s, l = cam.x - vw / 2, tp = cam.y - vh / 2;
+    if (!detail || detail.mode !== state.mode) return true;
+    if (l < detail.x0 || tp < detail.y0 || l + vw > detail.x0 + detail.ww || tp + vh > detail.y0 + detail.wh) return true;
+    return detail.sx > (vw / (W * Math.min(DPR, 1.5))) * 1.6;
+  }
+  function buildDetail() {
+    var s = sc(), vw = W / s * 1.3, vh = H / s * 1.3;
+    var x0 = clamp(cam.x - vw / 2, -0.5, WX + 0.5 - vw), y0 = clamp(cam.y - vh / 2, -0.5, WY + 0.5 - vh);
+    var q = Math.min(Math.min(DPR, 1.5), Math.sqrt(1.0e6 / (W * 1.3 * H * 1.3)));
+    detail = renderRegion(x0, y0, vw, vh, Math.round(W * 1.3 * q), Math.round(H * 1.3 * q), state.mode, vw < 4.5);
+    dirty = true;
+  }
+
+  var clouds = (function () {
+    var a = document.createElement("canvas"), b = document.createElement("canvas"), CW = 128, CH = 72;
     a.width = b.width = CW; a.height = b.height = CH;
-    return { cloud: a, shadow: b, ci: a.getContext("2d").createImageData(CW, CH), si: b.getContext("2d").createImageData(CW, CH) };
-  }
-  function computeClouds(L, mode, t) {
-    var cfg = MODES[mode].cloud, C = L.ci.data, S = L.si.data;
-    var vxn = vx / GW, vyn = vy / GH;
+    return { c: a, s: b, ci: a.getContext("2d").createImageData(CW, CH), si: b.getContext("2d").createImageData(CW, CH), CW: CW, CH: CH };
+  })();
+  function drawClouds(g, l, tp, vw, vh, w, h, mode, t, alphaMul) {
+    if (alphaMul <= 0.01) return;
+    var cfg = MODES[mode].cloud, C = clouds.ci.data, Sd = clouds.si.data, CW = clouds.CW, CH = clouds.CH;
     for (var y = 0; y < CH; y++) for (var x = 0; x < CW; x++) {
-      var nx = x / CW, ny = y / CH;
-      var c = fbm(nx * 5 + t * cfg.sp * 10, ny * 2.8, SEED + 900, 4) * 0.65 + fbm(nx * 3 - t * cfg.sp * 6 + 20, ny * 1.7 + 5, SEED + 950, 3) * 0.35;
-      var col = cfg.col, plume = 0;
-      if (mode === "erupt") {
-        var ddx = nx - vxn;
-        if (ddx > -0.02) {
-          var dd = Math.max(0, ddx), w = 0.025 + dd * 0.32, off = ny - vyn + dd * 0.18;
-          plume = Math.exp(-(off * off) / (w * w)) * Math.exp(-dd * 1.8);
-          c += plume * 0.5;
-          col = mix(col, [58, 50, 48], clamp(plume * 1.5, 0, 1));
+      var wx = l + (x + 0.5) / CW * vw, wy = tp + (y + 0.5) / CH * vh;
+      var c = fbm(wx * 0.32 - t * cfg.sp, wy * 0.5, S + 900, 4) * 0.65 + fbm(wx * 0.2 - t * cfg.sp * 0.6 + 20, wy * 0.32 + 5, S + 950, 3) * 0.35;
+      var col = cfg.col;
+      if (mode === "ash") {
+        var dd = wx - VOL.x;
+        if (dd > -0.2) {
+          var ex = Math.max(0, dd), wdt = 0.18 + ex * 0.22, off = wy - VOL.y + ex * 0.08;
+          var pl = Math.exp(-(off * off) / (wdt * wdt)) * Math.exp(-ex * 0.18);
+          c += pl * 0.5; col = mix(col, [58, 50, 48], clamp(pl * 1.5, 0, 1));
         }
       }
-      var al = sstep(cfg.th, cfg.th + 0.16, c) * cfg.a;
-      var lit = 0.86 + sstep(cfg.th, cfg.th + 0.3, c) * 0.14;
-      var o = (y * CW + x) * 4;
+      var al = sstep(cfg.th, cfg.th + 0.16, c) * cfg.a * alphaMul, lit = 0.86 + sstep(cfg.th, cfg.th + 0.3, c) * 0.14, o = (y * CW + x) * 4;
       C[o] = col[0] * lit; C[o + 1] = col[1] * lit; C[o + 2] = col[2] * lit; C[o + 3] = al * 255;
-      S[o] = 6; S[o + 1] = 12; S[o + 2] = 22; S[o + 3] = al * 255 * 0.42;
+      Sd[o] = 6; Sd[o + 1] = 12; Sd[o + 2] = 22; Sd[o + 3] = al * 255 * 0.4;
     }
-    L.cloud.getContext("2d").putImageData(L.ci, 0, 0);
-    L.shadow.getContext("2d").putImageData(L.si, 0, 0);
+    clouds.c.getContext("2d").putImageData(clouds.ci, 0, 0);
+    clouds.s.getContext("2d").putImageData(clouds.si, 0, 0);
+    g.imageSmoothingEnabled = true;
+    g.drawImage(clouds.s, w * 0.012, h * 0.022, w, h);
+    g.drawImage(clouds.c, 0, 0, w, h);
   }
 
-  /* ---------- scene ---------- */
-  function Scene(canvas, mode, live) {
-    this.cv = canvas; this.ctx = canvas.getContext("2d"); this.mode = mode; this.live = live;
-    this.L = makeCloudLayer(); this.t = 3; this.drops = []; this.flash = 0; this.bolt = null; this.nextBolt = 1.5;
-    this.resize();
+  var drops = [];
+  function seedDrops(w, h) {
+    drops = [];
+    var n = state.mode === "storm" ? 200 : state.mode === "rain" ? 120 : 0;
+    for (var i = 0; i < n; i++) drops.push({ x: hash(i, 1, 77) * w * 1.2, y: hash(i, 2, 77) * h, l: 8 + hash(i, 3, 77) * 14, s: 0.7 + hash(i, 4, 77) * 0.6 });
   }
-  Scene.prototype.resize = function () {
-    var r = this.cv.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
-    var w = Math.max(200, Math.round(r.width * dpr)), h = Math.round(w * 9 / 16);
-    if (this.cv.width !== w) { this.cv.width = w; this.cv.height = h; }
-    this.w = w; this.h = h;
-    this.seedDrops();
-  };
-  Scene.prototype.seedDrops = function () {
-    this.drops = [];
-    var n = this.mode === "storm" ? 220 : this.mode === "rain" ? 130 : 0;
-    for (var i = 0; i < n; i++) this.drops.push({ x: hash(i, 1, 77) * this.w * 1.2, y: hash(i, 2, 77) * this.h, l: 8 + hash(i, 3, 77) * 14, s: 0.7 + hash(i, 4, 77) * 0.6 });
-  };
-  Scene.prototype.draw = function (dt) {
-    var ctx = this.ctx, w = this.w, h = this.h, mode = this.mode, sx = w / GW, sy = h / GH, k = w / 900;
-    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
-    ctx.globalCompositeOperation = "source-over";
-    ctx.drawImage(terrain(mode), 0, 0, w, h);
 
-    if (mode === "erupt") {
-      var gx = (vx + 0.5) * sx, gy = (vy + 0.5) * sy, pr = 60 * k * (1 + 0.08 * Math.sin(this.t * 3));
-      var g = ctx.createRadialGradient(gx, gy, 0, gx, gy, pr);
-      g.addColorStop(0, "rgba(255,150,70,0.9)"); g.addColorStop(0.35, "rgba(224,90,50,0.45)"); g.addColorStop(1, "rgba(224,90,50,0)");
-      ctx.globalCompositeOperation = "lighter"; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(gx, gy, pr, 0, 6.29); ctx.fill();
-      ctx.globalCompositeOperation = "source-over";
+  function drawBoat(g, b, s) {
+    var p = toScreen(b.x, b.y), size = Math.max(b.type === "sail" ? 5 : 3.2, (b.type === "sail" ? 0.06 : 0.035) * s);
+    g.save(); g.translate(p[0], p[1]); g.rotate(b.a);
+    g.strokeStyle = "rgba(220,235,245,0.35)"; g.lineWidth = Math.max(1, size * 0.15);
+    g.beginPath(); g.moveTo(-size * 0.9, 0); g.lineTo(-size * 2.6, 0); g.stroke();
+    if (b.type === "raft") {
+      g.fillStyle = "#a8865a"; g.fillRect(-size * 0.5, -size * 0.4, size, size * 0.8);
+      g.strokeStyle = "#6e5434"; g.lineWidth = Math.max(0.6, size * 0.08);
+      for (var i = -1; i <= 1; i++) { g.beginPath(); g.moveTo(-size * 0.5, i * size * 0.26); g.lineTo(size * 0.5, i * size * 0.26); g.stroke(); }
+    } else {
+      g.fillStyle = "#8a6440";
+      g.beginPath(); g.moveTo(size, 0); g.quadraticCurveTo(0, size * 0.32, -size * 0.9, 0); g.quadraticCurveTo(0, -size * 0.32, size, 0); g.fill();
+      if (b.type === "outrigger" || b.type === "sail") {
+        g.strokeStyle = "#8a6440"; g.lineWidth = Math.max(0.7, size * 0.07);
+        g.beginPath(); g.moveTo(-size * 0.2, 0); g.lineTo(-size * 0.2, size * 0.55); g.moveTo(size * 0.3, 0); g.lineTo(size * 0.3, size * 0.55); g.moveTo(-size * 0.5, size * 0.55); g.lineTo(size * 0.6, size * 0.55); g.stroke();
+      }
+      if (b.type === "sail") {
+        g.fillStyle = "rgba(246,236,214,0.95)";
+        g.beginPath(); g.moveTo(size * 0.35, 0); g.lineTo(-size * 0.5, -size * 0.95); g.lineTo(-size * 0.55, size * 0.05); g.closePath(); g.fill();
+      }
+    }
+    g.restore();
+  }
+  function drawFigure(g, x, y, u, col, walking, t, ph) {
+    var bob = walking ? Math.abs(Math.sin(t * 6 + ph)) * u * 0.35 : 0;
+    g.fillStyle = "rgba(10,14,20,0.35)"; g.beginPath(); g.ellipse(x, y + u * 0.1, u * 0.8, u * 0.3, 0, 0, 6.29); g.fill();
+    g.fillStyle = rgba(col, 1); g.fillRect(x - u * 0.45, y - u * 2.1 - bob, u * 0.9, u * 1.9);
+    g.fillStyle = "#e8c9a0"; g.beginPath(); g.arc(x, y - u * 2.6 - bob, u * 0.55, 0, 6.29); g.fill();
+  }
+  function label(g, text, x, y, font, color) {
+    g.font = font; g.textAlign = "center"; g.textBaseline = "middle";
+    g.lineWidth = 3; g.strokeStyle = "rgba(8,13,22,0.75)"; g.strokeText(text, x, y);
+    g.fillStyle = color; g.fillText(text, x, y);
+  }
+
+  var pickables = [];
+  function frame(t, dt) {
+    var g = ctx; g.setTransform(DPR, 0, 0, DPR, 0, 0);
+    var s = sc(), vw = W / s, vh = H / s, l = cam.x - vw / 2, tp = cam.y - vh / 2, z = cam.z;
+    pickables = [];
+    g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high";
+    var B = base(state.mode);
+    g.fillStyle = "#0f2440"; g.fillRect(0, 0, W, H);
+    g.drawImage(B.canvas, (l / WX) * B.canvas.width, (tp / WY) * B.canvas.height, (vw / WX) * B.canvas.width, (vh / WY) * B.canvas.height, 0, 0, W, H);
+    if (detail && detail.mode === state.mode && z > 1.3) {
+      var d0 = toScreen(detail.x0, detail.y0);
+      g.drawImage(detail.canvas, d0[0], d0[1], detail.ww * s, detail.wh * s);
+    }
+    function inView(x, y, m) { return x > l - m && x < l + vw + m && y > tp - m && y < tp + vh + m; }
+    var era = ERAS[state.era];
+
+    if (z < 3.5) {
+      var ra = clamp(1 - (z - 2) / 1.5, 0, 1);
+      g.setLineDash([4, 5]); g.lineWidth = 1.2;
+      era.known.forEach(function (id) {
+        var I = ISLE[id], c = toScreen(I.cx, I.cy);
+        g.strokeStyle = "rgba(242,178,87," + 0.45 * ra + ")";
+        g.beginPath(); g.ellipse(c[0], c[1], I.rx * 0.95 * s, I.ry * 0.95 * s, 0, 0, 6.29); g.stroke();
+      });
+      g.setLineDash([]);
+    }
+    var rs = routesFor(state.era), boats = boatsNow(t);
+    if (z < 9) {
+      var routeA = clamp(1 - (z - 5) / 4, 0.15, 1);
+      rs.forEach(function (R) {
+        g.setLineDash(R.r.voyage ? [2, 6] : [3, 5]); g.lineWidth = R.r.voyage ? 1.6 : 1.1;
+        g.strokeStyle = R.r.voyage ? "rgba(242,178,87," + 0.85 * routeA + ")" : "rgba(230,240,248," + 0.45 * routeA + ")";
+        g.beginPath();
+        R.pts.forEach(function (p, i) { var q = toScreen(p[0], p[1]); if (i) g.lineTo(q[0], q[1]); else g.moveTo(q[0], q[1]); });
+        g.stroke();
+      });
+      g.setLineDash([]);
     }
 
-    for (var i = 0; i < towns.length; i++) {
-      var tn = towns[i], st = townState(tn, mode), px = (tn.x + 0.5) * sx, py = (tn.y + 0.5) * sy;
-      if (st.k === "lost") {
-        ctx.strokeStyle = "rgba(225,235,245,0.65)"; ctx.lineWidth = 1.4 * k + 0.4;
-        ctx.beginPath(); ctx.arc(px, py, 6 * k + 2, 0, 6.29); ctx.stroke();
-        continue;
-      }
-      if (st.k === "burned") {
-        ctx.strokeStyle = "rgba(224,114,90,0.85)"; ctx.lineWidth = 1.6 * k + 0.4; var q = 4 * k + 2;
-        ctx.beginPath(); ctx.moveTo(px - q, py - q); ctx.lineTo(px + q, py + q); ctx.moveTo(px + q, py - q); ctx.lineTo(px - q, py + q); ctx.stroke();
-        continue;
-      }
-      var fl = 0.85 + 0.15 * Math.sin(this.t * 2.3 + tn.ph);
-      var base = (4 + Math.sqrt(st.pop) / 7) * k + 2;
-      var r = base * (st.k === "dim" ? 0.7 : 1) * fl * 2.4;
-      var a = st.k === "dim" ? 0.5 : 0.85;
-      var gg = ctx.createRadialGradient(px, py, 0, px, py, r);
-      gg.addColorStop(0, "rgba(255,214,140," + a + ")"); gg.addColorStop(0.3, "rgba(242,178,87," + a * 0.55 + ")"); gg.addColorStop(1, "rgba(242,178,87,0)");
-      ctx.globalCompositeOperation = "lighter"; ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(px, py, r, 0, 6.29); ctx.fill();
-      ctx.globalCompositeOperation = "source-over";
-      ctx.fillStyle = st.k === "dim" ? "rgba(255,226,170,0.55)" : "rgba(255,240,205,1)";
-      ctx.beginPath(); ctx.arc(px, py, 1.3 * k + 1, 0, 6.29); ctx.fill();
-    }
-
-    if (this.live || !this.cloudsDone) { computeClouds(this.L, mode, this.t); this.cloudsDone = true; }
-    ctx.globalAlpha = 1;
-    ctx.drawImage(this.L.shadow, w * 0.012, h * 0.022, w, h);
-    ctx.drawImage(this.L.cloud, 0, 0, w, h);
-
-    if (mode === "storm") { ctx.fillStyle = "rgba(10,18,32,0.22)"; ctx.fillRect(0, 0, w, h); }
-    if (mode === "drought") { ctx.fillStyle = "rgba(242,178,87,0.07)"; ctx.fillRect(0, 0, w, h); }
-
-    if (this.drops.length) {
-      ctx.strokeStyle = mode === "storm" ? "rgba(190,215,235,0.42)" : "rgba(210,230,245,0.35)";
-      ctx.lineWidth = Math.max(1, k); ctx.beginPath();
-      var spd = (mode === "storm" ? 900 : 600) * k;
-      for (var j = 0; j < this.drops.length; j++) {
-        var dr = this.drops[j];
-        if (this.live) { dr.y += dr.s * spd * dt; dr.x -= dr.s * spd * dt * 0.25; if (dr.y > h) { dr.y -= h + 20; dr.x = Math.random() * w * 1.2; } if (dr.x < -20) dr.x += w * 1.2; }
-        ctx.moveTo(dr.x, dr.y); ctx.lineTo(dr.x - dr.l * k * 0.25, dr.y + dr.l * k);
-      }
-      ctx.stroke();
-    }
-
-    if (mode === "storm" && this.live) {
-      this.nextBolt -= dt;
-      if (this.nextBolt <= 0) {
-        this.nextBolt = 1.8 + Math.random() * 2.5; this.flash = 1;
-        var bx = w * (0.2 + Math.random() * 0.6), by = 0, pts = [[bx, by]];
-        var end = h * (0.35 + Math.random() * 0.4);
-        while (by < end) { by += h * 0.05; bx += (Math.random() - 0.5) * w * 0.04; pts.push([bx, by]); }
-        this.bolt = pts;
-      }
-      if (this.flash > 0.02) {
-        ctx.fillStyle = "rgba(215,232,255," + this.flash * 0.28 + ")"; ctx.fillRect(0, 0, w, h);
-        if (this.bolt) {
-          ctx.strokeStyle = "rgba(240,248,255," + this.flash + ")"; ctx.lineWidth = 2 * k + 0.6; ctx.beginPath();
-          ctx.moveTo(this.bolt[0][0], this.bolt[0][1]);
-          for (var b = 1; b < this.bolt.length; b++) ctx.lineTo(this.bolt[b][0], this.bolt[b][1]);
-          ctx.stroke();
+    if (z > 2.3) {
+      var fa = clamp((z - 2.3) / 1.2, 0, 1), crops = [[198, 176, 96], [132, 158, 74], [156, 124, 82]];
+      TOWNS.forEach(function (tw) {
+        var pop = popOf(tw); if (!pop || !inView(tw.x, tw.y, 0.6)) return;
+        var nf = Math.min(tw.fields.length, Math.round(pop / 70));
+        for (var i = 0; i < nf; i++) {
+          var f = tw.fields[i], p = toScreen(f.x, f.y);
+          g.save(); g.translate(p[0], p[1]); g.rotate(f.r);
+          g.fillStyle = rgba(crops[f.c], 0.85 * fa); g.fillRect(-f.w * s / 2, -f.h * s / 2, f.w * s, f.h * s);
+          if (z > 6) {
+            g.strokeStyle = "rgba(60,50,30," + 0.25 * fa + ")"; g.lineWidth = 1;
+            for (var r = 1; r < 5; r++) { var yy = -f.h * s / 2 + r * f.h * s / 5; g.beginPath(); g.moveTo(-f.w * s / 2, yy); g.lineTo(f.w * s / 2, yy); g.stroke(); }
+          }
+          g.restore();
         }
-        this.flash *= Math.pow(0.02, dt);
+      });
+    }
+    if (detail && detail.trees.length && z > 4) {
+      var ta = clamp((z - 4) / 1.5, 0, 1), tsz = 0.011 * s;
+      for (var i = 0; i < detail.trees.length; i++) {
+        var tr = detail.trees[i]; if (!inView(tr.x, tr.y, 0.05)) continue;
+        var p = toScreen(tr.x, tr.y), r = tsz * tr.s;
+        g.fillStyle = "rgba(10,20,14," + 0.3 * ta + ")"; g.beginPath(); g.arc(p[0] + r * 0.35, p[1] + r * 0.4, r, 0, 6.29); g.fill();
+        g.fillStyle = tr.pine ? "rgba(46,84,62," + ta + ")" : "rgba(58,104,62," + ta + ")";
+        g.beginPath(); g.arc(p[0], p[1], r, 0, 6.29); g.fill();
+        g.fillStyle = "rgba(120,170,100," + 0.35 * ta + ")"; g.beginPath(); g.arc(p[0] - r * 0.3, p[1] - r * 0.3, r * 0.45, 0, 6.29); g.fill();
       }
     }
-
-    var vg = ctx.createRadialGradient(w / 2, h / 2, h * 0.35, w / 2, h / 2, w * 0.62);
-    vg.addColorStop(0, "rgba(8,13,22,0)"); vg.addColorStop(1, "rgba(8,13,22,0.55)");
-    ctx.fillStyle = vg; ctx.fillRect(0, 0, w, h);
-  };
-  Scene.prototype.setMode = function (m) { this.mode = m; this.cloudsDone = false; this.flash = 0; this.nextBolt = 0.6; this.seedDrops(); };
-
-  /* ---------- hero ---------- */
-  var hero = new Scene(document.getElementById("hero"), "calm", !reduce);
-  var LINES = {
-    calm: "A quiet age. Harvests are steady and the villages grow slowly along the rivers.",
-    rain: "The rains came early. Granaries overflow and the valley villages swell.",
-    storm: "The sea rose in one night. The coastal villages are gone; survivors climb to the hills.",
-    drought: "The third dry year. Inland wells fail and families walk toward the coast.",
-    erupt: "The mountain woke. Ash covers the north, but the soil will be black and rich for a century."
-  };
-  var SEASONS = ["Spring", "Summer", "Autumn", "Winter"], year = 212, season = 0, seasonClock = 0;
-  var hudDate = document.getElementById("hud-date"), hudTowns = document.getElementById("hud-towns"), hudPop = document.getElementById("hud-pop");
-  var chronYr = document.querySelector("#chron .yr"), chronText = document.getElementById("chron-text");
-  function updateHud() {
-    var alive = 0, pop = 0;
-    for (var i = 0; i < towns.length; i++) { var s = townState(towns[i], hero.mode); if (s.pop > 0) { alive++; pop += s.pop; } }
-    hudTowns.textContent = alive; hudPop.textContent = pop.toLocaleString("en-US");
-    hudDate.textContent = "Year " + year + " · " + SEASONS[season];
-    chronYr.textContent = "Y" + year;
-  }
-  function setPower(m) {
-    hero.setMode(m);
-    chronText.textContent = LINES[m];
-    var btns = document.querySelectorAll(".power");
-    for (var i = 0; i < btns.length; i++) btns[i].setAttribute("aria-pressed", btns[i].getAttribute("data-mode") === m ? "true" : "false");
-    updateHud();
-    if (reduce) hero.draw(0);
-  }
-  document.querySelectorAll(".power").forEach(function (b) { b.addEventListener("click", function () { setPower(b.getAttribute("data-mode")); }); });
-  chronText.textContent = LINES.calm;
-  updateHud();
-
-  var visible = true, last = 0;
-  if ("IntersectionObserver" in window) new IntersectionObserver(function (es) { visible = es[0].isIntersecting; }).observe(hero.cv);
-  function frame(ts) {
-    var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016; last = ts;
-    if (visible) {
-      hero.t += dt; hero.draw(dt);
-      seasonClock += dt;
-      if (seasonClock > 2.2) { seasonClock = 0; season = (season + 1) % 4; if (season === 0) year++; updateHud(); }
+    boats.forEach(function (b) {
+      if (!inView(b.x, b.y, 0.2)) return;
+      drawBoat(g, b, s);
+      if (b.voyage) { var bp = toScreen(b.x, b.y); pickables.push({ x: bp[0], y: bp[1], r: 16, kind: "voyage" }); }
+    });
+    if (z > 2.3) {
+      var ha = clamp((z - 2.3) / 1.2, 0, 1), hs = Math.max(2.2, 0.014 * s);
+      TOWNS.forEach(function (tw) {
+        var pop = popOf(tw); if (!pop || !inView(tw.x, tw.y, 0.5)) return;
+        var nh = Math.min(tw.houses.length, Math.max(2, Math.round(pop / 40)));
+        for (var i = 0; i < nh; i++) {
+          var hh = tw.houses[i], p = toScreen(hh.x, hh.y), w2 = hs * (0.8 + hh.v * 0.5);
+          g.fillStyle = "rgba(10,14,20," + 0.35 * ha + ")"; g.fillRect(p[0] - w2 / 2 + w2 * 0.25, p[1], w2, w2 * 0.7);
+          g.fillStyle = "rgba(214,196,160," + ha + ")"; g.fillRect(p[0] - w2 / 2, p[1] - w2 * 0.3, w2, w2 * 0.7);
+          g.fillStyle = hh.v > 0.5 ? "rgba(150,84,60," + ha + ")" : "rgba(122,96,70," + ha + ")";
+          g.beginPath(); g.moveTo(p[0] - w2 * 0.62, p[1] - w2 * 0.3); g.lineTo(p[0], p[1] - w2 * 0.85); g.lineTo(p[0] + w2 * 0.62, p[1] - w2 * 0.3); g.closePath(); g.fill();
+        }
+      });
     }
-    requestAnimationFrame(frame);
+    if (z > 4.6) {
+      var u = Math.max(1.4, 0.0058 * s);
+      TOWNS.forEach(function (tw) {
+        if (!popOf(tw) || !inView(tw.x, tw.y, 0.6)) return;
+        crowd(tw).forEach(function (p) { var q = personPos(p, t); if (!inView(q[0], q[1], 0.02)) return; var sp2 = toScreen(q[0], q[1]); drawFigure(g, sp2[0], sp2[1], u, p.col, q[2], t, p.ph); });
+      });
+    }
+    TOWNS.forEach(function (tw) {
+      var pop = popOf(tw); if (!pop || !inView(tw.x, tw.y, 0.5)) return;
+      var p = toScreen(tw.x, tw.y), la = clamp(1 - (z - 2.2) / 2.5, 0, 1);
+      if (la > 0) {
+        var fl = 0.85 + 0.15 * Math.sin(t * 2.3 + tw.x * 7), r = (5 + Math.sqrt(pop) / 4) * (W / 900) * fl * Math.min(z, 2);
+        var gg = g.createRadialGradient(p[0], p[1], 0, p[0], p[1], r);
+        gg.addColorStop(0, "rgba(255,214,140," + 0.9 * la + ")"); gg.addColorStop(0.3, "rgba(242,178,87," + 0.5 * la + ")"); gg.addColorStop(1, "rgba(242,178,87,0)");
+        g.globalCompositeOperation = "lighter"; g.fillStyle = gg; g.beginPath(); g.arc(p[0], p[1], r, 0, 6.29); g.fill();
+        g.globalCompositeOperation = "source-over";
+        g.fillStyle = "rgba(255,240,205," + la + ")"; g.beginPath(); g.arc(p[0], p[1], 1.6, 0, 6.29); g.fill();
+      }
+      pickables.push({ x: p[0], y: p[1], r: Math.max(14, tw.R * s * 0.8), kind: "town", id: tw.id });
+    });
+    NAMED[state.era].forEach(function (a, idx) {
+      var q = namedPos(a, t, boats); if (!q || !inView(q[0], q[1], 0.05)) return;
+      var p = toScreen(q[0], q[1]);
+      if (z > 4.6) {
+        var u2 = Math.max(1.7, 0.0064 * s);
+        if (!a.boat) drawFigure(g, p[0], p[1], u2, [242, 178, 87], false, t, idx);
+        g.strokeStyle = "rgba(242,178,87,0.95)"; g.lineWidth = 1.5;
+        g.beginPath(); g.arc(p[0], p[1] - (a.boat ? 0 : u2 * 1.4), Math.max(7, u2 * 3.6), 0, 6.29); g.stroke();
+        if (z > 7) label(g, a.name + " · " + a.role, p[0], p[1] + Math.max(14, u2 * 4.6), "500 12px Figtree, system-ui, sans-serif", "#f2b257");
+        pickables.unshift({ x: p[0], y: p[1], r: Math.max(14, u2 * 4), kind: "agent", idx: idx });
+      } else if (a.boat) {
+        pickables.unshift({ x: p[0], y: p[1], r: 16, kind: "agent", idx: idx });
+      }
+    });
+
+    drawClouds(g, l, tp, vw, vh, W, H, state.mode, t, clamp(1.5 - z * 0.33, 0, 1));
+    if (state.mode === "wind" && z < 6) {
+      g.strokeStyle = "rgba(235,245,252," + 0.4 * clamp(1.2 - z * 0.2, 0, 1) + ")"; g.lineWidth = 1.2; g.beginPath();
+      for (var wi = 0; wi < 70; wi++) {
+        var wx = ((hash(wi, 1, 31) * WX + t * 0.9 * (0.7 + hash(wi, 3, 31) * 0.6)) % (WX + 1)) - 0.5, wy = hash(wi, 2, 31) * WY;
+        var a1 = toScreen(wx, wy), a2 = toScreen(wx + 0.45, wy - 0.04);
+        g.moveTo(a1[0], a1[1]); g.quadraticCurveTo((a1[0] + a2[0]) / 2, a1[1] - 4, a2[0], a2[1]);
+      }
+      g.stroke();
+    }
+    if (state.mode === "storm") { g.fillStyle = "rgba(10,18,32,0.2)"; g.fillRect(0, 0, W, H); }
+    if (state.mode === "drought") { g.fillStyle = "rgba(242,178,87,0.06)"; g.fillRect(0, 0, W, H); }
+    if (drops.length) {
+      g.strokeStyle = state.mode === "storm" ? "rgba(190,215,235,0.4)" : "rgba(210,230,245,0.32)"; g.lineWidth = 1; g.beginPath();
+      var spd = (state.mode === "storm" ? 800 : 520) * (W / 900);
+      drops.forEach(function (dr) {
+        dr.y += dr.s * spd * dt; dr.x -= dr.s * spd * dt * 0.25;
+        if (dr.y > H) { dr.y -= H + 20; dr.x = Math.random() * W * 1.2; }
+        if (dr.x < -20) dr.x += W * 1.2;
+        g.moveTo(dr.x, dr.y); g.lineTo(dr.x - dr.l * 0.25, dr.y + dr.l);
+      });
+      g.stroke();
+    }
+
+    if (z < 3.4) {
+      var la2 = clamp(1 - (z - 2.4), 0, 1);
+      ISLES.forEach(function (I) {
+        var p = toScreen(I.cx, I.cy - I.ry * 0.72), known = era.known.indexOf(I.id) >= 0;
+        label(g, I.name, p[0], p[1], (I.id === "hearth" || I.id === "far" ? "18px" : "14px") + " Marcellus, Georgia, serif", "rgba(227,232,240," + la2 + ")");
+        var st = I.id === "far" ? (state.era === 3 ? "settled" : state.era === 2 ? "sought, not yet reached" : "unknown to them") : (known ? "" : "unknown to them");
+        if (st) label(g, st, p[0], p[1] + 16, "11px JetBrains Mono, monospace", I.id === "far" && state.era >= 2 ? "rgba(242,178,87," + la2 + ")" : "rgba(141,154,176," + la2 + ")");
+      });
+    }
+    if (z > 1.6 && z < 10) {
+      var tla = clamp((z - 1.6) / 0.6, 0, 1) * clamp((10 - z) / 2, 0, 1);
+      TOWNS.forEach(function (tw) {
+        if (!popOf(tw) || !inView(tw.x, tw.y, 0.3)) return;
+        var p = toScreen(tw.x, tw.y + Math.max(tw.R * 1.15, 0.06));
+        label(g, tw.name.toUpperCase(), p[0], p[1] + 8, "500 11px JetBrains Mono, monospace", "rgba(227,232,240," + tla + ")");
+      });
+    }
+    var vg = g.createRadialGradient(W / 2, H / 2, H * 0.4, W / 2, H / 2, W * 0.66);
+    vg.addColorStop(0, "rgba(8,13,22,0)"); vg.addColorStop(1, "rgba(8,13,22,0.45)");
+    g.fillStyle = vg; g.fillRect(0, 0, W, H);
   }
-  hero.draw(0.016);
-  if (!reduce) requestAnimationFrame(frame);
+
+  /* ---------- UI ---------- */
+  function $(id) { return document.getElementById(id); }
+  var LEVELS = [
+    { max: 2.2, html: "<b>Each village is a light.</b> Brightness is population. This is where you work the weather and watch voyages." },
+    { max: 4.6, html: "<b>Villages become roofs and fields.</b> The number of houses and fields comes straight from each village's record." },
+    { max: 10, html: "<b>People appear.</b> They are drawn from the village's numbers, not stored one by one. Fishers walk to the shore, farmers to the fields." },
+    { max: 99, html: "<b>Named people stand out</b> with an ember ring. They are real agents with goals and memories. Click one." }
+  ];
+  var levelIdx = -1;
+  function updateLevel() {
+    var li = 0; while (cam.z > LEVELS[li].max) li++;
+    if (li === levelIdx) return;
+    levelIdx = li;
+    $("levelnote").innerHTML = LEVELS[li].html;
+    document.querySelectorAll(".rung").forEach(function (r, i) { r.classList.toggle("on", i === li); });
+  }
+  function fmt(n) { return Math.round(n).toLocaleString("en-US"); }
+  function showCard() {
+    var c = $("card"), sel = state.sel, e = ERAS[state.era];
+    if (!sel) {
+      c.innerHTML = '<span class="kind">' + e.name + ' · Year ' + e.year + '</span><h3>' + e.tech + '</h3><p class="sub">' + e.line + '</p>' +
+        '<dl><dt>Villages</dt><dd>' + TOWNS.filter(function (t) { return popOf(t); }).length + '</dd><dt>Known islands</dt><dd>' + e.known.length + ' of 5</dd><dt>Named people</dt><dd>' + NAMED[state.era].length + ' shown in this era</dd></dl>' +
+        '<p class="why">Click a village to see its record, or a person to meet them.</p>';
+      return;
+    }
+    if (sel.kind === "town") {
+      var t = TOWN[sel.id], pop = popOf(t), food = clamp(FOOD[state.era] + (hash(state.era, Math.round(t.x * 9), 2) - 0.5) * 0.3, 0.2, 0.98);
+      var awe = clamp(AWE[state.era] + (hash(state.era, Math.round(t.y * 9), 4) - 0.5) * 0.3, 0.1, 0.95);
+      var fish = Math.round(t.fish * 100), farm = t.fields.length ? Math.min(50, 90 - fish) : 0;
+      c.innerHTML = '<span class="kind">Village · one aggregate record</span><h3>' + t.name + '</h3><p class="sub">' + ISLE[t.isle].name + ' · ' + t.role + '</p>' +
+        '<dl><dt>People</dt><dd>' + fmt(pop) + '</dd><dt>Jobs</dt><dd>' + fish + '% fish · ' + farm + '% farm · ' + (100 - fish - farm) + '% other</dd><dt>Boats</dt><dd>' + (t.port ? e.tech : "None, inland") + '</dd>' +
+        '<dt>Food stores</dt><dd>' + Math.round(food * 100) + '%<div class="bar"><i style="width:' + Math.round(food * 100) + '%"></i></div></dd>' +
+        '<dt>Awe of the sky</dt><dd>' + awe.toFixed(2) + '<div class="bar"><i style="width:' + Math.round(awe * 100) + '%; background: var(--ember)"></i></div></dd></dl>' +
+        '<p class="why"><b>Simulated as numbers.</b> The houses, fields and people you see when you zoom in are drawn from this record.</p>';
+      return;
+    }
+    if (sel.kind === "agent") {
+      var a = NAMED[state.era][sel.idx];
+      c.innerHTML = '<span class="kind person">Named person · individual agent</span><h3>' + a.name + '</h3><p class="sub">' + a.role + ' · ' + (a.boat ? "at sea" : TOWN[a.town].name) + ' · age ' + a.age + '</p>' +
+        '<p class="quote">' + a.thought + '</p><dl><dt>Believes</dt><dd>' + a.belief + '</dd></dl>' +
+        '<p class="why"><b>Why they are simulated one by one:</b> ' + a.why + '</p>';
+      return;
+    }
+    if (sel.kind === "isle") {
+      var I = ISLE[sel.id], known = e.known.indexOf(I.id) >= 0;
+      var stt = I.id === "hearth" ? "Home" : I.id === "far" && state.era === 3 ? "Settled" : known ? "Known" : "Unknown to them";
+      c.innerHTML = '<span class="kind">Island · ' + stt + '</span><h3>' + I.name + '</h3><p class="sub">' + I.info.crossing + '</p><dl><dt>To reach it</dt><dd>' + I.info.needs + '</dd></dl>';
+    }
+  }
+  function updateHud() {
+    var e = ERAS[state.era], pop = 0;
+    TOWNS.forEach(function (t) { pop += popOf(t); });
+    $("hud-date").textContent = "Year " + e.year + " · " + e.name;
+    $("hud-known").textContent = e.known.length; $("hud-pop").textContent = fmt(pop);
+    $("chron-yr").textContent = "Y" + e.year; $("chron-text").textContent = e.line;
+  }
+  function updateScale() {
+    var kmPerPx = KM / sc(), opts = [0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50], best = opts[0];
+    for (var i = 0; i < opts.length; i++) if (opts[i] / kmPerPx <= 130) best = opts[i];
+    $("scale-bar").style.width = Math.round(best / kmPerPx) + "px";
+    $("scale-label").textContent = best < 1 ? Math.round(best * 1000) + " m" : best + " km";
+  }
+  function setEra(i) {
+    state.era = i; state.sel = null;
+    document.querySelectorAll(".chip.era").forEach(function (b) { b.setAttribute("aria-pressed", String(+b.dataset.era === i)); });
+    updateHud(); showCard(); dirty = true;
+  }
+  function setMode(m) {
+    state.mode = m; detail = null; lastMove = performance.now();
+    document.querySelectorAll(".chip.pw").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.mode === m)); });
+    seedDrops(W, H); dirty = true;
+  }
+  function flyTo(x, y, z) {
+    if (reduce) { cam.x = x; cam.y = y; cam.z = z; clampCam(); lastMove = performance.now(); dirty = true; return; }
+    fly = { x0: cam.x, y0: cam.y, z0: cam.z, x1: x, y1: y, z1: z, t: 0 };
+  }
+  function goTo(where) {
+    if (where === "world") flyTo(WX / 2, WY / 2, 1);
+    else if (where === "hearth") flyTo(ISLE.hearth.cx, ISLE.hearth.cy, 2.7);
+    else if (where === "aldmouth") { var a = TOWN.aldmouth; flyTo(a.x, a.y, 7); }
+    else if (where === "person") {
+      var list = NAMED[state.era], a2 = list.filter(function (n) { return !n.boat; })[0];
+      var q = namedPos(a2, T, []); flyTo(q[0], q[1], 16);
+      state.sel = { kind: "agent", idx: list.indexOf(a2) }; showCard();
+    }
+  }
+  document.querySelectorAll(".chip.era").forEach(function (b) { b.addEventListener("click", function () { setEra(+b.dataset.era); }); });
+  document.querySelectorAll(".chip.pw").forEach(function (b) { b.addEventListener("click", function () { setMode(b.dataset.mode); }); });
+  document.querySelectorAll(".chip.go").forEach(function (b) { b.addEventListener("click", function () { goTo(b.dataset.go); }); });
+  document.querySelectorAll(".rung").forEach(function (b) { b.addEventListener("click", function () { flyTo(cam.x, cam.y, +b.dataset.z); }); });
+  function zoomBy(f, px, py) {
+    if (px === undefined) { px = W / 2; py = H / 2; }
+    var before = toWorld(px, py); cam.z = clamp(cam.z * f, 1, 30);
+    var after = toWorld(px, py); cam.x += before[0] - after[0]; cam.y += before[1] - after[1];
+    clampCam(); lastMove = performance.now(); fly = null; dirty = true;
+  }
+  $("zin").addEventListener("click", function () { zoomBy(1.6); });
+  $("zout").addEventListener("click", function () { zoomBy(1 / 1.6); });
+  cv.addEventListener("wheel", function (e) {
+    e.preventDefault();
+    var r = cv.getBoundingClientRect();
+    zoomBy(Math.exp(-e.deltaY * (e.deltaMode === 1 ? 0.05 : 0.0016)), e.clientX - r.left, e.clientY - r.top);
+  }, { passive: false });
+  cv.addEventListener("keydown", function (e) {
+    var step = 60 / sc();
+    if (e.key === "+" || e.key === "=") zoomBy(1.4);
+    else if (e.key === "-") zoomBy(1 / 1.4);
+    else if (e.key === "ArrowLeft") cam.x -= step; else if (e.key === "ArrowRight") cam.x += step;
+    else if (e.key === "ArrowUp") cam.y -= step; else if (e.key === "ArrowDown") cam.y += step;
+    else return;
+    e.preventDefault(); clampCam(); lastMove = performance.now(); dirty = true;
+  });
+  var ptrs = {}, dragStart = null, pinch = null;
+  cv.addEventListener("pointerdown", function (e) {
+    try { cv.setPointerCapture(e.pointerId); } catch (err) {}
+    ptrs[e.pointerId] = [e.clientX, e.clientY]; fly = null;
+    var ids = Object.keys(ptrs);
+    if (ids.length === 1) dragStart = { moved: 0 };
+    if (ids.length === 2) { var a = ptrs[ids[0]], b = ptrs[ids[1]]; pinch = Math.hypot(a[0] - b[0], a[1] - b[1]); dragStart = null; }
+    cv.classList.add("dragging");
+  });
+  cv.addEventListener("pointermove", function (e) {
+    if (!ptrs[e.pointerId]) return;
+    var prev = ptrs[e.pointerId]; ptrs[e.pointerId] = [e.clientX, e.clientY];
+    var ids = Object.keys(ptrs);
+    if (ids.length === 2 && pinch) {
+      var a = ptrs[ids[0]], b = ptrs[ids[1]], d = Math.hypot(a[0] - b[0], a[1] - b[1]), r = cv.getBoundingClientRect();
+      zoomBy(d / pinch, (a[0] + b[0]) / 2 - r.left, (a[1] + b[1]) / 2 - r.top); pinch = d; return;
+    }
+    var s = sc(); cam.x -= (e.clientX - prev[0]) / s; cam.y -= (e.clientY - prev[1]) / s;
+    if (dragStart) dragStart.moved += Math.abs(e.clientX - prev[0]) + Math.abs(e.clientY - prev[1]);
+    clampCam(); lastMove = performance.now(); dirty = true;
+  });
+  function endPtr(e) {
+    if (!ptrs[e.pointerId]) return;
+    delete ptrs[e.pointerId];
+    if (Object.keys(ptrs).length < 2) pinch = null;
+    if (!Object.keys(ptrs).length) {
+      cv.classList.remove("dragging");
+      if (dragStart && dragStart.moved < 6 && e.type === "pointerup") {
+        var r = cv.getBoundingClientRect(); pick(e.clientX - r.left, e.clientY - r.top);
+      }
+      dragStart = null;
+    }
+  }
+  cv.addEventListener("pointerup", endPtr); cv.addEventListener("pointercancel", endPtr);
+  function pick(px, py) {
+    for (var i = 0; i < pickables.length; i++) {
+      var p = pickables[i];
+      if (Math.hypot(p.x - px, p.y - py) <= p.r) {
+        if (p.kind === "town") state.sel = { kind: "town", id: p.id };
+        else if (p.kind === "agent") state.sel = { kind: "agent", idx: p.idx };
+        else if (p.kind === "voyage") {
+          var li = -1; NAMED[state.era].forEach(function (n, k) { if (n.boat) li = k; });
+          state.sel = li >= 0 ? { kind: "agent", idx: li } : null;
+        }
+        showCard(); return;
+      }
+    }
+    var w = toWorld(px, py);
+    for (var k = 0; k < ISLES.length; k++) {
+      var I = ISLES[k], dx = (w[0] - I.cx) / I.rx, dy = (w[1] - I.cy) / I.ry;
+      if (dx * dx + dy * dy < 0.6 && heightAt(w[0], w[1], 5) > SEA) { state.sel = { kind: "isle", id: I.id }; showCard(); return; }
+    }
+    state.sel = null; showCard();
+  }
+
+  /* ---------- loop ---------- */
+  var visible = true, last = 0, T = 0;
+  if ("IntersectionObserver" in window) new IntersectionObserver(function (es) { visible = es[0].isIntersecting; }).observe(cv);
+  function tick(ts) {
+    var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016; last = ts;
+    if (fly) {
+      fly.t = Math.min(1, fly.t + dt / 1.1);
+      var e = fly.t < 0.5 ? 2 * fly.t * fly.t : 1 - Math.pow(-2 * fly.t + 2, 2) / 2;
+      cam.x = fly.x0 + (fly.x1 - fly.x0) * e; cam.y = fly.y0 + (fly.y1 - fly.y0) * e;
+      cam.z = Math.exp(Math.log(fly.z0) + (Math.log(fly.z1) - Math.log(fly.z0)) * e);
+      clampCam(); lastMove = ts; dirty = true;
+      if (fly.t >= 1) fly = null;
+    }
+    if (visible) {
+      if (!reduce) T += dt;
+      if (ts - lastMove > 160 && needDetail()) buildDetail();
+      if (!reduce || dirty) { frame(T, reduce ? 0 : dt); dirty = false; }
+      updateLevel(); updateScale();
+    }
+    requestAnimationFrame(tick);
+  }
 
   /* ---------- mood panels ---------- */
-  var panels = [];
-  document.querySelectorAll(".mood canvas").forEach(function (c, idx) {
-    var s = new Scene(c, c.getAttribute("data-mode"), false);
-    s.t = 4 + idx * 1.7; s.flash = 0; panels.push(s); s.draw(0);
-  });
+  function drawMood(c) {
+    var mode = c.dataset.mode, r = c.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var w = Math.max(200, r.width), h = w * 9 / 16; c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+    var g = c.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = true;
+    if (!c._terrain) c._terrain = renderRegion(0, 0, WX, WY, 560, 315, mode, false).canvas;
+    g.drawImage(c._terrain, 0, 0, w, h);
+    var s = w / WX;
+    if (mode === "ash") {
+      var vx = VOL.x * s, vy = VOL.y * s, gg = g.createRadialGradient(vx, vy, 0, vx, vy, w * 0.05);
+      gg.addColorStop(0, "rgba(255,150,70,0.9)"); gg.addColorStop(1, "rgba(224,90,50,0)");
+      g.globalCompositeOperation = "lighter"; g.fillStyle = gg; g.beginPath(); g.arc(vx, vy, w * 0.05, 0, 6.29); g.fill(); g.globalCompositeOperation = "source-over";
+    }
+    TOWNS.forEach(function (t) {
+      var pop = t.pop[1]; if (!pop) return;
+      var x2 = t.x * s, y2 = t.y * s;
+      var dim = mode === "drought" && t.isle === "hearth" && t.id !== "aldmouth" ? 0.45 : mode === "ash" && Math.hypot(t.x - VOL.x, t.y - VOL.y) < 1.4 ? 0 : 0.9;
+      if (!dim) { g.strokeStyle = "rgba(224,114,90,0.85)"; g.lineWidth = 1.4; g.beginPath(); g.moveTo(x2 - 4, y2 - 4); g.lineTo(x2 + 4, y2 + 4); g.moveTo(x2 + 4, y2 - 4); g.lineTo(x2 - 4, y2 + 4); g.stroke(); return; }
+      var rr = (4 + Math.sqrt(pop) / 5) * (w / 700), gr = g.createRadialGradient(x2, y2, 0, x2, y2, rr);
+      gr.addColorStop(0, "rgba(255,214,140," + dim + ")"); gr.addColorStop(1, "rgba(242,178,87,0)");
+      g.globalCompositeOperation = "lighter"; g.fillStyle = gr; g.beginPath(); g.arc(x2, y2, rr, 0, 6.29); g.fill(); g.globalCompositeOperation = "source-over";
+    });
+    drawClouds(g, 0, 0, WX, WY, w, h, mode, 6 + mode.length * 1.3, 1);
+    if (mode === "storm" || mode === "rain") {
+      g.strokeStyle = mode === "storm" ? "rgba(190,215,235,0.4)" : "rgba(210,230,245,0.3)"; g.lineWidth = 1; g.beginPath();
+      for (var i = 0; i < (mode === "storm" ? 160 : 70); i++) { var x3 = hash(i, 1, 99) * w * 1.1, y3 = hash(i, 2, 99) * h, l = 6 + hash(i, 3, 99) * 10; g.moveTo(x3, y3); g.lineTo(x3 - l * 0.25, y3 + l); }
+      g.stroke();
+      if (mode === "storm") { g.fillStyle = "rgba(10,18,32,0.2)"; g.fillRect(0, 0, w, h); }
+    }
+    if (mode === "drought") { g.fillStyle = "rgba(242,178,87,0.06)"; g.fillRect(0, 0, w, h); }
+  }
 
+  resize(); seedDrops(W, H); updateHud(); showCard(); updateLevel(); updateScale();
+  frame(0, 0);
+  requestAnimationFrame(tick);
+  var moodCanvases = Array.prototype.slice.call(document.querySelectorAll(".mood canvas"));
+  setTimeout(function () { moodCanvases.forEach(drawMood); }, 60);
   var rt;
   window.addEventListener("resize", function () {
     clearTimeout(rt);
-    rt = setTimeout(function () {
-      hero.resize(); hero.draw(0);
-      panels.forEach(function (p) { p.resize(); p.cloudsDone = false; p.draw(0); });
-    }, 120);
+    rt = setTimeout(function () { resize(); seedDrops(W, H); detail = null; moodCanvases.forEach(drawMood); }, 150);
   });
 })();
 </script>
