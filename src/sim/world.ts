@@ -1,7 +1,9 @@
 import type { World, Village, Tribe, Agent } from "./types";
 import { getTerrain, ISLE_IDS, type IsleId, type Site } from "./terrain";
 import { Rng } from "./rng";
-import { blankJobs, villageName, chron, addPeople } from "./util";
+import { blankJobs, villageName, chron, addPeople, blankStock, newGov, newFactions } from "./util";
+import depositsData from "../../data/deposits.json";
+import type { Res } from "./types";
 import tribesData from "../../data/tribes.json";
 
 type TribeData = (typeof tribesData)[number];
@@ -13,7 +15,8 @@ export function newVillage(w: World, tribe: Tribe, site: Site, name: string): Vi
     m: new Array(80).fill(0), f: new Array(80).fill(0), men: 0, women: 0, elders: 0,
     food: 0, jobs: blankJobs(), stage: "band", kin: 0, blood: { [tribe.id]: 1 },
     houses: 1, granary: 0, defense: 0, morale: 0.7, hungry: 0, threat: 0,
-    sick: null, immune: 0, mods: { farm: 1, fish: 1, gather: 1 }, lost: false, peak: 0
+    sick: null, immune: 0, mods: { farm: 1, fish: 1, gather: 1 }, lost: false, peak: 0,
+    stock: blankStock(), monument: 0
   };
   v.jobs.gatherer = 1;
   w.villages.push(v);
@@ -49,14 +52,24 @@ export function createWorld(seed: number): World {
     seed, tick: 0, rngState: 0, nextId: 1,
     tribes: [], villages: [], relations: [], routes: [], voyages: [], agents: [], effects: [],
     climate: Object.fromEntries(ISLE_IDS.map((i) => [i, { base: 1, rain: 1, storm: false, calm: false, wind: 0 }])) as World["climate"],
-    energy: 12, faith: 0, chronicle: [], events: [], fx: [], contacts: [], endings: []
+    energy: 12, faith: 0, chronicle: [], events: [], fx: [], contacts: [], endings: [],
+    deposits: {} as World["deposits"], depositBase: {} as World["depositBase"]
   };
+  // each island's natural resources, varied a little by seed
+  for (const id of ISLE_IDS) {
+    const base = (depositsData as Record<string, Record<string, number>>)[id];
+    const d = {} as Record<Res, number>;
+    for (const [r, v] of Object.entries(base)) d[r as Res] = v > 0 ? +(v * rng.range(0.8, 1.2)).toFixed(3) : 0;
+    d.brick = 0; d.bronze = 0;
+    w.depositBase[id] = d; w.deposits[id] = { ...d };
+  }
   (tribesData as TribeData[]).forEach((d, i) => {
     const t: Tribe = {
       id: i, name: d.name, home: d.home as IsleId, parent: null, alive: true,
       tail: d.tail, tip: d.tip, line: d.line, skin: d.skin, cloth: d.cloth, top: d.top, sash: d.sash, hair: d.hair,
       traits: { ...d.traits }, syllables: [...d.syllables],
       techs: [], progress: {}, belief: { awe: 0.2, fear: 0.1, love: 0.2 }, known: [d.home as IsleId],
+      age: 0, gov: newGov(0), factions: newFactions(), objective: { kind: "grow", text: "Survive the first winters.", village: null },
       drivers: { raftLoss: 0, capsize: 0, windSeasons: 0, calmSeasons: 0, plagueSurvived: 0, raids: 0, hunger: 0, omenVoyage: 0, farReturn: 0 },
       memory: []
     };

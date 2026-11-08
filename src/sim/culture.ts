@@ -1,7 +1,10 @@
 import type { World, Tribe, Job, Ending } from "./types";
 import { JOBS, yearOf } from "./types";
 import type { Rng } from "./rng";
-import { living, popOf, chron, has, TECHS, TECH, tribePop, agentsOf, villageById, remember, relation, makeName } from "./util";
+import { living, popOf, chron, has, TECHS, TECH, tribePop, agentsOf, villageById, remember, relation, makeName, tribeStock } from "./util";
+import type { Res } from "./types";
+import agesData from "../../data/ages.json";
+const AGES = agesData as { id: number; name: string; requires: string[]; desc: string }[];
 import { newAgent } from "./world";
 
 function shares(w: World, t: Tribe): Record<Job, number> {
@@ -22,6 +25,15 @@ function drive(w: World, t: Tribe, id: string, sh: Record<Job, number>, pop: num
   const nav = agentsOf(w, (a) => a.tribe === t.id && a.role === "Navigator").length;
   switch (id) {
     case "farming": return pop >= 6 ? 0.006 + sh.gatherer * 0.01 + (d.hunger > 0.5 ? 0.008 : 0) : 0;
+    case "stonetools": return pop >= 4 ? 0.008 + sh.gatherer * 0.008 + sh.miner * 0.04 : 0;
+    case "weaving": return 0.004 + sh.gatherer * 0.004 + sh.boatwright * 0.02;
+    case "pottery": return 0.003 + (has(t, "farming") ? 0.004 : 0) + sh.quarrier * 0.03;
+    case "salting": return coastal ? 0.004 + sh.fisher * 0.015 : 0;
+    case "masonry": return 0.002 + sh.quarrier * 0.05 + threat * 0.004;
+    case "brickmaking": return 0.002 + sh.quarrier * 0.04 + sh.builder * 0.02;
+    case "copperworking": return 0.003 + sh.miner * 0.06;
+    case "bronze": return 0.002 + sh.miner * 0.03 + sh.smith * 0.05;
+    case "writing": return 0.001 + sh.priest * 0.03 + Math.min(0.006, d.raids * 0.0005 + t.known.length * 0.0008);
     case "granary": return 0.004 + sh.builder * 0.05 + (d.hunger > 0.5 ? 0.005 : 0);
     case "raft": return coastal && pop >= 8 ? 0.004 + sh.fisher * 0.02 + Math.min(1, d.hunger) * 0.003 + kin * 0.01 : 0;
     case "canoe": return 0.002 + d.raftLoss * 0.01 + sh.boatwright * 0.04 + rainHome * 0.002;
@@ -40,7 +52,28 @@ function drive(w: World, t: Tribe, id: string, sh: Record<Job, number>, pop: num
   return 0;
 }
 
-const INVENTOR: Record<string, string> = { raft: "Boatwright", canoe: "Boatwright", outrigger: "Boatwright", sail: "Boatwright", herbs: "Doctor" };
+const INVENTOR: Record<string, string> = { raft: "Boatwright", canoe: "Boatwright", outrigger: "Boatwright", sail: "Boatwright", herbs: "Doctor", stonetools: "Toolmaker", bronze: "Smith", copperworking: "Smith", masonry: "Master builder", brickmaking: "Master builder", writing: "Scribe" };
+
+/**
+ * Inventions need the right materials in the tribe's stores. Missing materials slow research;
+ * for strict techs (bronze) they make it impossible. This is what makes islands advance differently.
+ */
+export function resourceFactor(w: World, t: Tribe, tech: { needs?: Record<string, number>; strict?: boolean }): number {
+  if (!tech.needs) return 1;
+  let f = 1;
+  for (const [r, amt] of Object.entries(tech.needs)) {
+    const have = tribeStock(w, t.id, r as Res);
+    f = Math.min(f, tech.strict ? (have >= amt ? 1 : 0) : 0.15 + 0.85 * Math.min(1, have / amt));
+  }
+  return f;
+}
+
+/** The highest age whose required inventions the tribe has. */
+export function ageOf(t: Tribe): number {
+  let a = 0;
+  for (const age of AGES) if (age.requires.every((r) => has(t, r))) a = Math.max(a, age.id);
+  return a;
+}
 
 function checkEndings(w: World) {
   const done = (id: Ending["id"]) => w.endings.some((e) => e.id === id);
@@ -75,7 +108,7 @@ export function culture(w: World, rng: Rng): World {
     for (const tech of TECHS) {
       if (has(t, tech.id) || !tech.prereq.every((p) => has(t, p))) continue;
       const trait = tech.group === "sea" ? 0.7 + t.traits.curious * 0.3 + t.traits.bold * 0.3 : tech.group === "war" ? 0.7 + t.traits.wary * 0.3 + t.traits.bold * 0.3 : 0.8 + t.traits.patient * 0.4;
-      t.progress[tech.id] = (t.progress[tech.id] ?? 0) + drive(w, t, tech.id, sh, pop) * trait;
+      t.progress[tech.id] = (t.progress[tech.id] ?? 0) + drive(w, t, tech.id, sh, pop) * trait * resourceFactor(w, t, tech);
       if (t.progress[tech.id] >= 1) {
         t.techs.push(tech.id);
         const v = living(w).filter((x) => x.tribe === t.id).sort((a, b) => popOf(b) - popOf(a))[0];
@@ -89,6 +122,15 @@ export function culture(w: World, rng: Rng): World {
         chron(w, "tech", `${who} ${role ? "invents" : "learn"}: ${tech.name}. ${tech.desc}`, v?.x, v?.y);
         remember(t, `Y${yearOf(w.tick)}: learned ${tech.name.toLowerCase()}`);
       }
+    }
+    const newAge = ageOf(t);
+    if (newAge > t.age) {
+      t.age = newAge;
+      const v = living(w).filter((x) => x.tribe === t.id).sort((a, b) => popOf(b) - popOf(a))[0];
+      chron(w, "age", `The ${t.name} enter the ${AGES[newAge].name}. ${AGES[newAge].desc}`, v?.x, v?.y);
+      if (v) w.fx.push({ kind: "age", x: v.x, y: v.y, tick: w.tick });
+      remember(t, `Y${yearOf(w.tick)}: entered the ${AGES[newAge].name}`);
+      t.gov.legitimacy = Math.min(1, t.gov.legitimacy + 0.1);
     }
     const d = t.drivers;
     d.raftLoss *= 0.995; d.capsize *= 0.995; d.windSeasons *= 0.99; d.calmSeasons *= 0.99; d.omenVoyage *= 0.97; d.hunger *= 0.97; d.raids *= 0.98;

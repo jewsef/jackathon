@@ -6,7 +6,7 @@ import { popOf, adults, kids } from "../sim/util";
 
 export interface HouseSpot { x: number; y: number; v: number; d: number; }
 export interface FieldSpot { x: number; y: number; w: number; h: number; r: number; c: number; d: number; }
-export interface Layout { houses: HouseSpot[]; fields: FieldSpot[]; ring: { x: number; y: number }[]; R: number; }
+export interface Layout { houses: HouseSpot[]; fields: FieldSpot[]; ring: { x: number; y: number }[]; R: number; quarry: { x: number; y: number }; mine: { x: number; y: number }; forge: { x: number; y: number }; }
 export interface Figure {
   job: Job | "child" | "elder"; sex: "m" | "f"; hx: number; hy: number; tx: number; ty: number; ph: number; sp: number;
 }
@@ -39,7 +39,17 @@ export function layoutFor(t: Terrain, v: Village): Layout {
     if (t.elev(x, y, 6) > 0.006) ring.push({ x, y });
   }
   if (!ring.length) ring.push({ x: v.x, y: v.y });
-  const out = { houses, fields, ring, R };
+  // work sites uphill: a quarry, and a mine a little further up
+  const hill: { x: number; y: number; e: number; a: number }[] = [];
+  for (let k = 0; k < 24; k++) for (const d of [0.3, 0.42]) {
+    const a = (k / 24) * 6.283, x = v.x + Math.cos(a) * d, y = v.y + Math.sin(a) * d * 0.85, e = t.elev(x, y, 6);
+    if (e > 0.02) hill.push({ x, y, e: e + d * 0.01, a });
+  }
+  hill.sort((p, q) => q.e - p.e);
+  const quarry = hill[0] ?? { x: v.x + 0.25, y: v.y };
+  const mine = hill.find((h) => Math.abs(((h.a - (hill[0]?.a ?? 0) + 9.42) % 6.283) - 3.14) < 2.4) ?? hill[1] ?? quarry;
+  const forge = { x: v.x + 0.035, y: v.y - 0.035 };
+  const out = { houses, fields, ring, R, quarry: { x: quarry.x, y: quarry.y }, mine: { x: mine.x, y: mine.y }, forge };
   layoutCache.set(key, out);
   return out;
 }
@@ -84,6 +94,10 @@ export function sampleCrowd(v: Village, L: Layout, max = 48): Figure[] {
       else if (job === "warrior") { const g = L.ring[Math.floor(r1 * L.ring.length)]; tx = v.x + (g.x - v.x) * 0.7; ty = v.y + (g.y - v.y) * 0.7; }
       else if (job === "leader" || job === "priest") { tx = v.x + (r1 - 0.5) * 0.02; ty = v.y + (r2 - 0.5) * 0.02; }
       else if (job === "builder") { const b = L.houses[Math.min(nh, L.houses.length - 1)] ?? h; tx = b.x; ty = b.y; }
+      else if (job === "woodcutter") { const g = L.ring[Math.floor(r1 * L.ring.length)]; tx = v.x + (g.x - v.x) * 1.25; ty = v.y + (g.y - v.y) * 1.25; }
+      else if (job === "quarrier") { tx = L.quarry.x + (r1 - 0.5) * 0.03; ty = L.quarry.y + (r2 - 0.5) * 0.03; }
+      else if (job === "miner") { tx = L.mine.x + (r1 - 0.5) * 0.02; ty = L.mine.y + (r2 - 0.5) * 0.02; }
+      else if (job === "smith") { tx = L.forge.x + (r1 - 0.5) * 0.01; ty = L.forge.y + (r2 - 0.5) * 0.01; }
       out.push({ job, sex: hash3(k, 6, v.id) < 0.5 ? "m" : "f", hx: h.x, hy: h.y, tx, ty, ph: hash3(k, 7, v.id) * 10, sp: 0.06 + hash3(k, 8, v.id) * 0.05 });
     }
   }

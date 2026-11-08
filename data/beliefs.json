@@ -1,11 +1,57 @@
 {
-  "calm": { "awe": 0.0, "fear": -0.02, "love": 0.03 },
-  "rain": { "awe": 0.01, "fear": 0.0, "love": 0.05 },
-  "wind": { "awe": 0.02, "fear": 0.0, "love": 0.01 },
-  "omen": { "awe": 0.12, "fear": 0.02, "love": 0.02 },
-  "drought": { "awe": 0.02, "fear": 0.06, "love": -0.04 },
-  "storm": { "awe": 0.04, "fear": 0.07, "love": -0.02 },
-  "quake": { "awe": 0.05, "fear": 0.09, "love": -0.03 },
-  "plague": { "awe": 0.04, "fear": 0.12, "love": -0.06 },
-  "eruption": { "awe": 0.12, "fear": 0.12, "love": -0.04 }
+ "calm": {
+  "awe": 0.0,
+  "fear": -0.02,
+  "love": 0.03
+ },
+ "rain": {
+  "awe": 0.01,
+  "fear": 0.0,
+  "love": 0.05
+ },
+ "wind": {
+  "awe": 0.02,
+  "fear": 0.0,
+  "love": 0.01
+ },
+ "omen": {
+  "awe": 0.12,
+  "fear": 0.02,
+  "love": 0.02
+ },
+ "drought": {
+  "awe": 0.02,
+  "fear": 0.06,
+  "love": -0.04
+ },
+ "storm": {
+  "awe": 0.04,
+  "fear": 0.07,
+  "love": -0.02
+ },
+ "quake": {
+  "awe": 0.05,
+  "fear": 0.09,
+  "love": -0.03
+ },
+ "plague": {
+  "awe": 0.04,
+  "fear": 0.12,
+  "love": -0.06
+ },
+ "eruption": {
+  "awe": 0.12,
+  "fear": 0.12,
+  "love": -0.04
+ },
+ "bless": {
+  "awe": 0.06,
+  "fear": 0.0,
+  "love": 0.04
+ },
+ "revolt": {
+  "awe": 0.03,
+  "fear": 0.05,
+  "love": -0.02
+ }
 }

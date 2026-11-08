@@ -63,6 +63,10 @@ export function conflict(w: World, rng: Rng): World {
       if (r.grudge > 0.6) p += 0.02;
       if (hungry && r.attitude < 0.15) p += 0.03;
       p *= 0.5 + ambition * (0.5 + Math.max(A.traits.bold, B.traits.bold));
+      const regimeMul = (x: typeof A) => ({ warlord: 1.6, chief: 1.1, priestking: 0.9, council: 0.6, elders: 0.8 } as Record<string, number>)[x.gov?.type ?? "elders"] ?? 1;
+      p *= Math.max(regimeMul(A), regimeMul(B));
+      if (A.objective?.tribe === B.id || B.objective?.tribe === A.id) p *= 1.5;
+      if (r.overlord !== null) p *= 0.3;
       if (r.alliance) p *= 0.1;
       if (r.marriages > 2) p *= 0.5;
       if (rng.chance(p)) {

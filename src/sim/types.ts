@@ -1,10 +1,19 @@
 import type { IsleId } from "./terrain";
 
-export type Job = "gatherer" | "farmer" | "fisher" | "builder" | "leader" | "doctor" | "priest" | "warrior" | "boatwright";
-export const JOBS: Job[] = ["gatherer", "farmer", "fisher", "builder", "leader", "doctor", "priest", "warrior", "boatwright"];
+export type Job = "gatherer" | "farmer" | "fisher" | "builder" | "leader" | "doctor" | "priest" | "warrior" | "boatwright" | "woodcutter" | "quarrier" | "miner" | "smith";
+export const JOBS: Job[] = ["gatherer", "farmer", "fisher", "builder", "leader", "doctor", "priest", "warrior", "boatwright", "woodcutter", "quarrier", "miner", "smith"];
+export type Res = "wood" | "stone" | "clay" | "brick" | "fiber" | "salt" | "herbs" | "flint" | "copper" | "tin" | "bronze";
+export const RES: Res[] = ["wood", "stone", "clay", "brick", "fiber", "salt", "herbs", "flint", "copper", "tin", "bronze"];
+export type RegimeType = "elders" | "chief" | "council" | "priestking" | "warlord";
+export type FactionId = "farmers" | "seafarers" | "warriors" | "priests" | "crafters";
+export const FACTIONS: FactionId[] = ["farmers", "seafarers", "warriors", "priests", "crafters"];
+export type Policy = "growth" | "defense" | "sea" | "faith" | "craft";
+export interface Faction { id: FactionId; support: number; militancy: number; head: number | null; }
+export interface Gov { type: RegimeType; ruler: number | null; rulerFaction: FactionId | null; legitimacy: number; unrest: number; since: number; policy: Policy; uprisings: number; }
+export interface Objective { kind: "feed" | "defend" | "secure" | "unite" | "reach" | "grow" | "ally"; text: string; village: number | null; res?: Res; tribe?: number; }
 export type Stage = "band" | "camp" | "village" | "town" | "chiefdom";
 export const STAGES: Stage[] = ["band", "camp", "village", "town", "chiefdom"];
-export type PowerId = "calm" | "rain" | "wind" | "omen" | "drought" | "storm" | "quake" | "plague" | "eruption";
+export type PowerId = "calm" | "rain" | "wind" | "omen" | "bless" | "drought" | "revolt" | "storm" | "quake" | "plague" | "eruption";
 export type StrainId = "fever" | "cough" | "grey";
 export type BeliefKey = "awe" | "fear" | "love";
 
@@ -25,6 +34,7 @@ export interface Village {
   sick: Sickness | null; immune: number;
   mods: { farm: number; fish: number; gather: number };
   lost: boolean; lostReason?: string; peak: number;
+  stock: Record<Res, number>; monument: number;
 }
 
 export interface Tribe {
@@ -37,11 +47,14 @@ export interface Tribe {
   known: IsleId[];
   drivers: { raftLoss: number; capsize: number; windSeasons: number; calmSeasons: number; plagueSurvived: number; raids: number; hunger: number; omenVoyage: number; farReturn: number };
   memory: string[];
+  age: number; gov: Gov; factions: Faction[]; objective: Objective;
 }
 
 export interface Relation {
   a: number; b: number; met: boolean; metTick: number; attitude: number; grudge: number;
   war: boolean; warTicks: number; losses: number; alliance: boolean; marriages: number; trades: number; speaker: boolean;
+  /** Overlord tribe id when one tribe pays tribute to the other. */
+  overlord: number | null;
 }
 
 export interface Route { id: number; a: number; b: number; kind: "trade" | "marriage" | "kin"; strength: number; tier: number; }
@@ -60,10 +73,10 @@ export interface Agent {
 
 export interface Effect { id: number; power: PowerId; x: number; y: number; r: number; ticks: number; age: number; }
 
-export type ChronKind = "birth" | "death" | "tech" | "war" | "plague" | "voyage" | "power" | "omen" | "contact" | "village" | "end" | "misc";
+export type ChronKind = "birth" | "death" | "tech" | "war" | "plague" | "voyage" | "power" | "omen" | "contact" | "village" | "end" | "misc" | "politics" | "age";
 export interface ChronEntry { tick: number; text: string; kind: ChronKind; x?: number; y?: number; }
 
-export interface Fx { kind: "lightning" | "quake" | "eruption" | "omen" | "plague" | "battle" | "lost" | "found"; x: number; y: number; tick: number; }
+export interface Fx { kind: "lightning" | "quake" | "eruption" | "omen" | "plague" | "battle" | "lost" | "found" | "uprising" | "age"; x: number; y: number; tick: number; }
 
 export interface Ending { id: "silence" | "farshore" | "unity" | "longage"; tick: number; title: string; text: string; }
 
@@ -73,6 +86,7 @@ export interface World {
   voyages: Voyage[]; agents: Agent[]; effects: Effect[];
   climate: Record<IsleId, { base: number; rain: number; storm: boolean; calm: boolean; wind: number }>;
   energy: number; faith: number;
+  deposits: Record<IsleId, Record<Res, number>>; depositBase: Record<IsleId, Record<Res, number>>;
   chronicle: ChronEntry[]; events: ChronEntry[]; fx: Fx[];
   contacts: { a: number; b: number; via: string }[];
   endings: Ending[];

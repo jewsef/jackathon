@@ -31,7 +31,7 @@ export class MapView3D implements MapLike {
   world: Snap | null = null;
 
   private el: HTMLElement; private terrain: Terrain;
-  private renderer!: THREE.WebGLRenderer; private scene = new THREE.Scene(); private camera = new THREE.PerspectiveCamera(FOV, 1, 0.01, 600);
+  private renderer!: THREE.WebGLRenderer; private scene = new THREE.Scene(); private camera = new THREE.PerspectiveCamera(FOV, 1, 0.002, 600);
   private hf!: HeightField; private shared: SharedUniforms = makeSharedUniforms();
   private terrainU!: ReturnType<typeof buildTerrainMesh>["uniforms"];
   private skySys!: SkySystem; private actors!: Actors;
@@ -121,13 +121,13 @@ export class MapView3D implements MapLike {
     this.camera.lookAt(this.cam.x + sx, ty, this.cam.y + sy);
     this.camera.updateMatrixWorld();
   }
-  private clampCam() { this.cam.z = clamp(this.cam.z, 1, 30); this.cam.x = clamp(this.cam.x, -0.5, WX + 0.5); this.cam.y = clamp(this.cam.y, -0.5, WY + 0.5); }
+  private clampCam() { this.cam.z = clamp(this.cam.z, 1, 60); this.cam.x = clamp(this.cam.x, -0.5, WX + 0.5); this.cam.y = clamp(this.cam.y, -0.5, WY + 0.5); }
   private moved() { this.lastMove = performance.now(); this.onCamera(); }
-  flyTo(x: number, y: number, z: number) { this.fly = { x0: this.cam.x, y0: this.cam.y, z0: this.cam.z, x1: x, y1: y, z1: clamp(z, 1, 30), t: 0 }; }
+  flyTo(x: number, y: number, z: number) { this.fly = { x0: this.cam.x, y0: this.cam.y, z0: this.cam.z, x1: x, y1: y, z1: clamp(z, 1, 60), t: 0 }; }
   zoomBy(f: number, px?: number, py?: number) {
     const g = px !== undefined && py !== undefined ? this.groundAt(px, py) : null;
     const old = this.cam.z;
-    this.cam.z = clamp(this.cam.z * f, 1, 30);
+    this.cam.z = clamp(this.cam.z * f, 1, 60);
     if (g) { const k = 1 - old / this.cam.z; this.cam.x += (g[0] - this.cam.x) * k; this.cam.y += (g[1] - this.cam.y) * k; }
     this.clampCam(); this.moved(); this.fly = null;
   }
@@ -230,7 +230,7 @@ export class MapView3D implements MapLike {
     cv.addEventListener("dblclick", (e) => {
       if (this.armed) return;
       const r = cv.getBoundingClientRect(), g = this.groundAt(e.clientX - r.left, e.clientY - r.top);
-      if (g) this.flyTo(g[0], g[1], Math.min(30, Math.max(this.cam.z * 2, 3)));
+      if (g) this.flyTo(g[0], g[1], Math.min(60, Math.max(this.cam.z * 2, 3)));
     });
     // Keys work anywhere on the page (except while typing). Held keys move smoothly every frame.
     window.addEventListener("keydown", (e) => {
@@ -526,6 +526,8 @@ export class MapView3D implements MapLike {
         g.strokeStyle = `rgba(242,178,87,${0.8 * (1 - u)})`; g.lineWidth = 3; g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx - 120, cy - 30); g.stroke();
       } else if (fx.kind === "plague" || fx.kind === "battle") { g.strokeStyle = fx.kind === "plague" ? `rgba(143,176,112,${Math.max(0, 0.9 - age / 2)})` : `rgba(224,114,90,${Math.max(0, 0.9 - age / 2)})`; g.beginPath(); g.arc(x, y, 10 + age * 40, 0, Math.PI * 2); g.stroke(); }
       else if (fx.kind === "found") { g.strokeStyle = `rgba(242,178,87,${Math.max(0, 1 - age / 2.5)})`; g.beginPath(); g.arc(x, y, 10 + age * 50, 0, Math.PI * 2); g.stroke(); }
+      else if (fx.kind === "uprising") { g.strokeStyle = `rgba(230,70,60,${Math.max(0, 1 - age / 3)})`; g.setLineDash([6, 5]); for (let k = 0; k < 2; k++) { g.beginPath(); g.arc(x, y, 12 + age * 36 + k * 14, 0, Math.PI * 2); g.stroke(); } g.setLineDash([]); }
+      else if (fx.kind === "age") { g.strokeStyle = `rgba(255,216,77,${Math.max(0, 1 - age / 3.2)})`; g.lineWidth = 3.5; g.beginPath(); g.arc(x, y, 14 + age * 90, 0, Math.PI * 2); g.stroke(); }
       else if (fx.kind === "lost") { g.strokeStyle = `rgba(220,234,242,${Math.max(0, 0.8 - age / 1.6)})`; g.beginPath(); g.arc(x, y, 6 + age * 26, 0, Math.PI * 2); g.stroke(); }
     }
   }

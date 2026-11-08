@@ -7,9 +7,21 @@ import { voyagePos } from "../sim/voyages";
 import { portraitURL } from "../render/sprites";
 import type { Selection } from "../render/map";
 import jobsData from "../../data/jobs.json";
+import resData from "../../data/resources.json";
+import agesData from "../../data/ages.json";
+import { REGIMES, FACTION_INFO } from "../sim/politics";
+import { RES } from "../sim/types";
+import { JOB_COLOR, RULER_COLOR, HEAD_COLOR } from "../render3d/actors";
 
 type Snap = Omit<World, "chronicle">;
 const JOBNAME: Record<string, string> = Object.fromEntries(jobsData.map((j) => [j.id, j.name]));
+const RESINFO: Record<string, { name: string; color: string }> = Object.fromEntries(resData.map((r) => [r.id, r]));
+const POLICY: Record<string, string> = { growth: "grow the fields", defense: "arm and fortify", sea: "boats and trade", faith: "feed the sky", craft: "tools and building" };
+function stockList(stock: Record<string, number>, scale: number) {
+  const rows = RES.filter((r) => stock[r] >= 0.5);
+  if (!rows.length) return '<span class="sub">nothing stored</span>';
+  return `<div class="jobs">${rows.map((r) => `<div class="jobrow"><span><i class="swatch" style="background:${RESINFO[r].color}"></i>${RESINFO[r].name}</span>${bar(stock[r] / scale, RESINFO[r].color)}<span>${fmt(stock[r])}</span></div>`).join("")}</div>`;
+}
 const BOAT = ["no boats", "log rafts", "dugout canoes", "outriggers", "sail-canoes", "sail and star navigation"];
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
 const pct = (x: number) => Math.round(x * 100) + "%";
@@ -36,11 +48,12 @@ function villageCard(w: Snap, v: Village, terrain: Terrain): string {
     <dt>Morale</dt><dd>${pct(v.morale)}${bar(v.morale, "var(--ember)")}</dd>
     <dt>Kinship</dt><dd>${v.kin > 0.35 ? "everyone is cousins; must marry out" : v.kin > 0.2 ? "closely related" : "varied families"}${bar(v.kin, "#c98fd0")}</dd>
     <dt>Bloodlines</dt><dd><div class="blood">${blood.map(([k, x]) => `<i title="${esc(w.tribes[+k]?.name ?? "")}" style="width:${x * 100}%;background:${w.tribes[+k]?.tail ?? "#888"}"></i>`).join("")}</div></dd>
-    <dt>Buildings</dt><dd>${Math.floor(v.houses)} houses${v.granary >= 1 ? ", granary" : ""}${Math.floor(v.defense) ? `, defences tier ${Math.floor(v.defense)}` : ""}</dd>
+    <dt>Buildings</dt><dd>${Math.floor(v.houses)} houses${v.granary >= 1 ? ", granary" : ""}${Math.floor(v.defense) ? `, defences tier ${Math.floor(v.defense)}` : ""}${v.monument >= 1 ? ", a great temple" : v.monument > 0.02 ? `, temple ${pct(v.monument)} built` : ""}</dd>
     ${v.sick ? `<dt>Sickness</dt><dd style="color:var(--blight)">${STRAINS[v.sick.strain].name}, season ${v.sick.t + 1}</dd>` : v.immune > 0.2 ? `<dt>Immunity</dt><dd>${pct(v.immune)} of the village</dd>` : ""}
     ${v.threat ? `<dt>Threat</dt><dd style="color:var(--blight)">${v.threat >= 1 ? "at war" : "hostile neighbours"}</dd>` : ""}
   </dl>
-  <div><div class="eyebrow" style="margin-bottom:6px">Jobs</div><div class="jobs">${JOBS.filter((j) => v.jobs[j] > 0.005).map((j) => `<div class="jobrow"><span>${JOBNAME[j]}</span>${bar(v.jobs[j] * 2)}<span>${pct(v.jobs[j])}</span></div>`).join("")}</div></div>
+  <div><div class="eyebrow" style="margin-bottom:6px">Stockpile</div>${stockList(v.stock, 60 + v.houses * 6 + v.granary * 40)}</div>
+  <div><div class="eyebrow" style="margin-bottom:6px">Jobs <span class="sub">(figure colours)</span></div><div class="jobs">${JOBS.filter((j) => v.jobs[j] > 0.005).map((j) => `<div class="jobrow"><span><i class="swatch" style="background:${JOB_COLOR[j] ?? "#ccc"}"></i>${JOBNAME[j]}</span>${bar(v.jobs[j] * 2)}<span>${pct(v.jobs[j])}</span></div>`).join("")}</div></div>
   ${named.length ? `<div><div class="eyebrow" style="margin-bottom:6px">Named people</div>${named.map((a) => `<button type="button" class="link" data-sel="agent:${a.id}">${esc(a.name)}</button> <span class="sub">${a.role}</span>`).join("<br>")}</div>` : ""}
   <p class="why"><b>Simulated as numbers.</b> The houses, fields and people you see when you zoom in are drawn from this record.</p>`;
 }
@@ -58,15 +71,36 @@ function agentCard(w: Snap, a: Agent): string {
   <p class="why"><b>Why simulated one by one:</b> ${{ Founder: "a founding parent of the tribe", Leader: "decides jobs, war and peace", "Sky-speaker": "interprets your powers and omens", Navigator: "star navigation depends on them", Captain: "commands a voyage; their skill cuts the risk", Doctor: "fights the plague", "War leader": "leads the war", Speaker: "lets two peoples talk without mistakes", Boatwright: "first to build a new kind of boat", "Village founder": "led families to a new village", Voyager: "came back from a voyage" }[a.role] ?? "the story needs a face here"}.</p>`;
 }
 
+function govBlock(w: Snap, t: Tribe): string {
+  const g = t.gov, R = REGIMES[g.type], ruler = g.ruler !== null ? w.agents.find((a) => a.id === g.ruler && a.alive) : undefined;
+  const lord = w.relations.find((r) => r.overlord !== null && r.overlord !== t.id && (r.a === t.id || r.b === t.id));
+  const vass = w.relations.filter((r) => r.overlord === t.id).map((r) => w.tribes[r.a === t.id ? r.b : r.a]);
+  const years = Math.floor((w.tick - g.since) / 4);
+  return `<div><div class="eyebrow" style="margin-bottom:4px">Government</div>
+  <dl><dt>Regime</dt><dd title="${esc(R.desc)}">${R.name}${years ? ` <span class="sub">for ${years} years</span>` : ""}</dd>
+  <dt>${R.ruler}</dt><dd>${ruler ? `<i class="swatch" style="background:${RULER_COLOR}"></i><button type="button" class="link" data-sel="agent:${ruler.id}">${esc(ruler.name)}</button>` : '<span class="sub">no one holds power</span>'}${g.rulerFaction ? ` <span class="sub">of the ${FACTION_INFO[g.rulerFaction].name.toLowerCase()}</span>` : ""}</dd>
+  <dt>Legitimacy</dt><dd>${bar(g.legitimacy, "var(--ember)")}</dd>
+  <dt>Unrest</dt><dd>${bar(g.unrest, "var(--blight)")}${g.unrest > 0.6 ? '<span class="sub" style="color:var(--blight)"> close to revolt</span>' : ""}</dd>
+  <dt>Policy</dt><dd>${POLICY[g.policy] ?? g.policy}</dd>
+  ${t.objective ? `<dt>Objective</dt><dd>${esc(t.objective.text)}</dd>` : ""}
+  ${lord ? `<dt>Pays tribute</dt><dd>to the ${tribeLink(w.tribes[lord.overlord!])}</dd>` : ""}
+  ${vass.length ? `<dt>Vassals</dt><dd>${vass.map(tribeLink).join(", ")}</dd>` : ""}
+  ${g.uprisings ? `<dt>Uprisings</dt><dd>${g.uprisings}</dd>` : ""}</dl>
+  <div class="jobs">${t.factions.map((f) => { const h = f.head !== null ? w.agents.find((a) => a.id === f.head && a.alive) : undefined; return `<div class="jobrow" title="${h ? esc(FACTION_INFO[f.id].head + ": " + h.name) : ""}"><span>${h ? `<i class="swatch" style="background:${HEAD_COLOR}"></i>` : ""}${FACTION_INFO[f.id].name}${f.militancy > 0.5 ? " ⚑" : ""}</span>${bar(f.support, f.id === g.rulerFaction ? RULER_COLOR : "var(--storm)")}<span>${pct(f.support)}</span></div>`; }).join("")}</div></div>`;
+}
+
 function tribeCard(w: Snap, t: Tribe, terrain: Terrain): string {
   const pop = tribePop(w as World, t.id), vs = w.villages.filter((v) => v.tribe === t.id && !v.lost);
   const rels = w.tribes.filter((o) => o.id !== t.id && o.alive).map((o) => ({ o, r: relation(w as World, t.id, o.id) })).filter((x) => x.r.met);
   return `<span class="kind">Tribe</span><h3>${esc(t.name)}</h3>
   <p class="sub">Home: ${terrain.byId[t.home].name}${t.parent !== null ? ` · broke away from the ${esc(w.tribes[t.parent].name)}` : ""}</p>
-  <dl><dt>People</dt><dd>${fmt(pop)} in ${vs.length} ${vs.length === 1 ? "village" : "villages"}</dd>
+  <dl><dt>Age</dt><dd>${agesData[t.age]?.name ?? "?"}</dd>
+  <dt>People</dt><dd>${fmt(pop)} in ${vs.length} ${vs.length === 1 ? "village" : "villages"}</dd>
   <dt>Boats</dt><dd>${BOAT[boatTier(t)]}</dd>
   <dt>Knows</dt><dd>${t.known.map((k) => terrain.byId[k].name).join(", ")}</dd>
   <dt>Awe</dt><dd>${bar(t.belief.awe, "var(--storm)")}</dd><dt>Fear</dt><dd>${bar(t.belief.fear, "var(--blight)")}</dd><dt>Love</dt><dd>${bar(t.belief.love, "var(--ember)")}</dd></dl>
+  ${govBlock(w, t)}
+  <div><div class="eyebrow" style="margin-bottom:6px">Stores</div>${stockList(Object.fromEntries(RES.map((r) => [r, vs.reduce((a, v) => a + v.stock[r], 0)])), 60 * Math.max(1, vs.length) + vs.reduce((a, v) => a + v.houses * 6, 0))}</div>
   <div>${t.techs.map((x) => `<span class="chip tech">${TECH[x].name}</span>`).join("") || '<span class="sub">No inventions yet.</span>'}</div>
   ${rels.length ? `<div><div class="eyebrow" style="margin-bottom:4px">Relations</div>${rels.map(({ o, r }) => `<div>${tribeLink(o)} <span class="chip ${r.war ? "war" : r.alliance ? "ally" : ""}">${r.war ? "at war" : r.alliance ? "allied" : r.attitude > 0.3 ? "friendly" : r.attitude < -0.3 ? "hostile" : "wary"}</span>${r.marriages ? `<span class="chip">${r.marriages} marriages</span>` : ""}</div>`).join("")}</div>` : ""}
   ${t.memory.length ? `<div><div class="eyebrow" style="margin-bottom:4px">They remember</div><ul class="mem">${t.memory.slice(0, 6).map((m) => `<li>${esc(m)}</li>`).join("")}</ul></div>` : ""}`;
@@ -76,10 +110,12 @@ function isleCard(w: Snap, id: string, terrain: Terrain): string {
   const I = terrain.byId[id as keyof typeof terrain.byId];
   const people = w.tribes.filter((t) => t.alive && w.villages.some((v) => v.tribe === t.id && v.isle === I.id && !v.lost));
   const fromHearth = I.id === "hearth" ? null : terrain.crossing("hearth", I.id);
+  const dep = w.deposits?.[I.id], base = w.depositBase?.[I.id];
   return `<span class="kind">Island</span><h3>${I.name}</h3>
   <dl><dt>Resource</dt><dd>${I.resource}</dd><dt>Living here</dt><dd>${people.map(tribeLink).join(", ") || "no one"}</dd>
   ${fromHearth ? `<dt>From Hearth</dt><dd>about ${Math.round(fromHearth.dist * 8)} km of sea; needs ${BOAT[Math.min(5, fromHearth.tier)]}</dd>` : ""}
-  <dt>Known to</dt><dd>${w.tribes.filter((t) => t.alive && t.known.includes(I.id)).map((t) => esc(t.name)).join(", ")}</dd></dl>`;
+  <dt>Known to</dt><dd>${w.tribes.filter((t) => t.alive && t.known.includes(I.id)).map((t) => esc(t.name)).join(", ")}</dd></dl>
+  ${dep ? `<div><div class="eyebrow" style="margin-bottom:6px">Deposits <span class="sub">(what is left)</span></div><div class="jobs">${RES.filter((r) => (base?.[r as keyof typeof base] ?? 0) > 0.05).map((r) => `<div class="jobrow"><span><i class="swatch" style="background:${RESINFO[r].color}"></i>${RESINFO[r].name}</span>${bar((dep[r as keyof typeof dep] ?? 0) / 1.6, RESINFO[r].color)}<span>${(dep[r as keyof typeof dep] ?? 0).toFixed(1)}</span></div>`).join("")}</div></div>` : ""}`;
 }
 
 function voyageCard(w: Snap, id: number, terrain: Terrain): string {

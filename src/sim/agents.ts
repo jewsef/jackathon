@@ -1,12 +1,12 @@
 import type { World, Agent, Village, Tribe } from "./types";
 import { STAGES } from "./types";
 import type { Rng } from "./rng";
-import { living, popOf, chron, villageById, agentsOf, makeName, villageName, relation, remember, has, boatTier, movePeople } from "./util";
+import { living, popOf, chron, villageById, agentsOf, makeName, villageName, relation, remember, has, boatTier, movePeople, newGov, newFactions } from "./util";
 import { freeSite, newVillage, newAgent } from "./world";
 import { STRAINS } from "./powers";
 import { getTerrain } from "./terrain";
 
-const MAX_AGENTS = 48;
+const MAX_AGENTS = 60;
 export const ageOf = (w: World, a: Agent) => Math.floor((w.tick - a.born) / 4);
 
 /** A succession crisis: two heirs, and half the village leaves to found a rival tribe. */
@@ -27,7 +27,10 @@ function splinter(w: World, v: Village, rng: Rng) {
   const nv = newVillage(w, nt, site, villageName(rng, nt));
   const moved = movePeople(v, nv, 0.4, rng);
   nv.food = v.food * 0.4; v.food *= 0.6; nv.blood = { ...v.blood }; nv.kin = v.kin; nv.houses = 3;
-  const heir = newAgent(w, { name: makeName(rng, parent), sex: rng.chance(0.5) ? "m" : "f", role: "Leader", village: nv.id, tribe: nt.id, age: rng.range(25, 40), ambition: 0.7 + rng.next() * 0.3 }, rng);
+  const heir = newAgent(w, { name: makeName(rng, parent), sex: rng.chance(0.5) ? "m" : "f", role: "Chief", village: nv.id, tribe: nt.id, age: rng.range(25, 40), ambition: 0.7 + rng.next() * 0.3 }, rng);
+  nt.gov = { ...newGov(w.tick), type: "chief", ruler: heir.id, rulerFaction: "warriors", legitimacy: 0.5 };
+  nt.factions = newFactions();
+  for (const r of w.relations) if (r.a === nt.id || r.b === nt.id) r.overlord = null;
   chron(w, "village", `Two heirs claim ${v.name}. ${heir.name} leads ${moved} people away to found ${nv.name}, and the ${nt.name} are born.`, nv.x, nv.y);
 }
 
@@ -72,6 +75,7 @@ export function agents(w: World, rng: Rng): World {
       const how = v?.lost ? `with ${v.name}` : v?.sick ? `of ${STRAINS[v.sick.strain].name}` : `at ${age}`;
       chron(w, "death", `${a.name} the ${a.role.toLowerCase()} dies ${how}.${a.founder ? " A founder of the " + w.tribes[a.tribe].name + " is gone." : ""}`, v?.x, v?.y);
       remember(w.tribes[a.tribe], `Y${Math.floor(w.tick / 4)}: ${a.name} the ${a.role.toLowerCase()} died`);
+      if (w.tribes[a.tribe].gov.ruler === a.id) w.tribes[a.tribe].gov.ruler = null;
       if (a.role === "Leader" && v && !v.lost && popOf(v) > 150 && rng.chance(0.3)) splinter(w, v, rng);
     } else a.goal = goalFor(w, a);
   }

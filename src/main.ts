@@ -7,6 +7,7 @@ import { POWER } from "./sim/powers";
 import type { FromWorker, ToWorker } from "./sim/worker";
 import { MapView } from "./render/map";
 import { MapView3D } from "./render3d/view";
+import { JOB_COLOR, RULER_COLOR, HEAD_COLOR } from "./render3d/actors";
 import { LEVELS, type Selection, type MapLike } from "./render/common";
 import { portraitURL } from "./render/sprites";
 import { PowersBar } from "./ui/powers";
@@ -207,11 +208,12 @@ async function start(seed: number, fromSave: boolean) {
   const ladder = $("ladder");
   ladder.innerHTML = LEVELS.map((l, i) => `<button type="button" class="rung" data-i="${i}"><span class="dot"></span><span>${l.name}</span><span class="zz">${l.z}×</span></button>`).join("");
   ladder.addEventListener("click", (e) => { const b = (e.target as HTMLElement).closest(".rung") as HTMLElement | null; if (b) map.flyTo(map.cam.x, map.cam.y, LEVELS[+b.dataset.i!].z); });
+  const LEGEND = `<span class="legend">${[["farmer", "Farmer"], ["fisher", "Fisher"], ["gatherer", "Gatherer"], ["woodcutter", "Woodcutter"], ["quarrier", "Quarrier"], ["miner", "Miner"], ["smith", "Smith"], ["builder", "Builder"], ["warrior", "Warrior"], ["priest", "Priest"], ["doctor", "Doctor"], ["boatwright", "Boatwright"], ["leader", "Leader"], ["child", "Child"]].map(([j, n]) => `<span><i class="swatch" style="background:${JOB_COLOR[j]}"></i>${n}</span>`).join("")}<span><i class="swatch" style="background:${RULER_COLOR}"></i>Ruler</span><span><i class="swatch" style="background:${HEAD_COLOR}"></i>Faction head</span></span>`;
   const NOTES = [
     "<b>Each village is a light.</b> Brightness is population. Work the weather and watch voyages here.",
     "<b>Villages become roofs and fields.</b> Their number comes straight from each village's record.",
-    "<b>People appear.</b> They are drawn from the village's numbers, not stored one by one. Fishers walk to the shore, farmers to the fields.",
-    "<b>Named people</b> wear an ember ring. They are real agents with goals and memories. Click one."
+    "<b>People appear</b> as small figures coloured by their work. They are drawn from the village's numbers: fishers walk to the shore, miners uphill." + LEGEND,
+    "<b>Named people</b> wear a ring. Gold figures are rulers, orange are faction heads. Click one." + LEGEND
   ];
   let lvl = -1;
   map.onCamera = () => {

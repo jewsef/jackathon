@@ -1,7 +1,8 @@
 import type { World, Action, PowerId, Village, BeliefKey } from "./types";
 import type { Rng } from "./rng";
 import { getTerrain } from "./terrain";
-import { living, popOf, kill, chron, tribeOf, agentsOf, relation, remember } from "./util";
+import { living, popOf, kill, chron, tribeOf, agentsOf, relation, remember, rulerOf } from "./util";
+import { stirRevolt, FACTION_INFO } from "./politics";
 import powersData from "../../data/powers.json";
 import beliefs from "../../data/beliefs.json";
 import strains from "../../data/plague.json";
@@ -93,6 +94,22 @@ export function applyPowers(w: World, acts: Action[], rng: Rng): World {
         w.fx.push({ kind: "plague", x: v.x, y: v.y, tick: w.tick });
         chron(w, "plague", `${STRAINS[strain].name} appears in ${v.name}. No one knows where it came from.`, v.x, v.y);
         remember(tribeOf(w, v.tribe), `Y${Math.floor(w.tick / 4)}: the sky's sickness at ${v.name}`);
+        break;
+      }
+      case "bless": case "revolt": {
+        const v = nearestVillage(w, a.x, a.y, 1.2);
+        if (!v) continue;
+        const t = tribeOf(w, v.tribe);
+        affected.add(v.tribe);
+        w.fx.push({ kind: "omen", x: v.x, y: v.y, tick: w.tick });
+        const ruler = rulerOf(w, t);
+        if (a.power === "bless") {
+          t.gov.legitimacy = Math.min(1, t.gov.legitimacy + 0.2); t.gov.unrest = Math.max(0, t.gov.unrest - 0.15);
+          chron(w, "politics", ruler ? `A halo of light crowns ${ruler.name}, ${ruler.role.toLowerCase()} of the ${t.name}. The people take it as the sky's blessing.` : `A warm light rests over ${v.name}. The elders of the ${t.name} are heeded.`, v.x, v.y);
+        } else {
+          const rival = stirRevolt(w, t, rng);
+          chron(w, "politics", `Whispers spread through ${v.name}: the sky has turned from ${ruler ? ruler.name : "the elders"}. ${rival ? `The ${FACTION_INFO[rival.id].name.toLowerCase()} grow bold.` : ""}`, v.x, v.y);
+        }
         break;
       }
       case "omen": {

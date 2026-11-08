@@ -1,0 +1,16 @@
+{
+  "regimes": {
+    "elders": { "name": "Council of elders", "ruler": "Eldest", "desc": "The oldest decide together. Fine for a band, slow for a nation." },
+    "chief": { "name": "Chiefdom", "ruler": "Chief", "desc": "One family rules. Strong while the chief is loved." },
+    "council": { "name": "Council", "ruler": "Council speaker", "desc": "Heads of families vote. Stable, slow to go to war." },
+    "priestking": { "name": "Priest-king", "ruler": "High priest", "desc": "The sky-speakers rule in the sky's name. Your omens weigh heavily." },
+    "warlord": { "name": "Warlord", "ruler": "Warlord", "desc": "Whoever holds the spears holds power. Quick to fight, quick to fall." }
+  },
+  "factions": {
+    "farmers": { "name": "Farmers", "wants": "growth", "regime": "council", "head": "Voice of the fields" },
+    "seafarers": { "name": "Seafarers", "wants": "sea", "regime": "chief", "head": "Harbour master" },
+    "warriors": { "name": "Warriors", "wants": "defense", "regime": "warlord", "head": "Spear captain" },
+    "priests": { "name": "Priests", "wants": "faith", "regime": "priestking", "head": "Keeper of fires" },
+    "crafters": { "name": "Crafters", "wants": "craft", "regime": "council", "head": "Master builder" }
+  }
+}

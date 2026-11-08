@@ -1,11 +1,93 @@
 [
-  { "id": "gatherer", "name": "Gatherer", "stage": 0, "makes": "Berries, roots, shellfish, fibre", "why": "Feeds the founding band before farming exists." },
-  { "id": "farmer", "name": "Farmer", "stage": 1, "makes": "Grain, roots, stored food", "why": "Turns a camp into a village. Rain and drought hit farmers first." },
-  { "id": "fisher", "name": "Fisher", "stage": 0, "makes": "Fish, knowledge of the sea", "why": "Learns currents and boats. Most voyages start with a fisher." },
-  { "id": "builder", "name": "Builder", "stage": 1, "makes": "Houses, granaries, walls", "why": "Shelter raises births. Walls only go up under threat." },
-  { "id": "leader", "name": "Leader", "stage": 2, "makes": "Decisions, diplomacy", "why": "Moves people toward the biggest need. Declares war or marries into peace." },
-  { "id": "doctor", "name": "Doctor", "stage": 2, "makes": "Healing, herb lore", "why": "Cuts deaths in a plague." },
-  { "id": "priest", "name": "Sky-speaker", "stage": 2, "makes": "Faith, rituals, omens", "why": "Explains your weather. Faith refills your divine energy." },
-  { "id": "warrior", "name": "Warrior", "stage": 2, "makes": "Defence, raids, war", "why": "Protects the village but does not farm." },
-  { "id": "boatwright", "name": "Boatwright", "stage": 1, "makes": "Rafts, canoes, outriggers, sails", "why": "The key to the Far Shore." }
+ {
+  "id": "gatherer",
+  "name": "Gatherer",
+  "stage": 0,
+  "makes": "Berries, roots, shellfish, fibre",
+  "why": "Feeds the founding band before farming exists."
+ },
+ {
+  "id": "farmer",
+  "name": "Farmer",
+  "stage": 1,
+  "makes": "Grain, roots, stored food",
+  "why": "Turns a camp into a village. Rain and drought hit farmers first."
+ },
+ {
+  "id": "fisher",
+  "name": "Fisher",
+  "stage": 0,
+  "makes": "Fish, knowledge of the sea",
+  "why": "Learns currents and boats. Most voyages start with a fisher."
+ },
+ {
+  "id": "builder",
+  "name": "Builder",
+  "stage": 1,
+  "makes": "Houses, granaries, walls",
+  "why": "Shelter raises births. Walls only go up under threat."
+ },
+ {
+  "id": "leader",
+  "name": "Leader",
+  "stage": 2,
+  "makes": "Decisions, diplomacy",
+  "why": "Moves people toward the biggest need. Declares war or marries into peace."
+ },
+ {
+  "id": "doctor",
+  "name": "Doctor",
+  "stage": 2,
+  "makes": "Healing, herb lore",
+  "why": "Cuts deaths in a plague."
+ },
+ {
+  "id": "priest",
+  "name": "Sky-speaker",
+  "stage": 2,
+  "makes": "Faith, rituals, omens",
+  "why": "Explains your weather. Faith refills your divine energy."
+ },
+ {
+  "id": "warrior",
+  "name": "Warrior",
+  "stage": 2,
+  "makes": "Defence, raids, war",
+  "why": "Protects the village but does not farm."
+ },
+ {
+  "id": "boatwright",
+  "name": "Boatwright",
+  "stage": 1,
+  "makes": "Rafts, canoes, outriggers, sails",
+  "why": "The key to the Far Shore."
+ },
+ {
+  "id": "woodcutter",
+  "name": "Woodcutter",
+  "stage": 1,
+  "makes": "Timber",
+  "why": "Houses, palisades and boats all need wood. Too much cutting strips the forest."
+ },
+ {
+  "id": "quarrier",
+  "name": "Quarrier",
+  "stage": 1,
+  "makes": "Stone and clay",
+  "why": "Stone for walls, clay for pots and bricks."
+ },
+ {
+  "id": "miner",
+  "name": "Miner",
+  "stage": 1,
+  "makes": "Flint, copper and tin",
+  "why": "Tools first, then metal."
+ },
+ {
+  "id": "smith",
+  "name": "Smith",
+  "stage": 2,
+  "makes": "Bronze",
+  "why": "Turns copper and tin into bronze tools and blades."
+ }
 ]

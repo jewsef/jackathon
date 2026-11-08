@@ -12,6 +12,8 @@ import type { HeightField } from "./heightfield";
 
 type Snap = Omit<World, "chronicle">;
 const tmpQ = new THREE.Quaternion(), tmpS = new THREE.Vector3(), tmpP = new THREE.Vector3(), tmpE = new THREE.Euler(), tmpC = new THREE.Color();
+/** Height of a person in world units: about a third of a house. */
+export const PERSON = 0.0045;
 const mA = new THREE.Matrix4(), mB = new THREE.Matrix4(), mR = new THREE.Matrix4(), mBase = new THREE.Matrix4(), mUpper = new THREE.Matrix4(), mArm = new THREE.Matrix4(), mOut = new THREE.Matrix4();
 
 /** Each island builds with its own material and shape. */
@@ -24,7 +26,13 @@ const STYLE: Record<string, { kind: "gable" | "round" | "long" | "stone" | "tent
 };
 const CROPS = ["#c6b060", "#849e4a", "#9c7c52"];
 const STRAW = "#e6d49a";
-const TOOL_JOBS = new Set(["farmer", "fisher", "warrior", "builder", "boatwright", "priest"]);
+/** People are simple solid figures, coloured by what they do. */
+export const JOB_COLOR: Record<string, string> = {
+  gatherer: "#8fbf6a", farmer: "#e0c04a", fisher: "#4fa3d1", builder: "#d08a4b", woodcutter: "#4f7d3a", quarrier: "#a3a7ad",
+  miner: "#6d5f7a", smith: "#ff7a3d", boatwright: "#3fc0b0", warrior: "#c83a3a", doctor: "#f4f4f4", priest: "#a98ad8",
+  leader: "#f2b257", child: "#efe6cf", elder: "#9b938b", idle: "#cfc6b8"
+};
+export const RULER_COLOR = "#ffd84d", HEAD_COLOR = "#ff9f40";
 
 function inst(geo: THREE.BufferGeometry, max: number, mat: THREE.Material) {
   const m = new THREE.InstancedMesh(geo, mat, max);
@@ -110,7 +118,7 @@ export function pose(state: FigureState | "idle", job: string, t: number, ph: nu
 export class Actors {
   group = new THREE.Group();
   private hf: HeightField; private terrain: Terrain; private low: boolean;
-  private trees: { x: number; y: number; s: number; pine: boolean }[] = [];
+  private trees: { x: number; y: number; s: number; pine: boolean; isle: string; h: number }[] = [];
   private pines: THREE.InstancedMesh; private broad: THREE.InstancedMesh;
   private B: Record<string, THREE.InstancedMesh> = {};
   private fields: THREE.InstancedMesh; private posts: THREE.InstancedMesh;
@@ -155,27 +163,24 @@ export class Actors {
       totemTop: new THREE.BoxGeometry(0.7, 0.14, 0.18).translate(0, 0.95, 0),
       rack: mergeGeometries([new THREE.BoxGeometry(0.06, 0.6, 0.06).translate(-0.5, 0.3, 0), new THREE.BoxGeometry(0.06, 0.6, 0.06).translate(0.5, 0.3, 0), new THREE.BoxGeometry(1.1, 0.05, 0.05).translate(0, 0.58, 0), new THREE.BoxGeometry(0.9, 0.25, 0.02).translate(0, 0.42, 0)])!,
       granary: new THREE.CylinderGeometry(0.5, 0.55, 0.8, 10).translate(0, 0.4, 0),
-      granaryRoof: new THREE.ConeGeometry(0.62, 0.5, 10).translate(0, 1.05, 0)
+      granaryRoof: new THREE.ConeGeometry(0.62, 0.5, 10).translate(0, 1.05, 0),
+      logs: mergeGeometries([0, 1, 2].map((k) => new THREE.CylinderGeometry(0.16, 0.16, 1, 6).rotateZ(Math.PI / 2).translate(0, 0.16 + (k === 2 ? 0.27 : 0), k === 2 ? 0 : (k - 0.5) * 0.34)))!,
+      heap: new THREE.DodecahedronGeometry(0.5).scale(1, 0.55, 1).translate(0, 0.2, 0),
+      crate: new THREE.BoxGeometry(1, 0.6, 0.7).translate(0, 0.3, 0),
+      pit: new THREE.CylinderGeometry(0.5, 0.42, 0.06, 12).translate(0, 0.01, 0),
+      entrance: new THREE.BoxGeometry(0.7, 0.6, 0.5).translate(0, 0.3, 0),
+      kiln: new THREE.SphereGeometry(0.5, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2),
+      pole: new THREE.CylinderGeometry(0.04, 0.05, 1, 5).translate(0, 0.5, 0),
+      flag: new THREE.PlaneGeometry(1, 0.6).translate(0.5, 0, 0),
+      step: new THREE.BoxGeometry(1, 0.3, 1).translate(0, 0.15, 0)
     };
-    for (const [k, g] of Object.entries(kit)) { this.B[k] = inst(g, 8000, lambert()); G.add(this.B[k]); }
+    for (const [k, g] of Object.entries(kit)) { this.B[k] = inst(g, 8000, lambert(k === "flag" ? { side: THREE.DoubleSide } : {})); G.add(this.B[k]); }
     this.fields = inst(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), 8000, lambert({ side: THREE.DoubleSide }));
     this.posts = inst(new THREE.CylinderGeometry(0.5, 0.5, 1, 5).translate(0, 0.5, 0), 12000, lambert());
     G.add(this.pines, this.broad, this.fields, this.posts);
-    // the Tailfolk rig: each part is built around its own pivot (hip, shoulder, tail root)
-    const rig: Record<string, THREE.BufferGeometry> = {
-      leg: new THREE.BoxGeometry(0.15, 0.38, 0.22).translate(0, -0.19, 0),
-      torso: new THREE.BoxGeometry(0.42, 0.32, 0.26).translate(0, 0.16, 0),
-      sash: new THREE.BoxGeometry(0.45, 0.08, 0.29).translate(0, 0.03, 0),
-      arm: new THREE.BoxGeometry(0.1, 0.34, 0.12).translate(0, -0.17, 0),
-      wrap: new THREE.BoxGeometry(0.12, 0.07, 0.14).translate(0, -0.28, 0),
-      head: new THREE.SphereGeometry(0.17, 10, 8).translate(0, 0.45, 0),
-      hat: new THREE.ConeGeometry(0.38, 0.2, 14).translate(0, 0.62, 0),
-      tail: new THREE.SphereGeometry(0.15, 8, 6).scale(1, 1, 2.3).rotateX(0.55).translate(0, 0.06, -0.16),
-      tip: new THREE.SphereGeometry(0.11, 8, 6).translate(0, 0.23, -0.4),
-      tool: new THREE.CylinderGeometry(0.025, 0.025, 0.9, 5).rotateX(Math.PI / 2.4).translate(0, -0.36, 0.25)
-    };
-    const twice = new Set(["leg", "arm", "wrap"]);
-    for (const [k, g] of Object.entries(rig)) { this.P[k] = inst(g, twice.has(k) ? 8000 : 4000, lambert()); G.add(this.P[k]); }
+    // people: a simple pawn, one solid colour per figure
+    const pawn = mergeGeometries([new THREE.CylinderGeometry(0.17, 0.23, 0.62, 8).translate(0, 0.31, 0), new THREE.SphereGeometry(0.16, 8, 6).translate(0, 0.79, 0)])!;
+    this.P.body = inst(pawn, 5000, lambert()); G.add(this.P.body);
     this.rings = inst(new THREE.RingGeometry(0.55, 0.7, 28).rotateX(-Math.PI / 2).translate(0, 0.03, 0), 64, new THREE.MeshBasicMaterial({ color: 0xf2b257, transparent: true, opacity: 0.9, side: THREE.DoubleSide, depthWrite: false }));
     G.add(this.rings);
     // boats, facing +x, with a fading V wake behind them
@@ -222,14 +227,15 @@ export class Actors {
       if (el < 0.02 || el > 0.25) continue;
       const m = t.moistAt(x, y);
       if (hash3(gx, gy, 72) > (m - 0.28) * 1.2) continue;
-      this.trees.push({ x, y, s: 0.75 + hash3(gx, gy, 74) * 0.6, pine: el > 0.15 || hash3(gx, gy, 75) < 0.25 });
+      this.trees.push({ x, y, s: 0.75 + hash3(gx, gy, 74) * 0.6, pine: el > 0.15 || hash3(gx, gy, 75) < 0.25, isle: t.isleAt(x, y) ?? "", h: hash3(gx, gy, 76) });
     }
-    this.layoutTrees([]);
+    this.layoutTrees([], {});
   }
   /** Clear trees where villages stand; a village's land is cleared for fields. */
-  private layoutTrees(villages: Village[]) {
+  private layoutTrees(villages: Village[], forest: Record<string, number>) {
     let ip = 0, ib = 0;
     for (const tr of this.trees) {
+      if (tr.h > (forest[tr.isle] ?? 1)) continue;
       if (villages.some((v) => Math.abs(v.x - tr.x) < 0.42 && Math.abs(v.y - tr.y) < 0.42 && Math.hypot(v.x - tr.x, v.y - tr.y) < 0.21 + Math.min(0.2, Math.sqrt(popOf(v)) / 120))) continue;
       const y = this.hf.groundY(tr.x, tr.y), k = 0.013 * tr.s;
       const shade = 0.75 + hash3(Math.round(tr.x * 100), Math.round(tr.y * 100), 9) * 0.35;
@@ -242,8 +248,10 @@ export class Actors {
   /** Rebuild villages, routes and the selected tribe's known world. Called when a snapshot arrives or the selection changes. */
   updateStatic(w: Snap, sel: Selection) {
     const live = w.villages.filter((v) => !v.lost);
-    const key = live.map((v) => v.id + ":" + Math.round(Math.sqrt(popOf(v)))).join(",");
-    if (key !== this.villageKey) { this.villageKey = key; this.layoutTrees(live); }
+    const forest: Record<string, number> = {};
+    for (const id of Object.keys(w.deposits)) { const b = w.depositBase[id as keyof typeof w.depositBase].wood; forest[id] = b > 0 ? Math.round(Math.min(1, w.deposits[id as keyof typeof w.deposits].wood / b) * 20) / 20 : 1; }
+    const key = live.map((v) => v.id + ":" + Math.round(Math.sqrt(popOf(v)))).join(",") + JSON.stringify(forest);
+    if (key !== this.villageKey) { this.villageKey = key; this.layoutTrees(live, forest); }
     const n: Record<string, number> = Object.fromEntries(Object.keys(this.B).map((k) => [k, 0]));
     const b = (k: string, x: number, y: number, z: number, rot: number, sx: number, sy: number, sz: number, c: string) => { if (n[k] < 8000) put(this.B[k], n[k]++, x, y, z, rot, sx, sy, sz, c); };
     let ifl = 0, ip = 0;
@@ -252,7 +260,7 @@ export class Actors {
       const L = layoutFor(this.terrain, v), t = w.tribes[v.tribe];
       const st = STYLE[t?.home ?? "hearth"] ?? STYLE.hearth;
       const roofTint = t?.top ?? st.roof;
-      const band = v.stage === "band";
+      const band = v.stage === "band" || (t?.age ?? 0) === 0;
       for (let i = 0; i < houseCount(v, L); i++) {
         const h = L.houses[i], s = 0.014 * (0.8 + h.v * 0.5), gy = this.hf.groundY(h.x, h.y), rot = h.v * 3;
         const roof = h.v > 0.7 && (st.kind === "gable" || st.kind === "round") ? roofTint : st.roof;
@@ -277,6 +285,45 @@ export class Actors {
         else if (st.landmark === "racks") for (let k = 0; k < 3; k++) { const rx = v.px * 0.7 + v.x * 0.3 + k * 0.02, ry = v.py * 0.7 + v.y * 0.3; b("rack", rx, this.hf.surfaceY(rx, ry), ry, 0.4, s, s, s, "#a08860"); }
         else if (st.landmark === "stones") for (let k = 0; k < 9; k++) { const a = (k / 9) * Math.PI * 2, sx = lx + Math.cos(a) * 0.03, sy = ly + Math.sin(a) * 0.03; b("stone", sx, this.hf.groundY(sx, sy), sy, a, 0.011, 0.016 + (k % 3) * 0.004, 0.011, "#b4b0aa"); }
         else if (st.landmark === "totem") { b("totem", lx, gy, ly, 0, s, s * 2.2, s, "#5a3c2a"); b("totemTop", lx, gy, ly, 0.2, s, s * 2.2, s, t?.tip ?? "#f2b257"); }
+      }
+      // stockpiles: what the village has in store, at a glance
+      const piles: [keyof Village["stock"], string, string][] = [["wood", "logs", "#8a6440"], ["stone", "heap", "#a9a59e"], ["brick", "crate", "#c35a3e"], ["clay", "heap", "#b5714a"], ["salt", "heap", "#eef2f4"], ["fiber", "crate", "#c9b77a"], ["flint", "heap", "#3b3540"], ["copper", "heap", "#c87533"], ["tin", "heap", "#b8bcc2"], ["bronze", "crate", "#e2b04f"]];
+      let pk = 0;
+      for (const [r, kitName, col] of piles) {
+        const amt = v.stock[r];
+        if (amt < 3) continue;
+        const cnt = Math.min(3, Math.ceil(amt / 40)), size = 0.006 + Math.min(0.007, amt / 500);
+        for (let j = 0; j < cnt; j++, pk++) {
+          const px = v.x + 0.04 + (pk % 4) * 0.013, py = v.y + 0.035 + Math.floor(pk / 4) * 0.012;
+          b(kitName, px, this.hf.groundY(px, py), py, pk * 0.7, size, size, size, col);
+        }
+      }
+      // work sites: a quarry pit, a mine entrance, kilns and the smithy
+      if (v.jobs.quarrier > 0.01 && this.hf.elevAt(L.quarry.x, L.quarry.y) > 0) {
+        const gy = this.hf.groundY(L.quarry.x, L.quarry.y);
+        b("pit", L.quarry.x, gy, L.quarry.y, 0, 0.04, 0.04, 0.04, "#5a5650");
+        b("heap", L.quarry.x + 0.025, gy, L.quarry.y + 0.01, 1, 0.012, 0.012, 0.012, v.isle === "hearth" ? "#b5714a" : "#a9a59e");
+      }
+      if (v.jobs.miner > 0.01 && this.hf.elevAt(L.mine.x, L.mine.y) > 0) {
+        const gy = this.hf.groundY(L.mine.x, L.mine.y), metal = v.stock.copper > v.stock.tin ? "#c87533" : v.stock.tin > 1 ? "#b8bcc2" : "#3b3540";
+        b("entrance", L.mine.x, gy, L.mine.y, Math.atan2(v.x - L.mine.x, v.y - L.mine.y), 0.016, 0.016, 0.016, "#2a2622");
+        b("heap", L.mine.x + 0.02, gy, L.mine.y + 0.012, 0.4, 0.008, 0.008, 0.008, metal);
+      }
+      if (t && t.techs.includes("brickmaking") && !band) { const kx = v.x - 0.055, ky = v.y + 0.02, gy = this.hf.groundY(kx, ky); b("kiln", kx, gy, ky, 0, 0.013, 0.013, 0.013, "#9a5a3a"); this.chimneys.push({ x: kx, y: ky, h: gy + 0.012 }); }
+      if (v.jobs.smith > 0.005) { const gy = this.hf.groundY(L.forge.x, L.forge.y); b("crate", L.forge.x, gy, L.forge.y, 0.5, 0.012, 0.012, 0.012, "#3d3430"); b("crate", L.forge.x + 0.007, gy, L.forge.y, 0, 0.005, 0.004, 0.005, "#ff7a2e"); this.chimneys.push({ x: L.forge.x, y: L.forge.y, h: gy + 0.01 }); }
+      // the tribe's flag; red when the people are close to revolt
+      if (!band && t) {
+        const capital = w.agents.find((a) => a.id === t.gov?.ruler)?.village === v.id;
+        const fx = v.x + 0.01, fy = v.y - 0.02, gy = this.hf.groundY(fx, fy), hgt = capital ? 0.07 : 0.045;
+        b("pole", fx, gy, fy, 0, 0.012, hgt, 0.012, "#5a4430");
+        b("flag", fx, gy + hgt * 0.82, fy, 0.4, capital ? 0.03 : 0.02, capital ? 0.03 : 0.02, 1, t.gov && t.gov.unrest > 0.6 ? "#d23c2c" : t.line);
+      }
+      // a ruler's temple or great hall rises step by step
+      if (v.monument > 0.02) {
+        const mx = v.x + 0.03, my = v.y - 0.065, gy = this.hf.groundY(mx, my), steps = Math.ceil(v.monument * 3);
+        const mcol = v.isle === "hearth" ? "#b8705a" : v.isle === "gull" ? "#b4b0aa" : "#9c8b70";
+        for (let k = 0; k < steps; k++) b("step", mx, gy + k * 0.012, my, 0, 0.05 - k * 0.012, 0.04, 0.05 - k * 0.012, mcol);
+        if (v.monument >= 1) { b("gableBody", mx, gy + 0.036, my, 0, 0.012, 0.012, 0.012, mcol); b("gableRoof", mx, gy + 0.036, my, 0, 0.012, 0.012, 0.012, roofTint); }
       }
       for (let i = 0; i < fieldCount(v, L); i++) {
         const f = L.fields[i];
@@ -333,33 +380,17 @@ export class Actors {
     this.known.geometry.dispose(); this.known.geometry = kg;
   }
 
-  /** Place one rigged figure. Every part hangs off the hip or shoulder pivots, so poses bend naturally. */
-  private figure(i: number, x: number, z: number, yaw: number, scale: number, t: Tribe, sex: "m" | "f", job: string, ps: Pose, tool: boolean, ti: { n: number }) {
-    const P = this.P, y = this.hf.surfaceY(x, z) + ps.bob * scale;
-    const sash = job === "doctor" ? "#5d7a4a" : job === "priest" ? "#5a8fb0" : job === "warrior" ? "#8f2f2a" : t.sash;
-    compose(mBase, x, y, z, yaw, scale, scale, scale);
-    mOut.copy(mBase).multiply(T(-0.09, 0.38, 0)).multiply(RX(ps.legL)); putM(P.leg, i * 2, mOut, t.cloth);
-    mOut.copy(mBase).multiply(T(0.09, 0.38, 0)).multiply(RX(ps.legR)); putM(P.leg, i * 2 + 1, mOut, t.cloth);
-    mUpper.copy(mBase).multiply(T(0, 0.38, 0)).multiply(RX(ps.bend));
-    putM(P.torso, i, mUpper, sex === "f" ? t.top : t.skin);
-    putM(P.sash, i, mUpper, sash);
-    putM(P.head, i, mUpper, t.skin);
-    putM(P.hat, i, mUpper, STRAW);
-    const sides: [number, number, number][] = [[-1, ps.armL, 0], [1, ps.armR, 1]];
-    for (const [side, sw, k] of sides) {
-      mArm.copy(mUpper).multiply(T(0.27 * side, 0.32, 0)).multiply(RX(sw));
-      putM(P.arm, i * 2 + k, mArm, t.skin); putM(P.wrap, i * 2 + k, mArm, "#c4473a");
-      if (side === 1 && tool) putM(P.tool, ti.n++, mArm, "#7a5532");
-    }
-    mOut.copy(mBase).multiply(T(0, 0.3, -0.12)).multiply(RY(ps.tail)).multiply(RX(ps.lift));
-    putM(P.tail, i, mOut, t.tail); putM(P.tip, i, mOut, t.tip);
+  /** Place one person: position, facing, a slight lean when working, a bob when walking. */
+  private figure(i: number, x: number, z: number, yaw: number, scale: number, color: string, bend: number, bob: number) {
+    const y = this.hf.surfaceY(x, z) + bob;
+    mBase.makeTranslation(x, y, z).multiply(RY(yaw)).multiply(RX(bend)).multiply(mB.makeScale(scale, scale, scale));
+    putM(this.P.body, i, mBase, color);
   }
 
   /** Per-frame: people, named agents, boats and crews, lights, clouds, rain, lightning and smoke. */
   updateDynamic(w: Snap, time: number, z: number, inView: (x: number, y: number, m: number) => boolean, camY: number, dayLight: number, cam: { x: number; y: number }, viewR: number) {
     let n = 0;
-    const ti = { n: 0 };
-    this.named = [];
+        this.named = [];
     if (z > 4.2) {
       for (const v of w.villages) {
         if (v.lost || !inView(v.x, v.y, 0.5)) continue;
@@ -368,13 +399,14 @@ export class Actors {
         let crowd = this.crowdCache.get(key);
         if (!crowd) { crowd = sampleCrowd(v, layoutFor(this.terrain, v), 60); this.crowdCache.set(key, crowd); }
         for (const p of crowd) {
-          if (n >= 3950) break;
+          if (n >= 4900) break;
           const f = figureState(p, time);
           if (!inView(f.x, f.y, 0.05)) continue;
           const moving = f.state === "out" || f.state === "back";
           const yaw = moving && (f.hx || f.hy) ? Math.atan2(f.hx, f.hy) : p.ph * 2;
-          const sc = p.job === "child" ? 0.0078 : 0.011;
-          this.figure(n++, f.x, f.y, yaw, sc, t, p.sex, p.job, pose(f.state, p.job, time, p.ph), TOOL_JOBS.has(p.job), ti);
+          const sc = p.job === "child" ? PERSON * 0.72 : PERSON;
+          const ps = pose(f.state, p.job, time, p.ph);
+          this.figure(n++, f.x, f.y, yaw, sc, JOB_COLOR[p.job] ?? JOB_COLOR.idle, ps.bend * 0.6, ps.bob * sc);
         }
       }
     }
@@ -395,12 +427,13 @@ export class Actors {
       if (!inView(x, y, 0.1)) continue;
       const h = this.hf.surfaceY(x, y);
       this.named.push({ a, x, y, h });
-      if (z > 4.2 && !voy && n < 3990) {
+      if (z > 4.2 && !voy && n < 4980) {
         const t = w.tribes[a.tribe];
-        const job = ({ Leader: "leader", "Sky-speaker": "priest", Doctor: "doctor", "War leader": "warrior", Boatwright: "boatwright" } as Record<string, string>)[a.role] ?? "";
-        const ps = pose("work", job || "idle", time * 0.8, a.id);
-        this.figure(n++, x, y, Math.sin(time * 0.3 + a.id) * 0.6, 0.0125, t, a.sex, job, ps, job === "boatwright" || job === "warrior" || job === "priest", ti);
-        put(this.rings, nr++, x, h, y, 0, 0.012, 0.012, 0.012);
+        const isRuler = t?.gov?.ruler === a.id, isHead = t?.factions?.some((f) => f.head === a.id);
+        const job = ({ Leader: "leader", "Sky-speaker": "priest", Doctor: "doctor", "War leader": "warrior", Boatwright: "boatwright", Smith: "smith", Toolmaker: "miner", "Master builder": "builder" } as Record<string, string>)[a.role] ?? "leader";
+        const color = isRuler ? RULER_COLOR : isHead ? HEAD_COLOR : JOB_COLOR[job] ?? JOB_COLOR.leader;
+        this.figure(n++, x, y, Math.sin(time * 0.3 + a.id) * 0.6, PERSON * (isRuler ? 1.35 : 1.15), color, 0, Math.abs(Math.sin(time * 2 + a.id)) * 0.0004);
+        put(this.rings, nr++, x, h, y, 0, PERSON * 1.1, PERSON * 1.1, PERSON * 1.1);
       }
     }
 
@@ -417,7 +450,7 @@ export class Actors {
         if (tier >= 4) put(this.sail, ns++, x, yy, y, yaw, size, size, size, "#f6ecd6", rock, 0);
       }
       if (moving) put(this.wakes, nw++, x, 0.004, y, yaw, size, size, size * (0.8 + 0.2 * Math.sin(time * 3 + x)));
-      if (crew && z > 4.2) for (let k = 0; k < crewN; k++) crewSpots.push({ x: x + Math.cos(head) * size * (0.25 - k * 0.22), y: y + Math.sin(head) * size * (0.25 - k * 0.22), yaw: Math.PI / 2 - head, t: crew });
+      if (crew && z > 6) for (let k = 0; k < crewN; k++) crewSpots.push({ x: x + Math.cos(head) * size * (0.25 - k * 0.22), y: y + Math.sin(head) * size * (0.25 - k * 0.22), yaw: Math.PI / 2 - head, t: crew });
     };
     for (const voy of w.voyages) {
       const [x, y] = voyagePos(voy as Voyage);
@@ -442,14 +475,12 @@ export class Actors {
         boat(x, y, a + Math.sin(time * 0.5 + k) * 0.4, tier, 0.026, false, w.tribes[v.tribe], 1);
       }
     }
-    // crews: seated, paddling
+    // crews: seated, rocking with the paddle stroke
     for (const c of crewSpots) {
-      if (n >= 3995) break;
-      const ps: Pose = { bend: 0.25, legL: -1.4, legR: -1.4, armL: -0.9 + 0.5 * Math.sin(time * 4), armR: -0.9 - 0.5 * Math.sin(time * 4), bob: -0.25, tail: 0.3, lift: 0 };
-      this.figure(n++, c.x, c.y, c.yaw, 0.0085, c.t, "m", "", ps, false, ti);
+      if (n >= 4990) break;
+      this.figure(n++, c.x, c.y, c.yaw, PERSON * 0.8, JOB_COLOR.fisher, 0.25 * Math.sin(time * 4), -PERSON * 0.15);
     }
-    for (const k of ["torso", "sash", "head", "hat", "tail", "tip"]) finish(this.P[k], n);
-    finish(this.P.leg, n * 2); finish(this.P.arm, n * 2); finish(this.P.wrap, n * 2); finish(this.P.tool, ti.n); finish(this.rings, nr);
+    finish(this.P.body, n); finish(this.rings, nr);
     (this.rings.material as THREE.MeshBasicMaterial).opacity = 0.6 + 0.3 * Math.sin(time * 3);
     finish(this.hull, nh); finish(this.raft, nf); finish(this.sail, ns); finish(this.outrig, no); finish(this.wakes, nw);
 

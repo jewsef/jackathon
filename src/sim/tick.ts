@@ -9,6 +9,8 @@ import { conflict } from "./conflict";
 import { agents } from "./agents";
 import { voyages } from "./voyages";
 import { culture } from "./culture";
+import { economy } from "./economy";
+import { politics } from "./politics";
 import { stamp } from "./util";
 
 const CHRONICLE_MAX = 800;
@@ -32,8 +34,10 @@ export function tick(w: World, acts: Action[] = []): World {
   w = climate(w, rng);             // season, wind, weather cells
   w = ecology(w);                  // soil, crops, forests, fish
   w = society(w, rng);             // villages: growth, hunger, jobs
+  w = economy(w, rng);             // resources, crafting, building, trade
   w = plague(w, rng);              // sickness along contact
   w = conflict(w, rng);            // grudges, raids, wars
+  w = politics(w, rng);            // factions, rulers, uprisings, tribute
   w = agents(w, rng);              // named people: goals, choices
   w = voyages(w, rng);             // boats at sea, discovery
   w = culture(w, rng);             // tech, belief, memory

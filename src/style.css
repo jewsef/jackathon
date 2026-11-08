@@ -193,3 +193,10 @@ li.k-tech span:last-child, li.k-contact span:last-child { color: #bfe4f0; }
 .edgebtn[aria-pressed="true"] { color: var(--storm); border-color: var(--storm); }
 .compass { position: absolute; right: 10px; bottom: 92px; width: 40px; height: 40px; padding: 0; border: 0; background: none; cursor: pointer; z-index: 2; }
 .compass svg { width: 40px; height: 40px; display: block; }
+
+/* phase 3: colour swatches, job legend, politics chronicle */
+.swatch { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: 0; box-shadow: 0 0 0 1px rgba(0,0,0,.35); }
+.legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px 10px; margin-top: 8px; font-size: 11px; opacity: .9; }
+.legend span { white-space: nowrap; }
+li.k-politics span:last-child { color: #ffd88a; }
+li.k-age span:last-child { color: #ffe27a; font-weight: 600; }

@@ -1,7 +1,7 @@
 import { POWERS } from "../sim/powers";
 import type { PowerId, StrainId } from "../sim/types";
 
-const HOT = new Set(["storm", "quake", "plague", "eruption", "drought"]);
+const HOT = new Set(["storm", "quake", "plague", "eruption", "drought", "revolt"]);
 
 /** The power palette. Selecting a power arms the map; the next click casts it. */
 export class PowersBar {

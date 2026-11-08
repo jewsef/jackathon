@@ -1,17 +1,245 @@
 [
-  { "id": "farming", "name": "Farming", "group": "food", "prereq": [], "desc": "Planted fields. Villages can grow past the size foraging allows." },
-  { "id": "granary", "name": "Granaries", "group": "food", "prereq": ["farming"], "desc": "Stored grain survives a bad year." },
-  { "id": "raft", "name": "Log raft", "group": "sea", "tier": 1, "prereq": [], "desc": "Logs bound with kelp rope. Crosses shallow reefs." },
-  { "id": "canoe", "name": "Dugout canoe", "group": "sea", "tier": 2, "prereq": ["raft"], "desc": "A hollowed log. Crosses open channels in fair weather." },
-  { "id": "outrigger", "name": "Outrigger", "group": "sea", "tier": 3, "prereq": ["canoe"], "desc": "A float lashed to the hull. Stable in rough water." },
-  { "id": "sail", "name": "Woven sail", "group": "sea", "tier": 4, "prereq": ["outrigger"], "desc": "Leaf-mat sails. Trips of several days." },
-  { "id": "navigation", "name": "Star navigation", "group": "sea", "tier": 5, "prereq": ["sail"], "desc": "Star counts and bird lore. Crossings beyond sight of land, and back." },
-  { "id": "fleet", "name": "Colony fleet", "group": "sea", "prereq": ["navigation"], "desc": "Several boats sail together to settle a new shore." },
-  { "id": "herbs", "name": "Herb lore", "group": "health", "prereq": [], "desc": "Doctors know which leaves break a fever." },
-  { "id": "quarantine", "name": "Quarantine custom", "group": "health", "prereq": ["herbs"], "desc": "The sick are kept apart. Plague spreads far less." },
-  { "id": "bow", "name": "Bow and obsidian", "group": "war", "prereq": [], "desc": "Weapons that kill at a distance." },
-  { "id": "palisade", "name": "Palisade", "group": "war", "prereq": [], "desc": "A wall of sharpened logs around the village." },
-  { "id": "shields", "name": "Shield wall", "group": "war", "prereq": ["bow"], "desc": "Woven shields and long spears. Trained war bands." },
-  { "id": "warcanoe", "name": "War canoe", "group": "war", "prereq": ["canoe", "bow"], "desc": "Raids across the sea." },
-  { "id": "stonefort", "name": "Stone fort", "group": "war", "prereq": ["shields", "palisade"], "desc": "Stone walls and a sea gate." }
+ {
+  "id": "stonetools",
+  "name": "Stone tools",
+  "group": "craft",
+  "age": 1,
+  "prereq": [],
+  "needs": {
+   "flint": 3
+  },
+  "desc": "Knapped flint and ground stone. Every job goes faster. The Stone Age begins."
+ },
+ {
+  "id": "farming",
+  "name": "Farming",
+  "group": "food",
+  "prereq": [],
+  "desc": "Planted fields. Villages can grow past the size foraging allows."
+ },
+ {
+  "id": "granary",
+  "name": "Granaries",
+  "group": "food",
+  "prereq": [
+   "farming"
+  ],
+  "desc": "Stored grain survives a bad year."
+ },
+ {
+  "id": "raft",
+  "name": "Log raft",
+  "group": "sea",
+  "tier": 1,
+  "prereq": [],
+  "desc": "Logs bound with kelp rope. Crosses shallow reefs."
+ },
+ {
+  "id": "canoe",
+  "name": "Dugout canoe",
+  "group": "sea",
+  "tier": 2,
+  "prereq": [
+   "raft",
+   "stonetools"
+  ],
+  "desc": "A hollowed log. Crosses open channels in fair weather."
+ },
+ {
+  "id": "outrigger",
+  "name": "Outrigger",
+  "group": "sea",
+  "tier": 3,
+  "prereq": [
+   "canoe"
+  ],
+  "desc": "A float lashed to the hull. Stable in rough water."
+ },
+ {
+  "id": "sail",
+  "name": "Woven sail",
+  "group": "sea",
+  "tier": 4,
+  "prereq": [
+   "outrigger",
+   "weaving"
+  ],
+  "desc": "Leaf-mat sails. Trips of several days."
+ },
+ {
+  "id": "navigation",
+  "name": "Star navigation",
+  "group": "sea",
+  "tier": 5,
+  "prereq": [
+   "sail"
+  ],
+  "desc": "Star counts and bird lore. Crossings beyond sight of land, and back."
+ },
+ {
+  "id": "fleet",
+  "name": "Colony fleet",
+  "group": "sea",
+  "prereq": [
+   "navigation"
+  ],
+  "desc": "Several boats sail together to settle a new shore."
+ },
+ {
+  "id": "herbs",
+  "name": "Herb lore",
+  "group": "health",
+  "prereq": [],
+  "desc": "Doctors know which leaves break a fever."
+ },
+ {
+  "id": "quarantine",
+  "name": "Quarantine custom",
+  "group": "health",
+  "prereq": [
+   "herbs"
+  ],
+  "desc": "The sick are kept apart. Plague spreads far less."
+ },
+ {
+  "id": "bow",
+  "name": "Bow and obsidian",
+  "group": "war",
+  "prereq": [
+   "stonetools"
+  ],
+  "desc": "Weapons that kill at a distance."
+ },
+ {
+  "id": "palisade",
+  "name": "Palisade",
+  "group": "war",
+  "prereq": [],
+  "desc": "A wall of sharpened logs around the village."
+ },
+ {
+  "id": "shields",
+  "name": "Shield wall",
+  "group": "war",
+  "prereq": [
+   "bow"
+  ],
+  "desc": "Woven shields and long spears. Trained war bands."
+ },
+ {
+  "id": "warcanoe",
+  "name": "War canoe",
+  "group": "war",
+  "prereq": [
+   "canoe",
+   "bow"
+  ],
+  "desc": "Raids across the sea."
+ },
+ {
+  "id": "stonefort",
+  "name": "Stone fort",
+  "group": "war",
+  "prereq": [
+   "shields",
+   "palisade",
+   "masonry"
+  ],
+  "desc": "Stone walls and a sea gate."
+ },
+ {
+  "id": "weaving",
+  "name": "Weaving",
+  "group": "craft",
+  "prereq": [],
+  "needs": {
+   "fiber": 8
+  },
+  "desc": "Rope, cloth and mats. Sails become possible."
+ },
+ {
+  "id": "pottery",
+  "name": "Pottery",
+  "group": "craft",
+  "prereq": [],
+  "needs": {
+   "clay": 8
+  },
+  "desc": "Pots store grain and water."
+ },
+ {
+  "id": "salting",
+  "name": "Salting",
+  "group": "food",
+  "prereq": [],
+  "needs": {
+   "salt": 5
+  },
+  "desc": "Salted fish and meat keep through winter and long voyages."
+ },
+ {
+  "id": "masonry",
+  "name": "Masonry",
+  "group": "craft",
+  "prereq": [
+   "stonetools"
+  ],
+  "needs": {
+   "stone": 20
+  },
+  "desc": "Fitted stone. Stone houses and walls."
+ },
+ {
+  "id": "brickmaking",
+  "name": "Brickmaking",
+  "group": "craft",
+  "prereq": [
+   "pottery"
+  ],
+  "needs": {
+   "clay": 15,
+   "wood": 10
+  },
+  "desc": "Clay fired in kilns. Brick houses and granaries."
+ },
+ {
+  "id": "copperworking",
+  "name": "Copperworking",
+  "group": "craft",
+  "prereq": [
+   "stonetools"
+  ],
+  "needs": {
+   "copper": 6
+  },
+  "desc": "The first metal, hammered into blades and ornaments."
+ },
+ {
+  "id": "bronze",
+  "name": "Bronze",
+  "group": "craft",
+  "age": 2,
+  "prereq": [
+   "copperworking"
+  ],
+  "needs": {
+   "copper": 10,
+   "tin": 5
+  },
+  "strict": true,
+  "desc": "Copper and tin smelted together. The Bronze Age begins."
+ },
+ {
+  "id": "writing",
+  "name": "Writing",
+  "group": "knowledge",
+  "prereq": [
+   "bronze",
+   "pottery"
+  ],
+  "needs": {
+   "clay": 10
+  },
+  "desc": "Marks on clay. Laws, records and the first histories."
+ }
 ]

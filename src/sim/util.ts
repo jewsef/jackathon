@@ -1,9 +1,10 @@
 import type { World, Village, Tribe, Relation, ChronKind, Agent, Job } from "./types";
-import { JOBS, yearOf, seasonOf } from "./types";
+import { JOBS, RES, FACTIONS, yearOf, seasonOf } from "./types";
+import type { Res, Faction, Gov } from "./types";
 import type { Rng } from "./rng";
 import techs from "../../data/techs.json";
 
-export const TECHS = techs as { id: string; name: string; group: string; tier?: number; prereq: string[]; desc: string }[];
+export const TECHS = techs as { id: string; name: string; group: string; tier?: number; age?: number; prereq: string[]; needs?: Record<string, number>; strict?: boolean; desc: string }[];
 export const TECH = Object.fromEntries(TECHS.map((t) => [t.id, t]));
 
 export const sumArr = (a: number[]) => a.reduce((s, v) => s + v, 0);
@@ -76,7 +77,7 @@ export function relation(w: World, a: number, b: number): Relation {
   const lo = Math.min(a, b), hi = Math.max(a, b);
   let r = w.relations.find((x) => x.a === lo && x.b === hi);
   if (!r) {
-    r = { a: lo, b: hi, met: false, metTick: -1, attitude: 0, grudge: 0, war: false, warTicks: 0, losses: 0, alliance: false, marriages: 0, trades: 0, speaker: false };
+    r = { a: lo, b: hi, met: false, metTick: -1, attitude: 0, grudge: 0, war: false, warTicks: 0, losses: 0, alliance: false, marriages: 0, trades: 0, speaker: false, overlord: null };
     w.relations.push(r);
   }
   return r;
@@ -129,3 +130,10 @@ export function workers(v: Village, job: Job): number { return v.jobs[job] * adu
 
 export function agentsOf(w: World, pred: (a: Agent) => boolean) { return w.agents.filter((a) => a.alive && pred(a)); }
 export function remember(a: { memory: string[] }, text: string, max = 6) { a.memory.unshift(text); if (a.memory.length > max) a.memory.length = max; }
+
+export function blankStock(): Record<Res, number> { return Object.fromEntries(RES.map((r) => [r, 0])) as Record<Res, number>; }
+export function newGov(tick: number): Gov { return { type: "elders", ruler: null, rulerFaction: null, legitimacy: 0.7, unrest: 0.05, since: tick, policy: "growth", uprisings: 0 }; }
+export function newFactions(): Faction[] { return FACTIONS.map((id) => ({ id, support: 0.2, militancy: 0.2, head: null })); }
+/** Total of one resource across a tribe's villages. */
+export function tribeStock(w: World, tribe: number, r: Res) { let s = 0; for (const v of w.villages) if (!v.lost && v.tribe === tribe) s += v.stock[r]; return s; }
+export const rulerOf = (w: World, t: Tribe) => (t.gov.ruler !== null ? w.agents.find((a) => a.id === t.gov.ruler && a.alive) ?? null : null);
