@@ -1,0 +1,971 @@
+<title>Firmament</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a night-sky survey document. Full-bleed live world up top, then a single 1120px column of framework, roadmap and art direction sections. Deliberately single dark theme. */
+:root {
+  --night: #0c131f;
+  --deep: #121b2a;
+  --panel: #172234;
+  --rule: #26344c;
+  --ink: #e3e8f0;
+  --mist: #8d9ab0;
+  --storm: #8fd0e6;
+  --ember: #f2b257;
+  --blight: #e0725a;
+  --display: "Marcellus", "Trajan Pro", Georgia, serif;
+  --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--night);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2, h3 { font-family: var(--display); font-weight: 400; text-wrap: balance; margin: 0; letter-spacing: 0.01em; }
+h2 { font-size: clamp(30px, 4.4vw, 44px); line-height: 1.1; }
+h3 { font-size: 21px; line-height: 1.25; }
+p { margin: 0; }
+a { color: var(--storm); }
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mist);
+}
+.lede { font-size: 18px; color: var(--mist); max-width: 62ch; }
+.muted { color: var(--mist); }
+code, pre { font-family: var(--mono); }
+
+/* nav */
+.topnav { border-bottom: 1px solid var(--rule); }
+.topnav .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 14px; flex-wrap: wrap; }
+.brand { font-family: var(--display); font-size: 18px; letter-spacing: 0.24em; text-transform: uppercase; }
+.topnav nav { display: flex; gap: 20px; flex-wrap: wrap; }
+.topnav nav a { color: var(--mist); text-decoration: none; font-size: 14px; }
+.topnav nav a:hover, .topnav nav a:focus-visible { color: var(--ink); }
+
+/* hero */
+.hero { padding-block: 48px 64px; }
+.hero-head { display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; align-items: end; margin-bottom: 28px; }
+.hero h1 { font-size: clamp(56px, 10vw, 112px); line-height: 0.92; letter-spacing: 0.06em; text-transform: uppercase; margin-top: 10px; }
+.hero h1 span { color: var(--storm); }
+.hero-head .lede { font-size: 19px; color: var(--ink); }
+.hero-head .lede em { font-style: normal; color: var(--ember); }
+.stage {
+  position: relative;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--deep);
+}
+.stage canvas { display: block; width: 100%; aspect-ratio: 16 / 9; max-width: 100%; }
+.hud {
+  position: absolute; left: 0; right: 0; top: 0;
+  display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 12px 14px;
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em;
+  background: linear-gradient(rgba(8,13,22,0.72), rgba(8,13,22,0));
+  pointer-events: none;
+}
+.hud b { font-weight: 500; color: var(--ember); }
+.powers {
+  display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+  padding: 12px 14px; border-top: 1px solid var(--rule); background: var(--deep);
+}
+.powers .label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mist); margin-right: 6px; }
+.power {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: transparent; color: var(--ink);
+  border: 1px solid var(--rule); border-radius: 999px;
+  padding: 7px 14px 7px 10px; font: 500 14px var(--body); cursor: pointer;
+  transition: border-color .15s, background .15s, color .15s;
+}
+.power svg { width: 20px; height: 20px; }
+.power:hover { border-color: var(--mist); }
+.power:focus-visible { outline: 2px solid var(--storm); outline-offset: 2px; }
+.power[aria-pressed="true"] { background: var(--storm); color: var(--night); border-color: var(--storm); }
+.chronicle-line {
+  padding: 14px; border-top: 1px solid var(--rule);
+  font-family: var(--display); font-size: 18px; line-height: 1.45; min-height: 3.2em;
+}
+.chronicle-line .yr { font-family: var(--mono); font-size: 12px; color: var(--ember); letter-spacing: 0.08em; margin-right: 10px; }
+.stage-note { margin-top: 10px; font-size: 13px; color: var(--mist); }
+
+/* sections */
+section.block { padding-block: 72px; border-top: 1px solid var(--rule); }
+.sec-head { display: grid; gap: 14px; margin-bottom: 40px; max-width: 760px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+.grid2 > *, .grid3 > *, .grid4 > * { min-width: 0; }
+.pillar { display: grid; gap: 10px; padding-top: 18px; border-top: 2px solid var(--storm); }
+.pillar.ember { border-top-color: var(--ember); }
+.pillar p { color: var(--mist); }
+
+/* loop */
+.loop-wrap { display: grid; grid-template-columns: minmax(0, 420px) 1fr; gap: 48px; align-items: center; }
+.loop-wrap svg { width: 100%; height: auto; max-width: 420px; }
+.loop-steps { display: grid; gap: 18px; }
+.loop-steps li { display: grid; grid-template-columns: 34px 1fr; gap: 12px; }
+.loop-steps ol { list-style: none; padding: 0; margin: 0; display: grid; gap: 20px; }
+.loop-steps .n { font-family: var(--mono); font-size: 13px; color: var(--storm); padding-top: 3px; }
+.loop-steps h3 { font-size: 19px; margin-bottom: 4px; }
+.loop-steps p { color: var(--mist); }
+
+/* framework */
+.principles { margin-bottom: 56px; }
+.principle { background: var(--panel); border-radius: 4px; padding: 20px; display: grid; gap: 8px; align-content: start; }
+.principle .tag { font-family: var(--mono); font-size: 11px; color: var(--storm); letter-spacing: 0.12em; text-transform: uppercase; }
+.principle p { color: var(--mist); font-size: 15px; }
+.stack { display: grid; gap: 6px; margin-bottom: 14px; }
+.layer {
+  display: grid; grid-template-columns: 170px 1fr 130px; gap: 16px; align-items: center;
+  padding: 14px 16px; border: 1px solid var(--rule); border-radius: 3px; background: var(--deep);
+}
+.layer .lname { font-family: var(--display); font-size: 18px; }
+.layer .mods { display: flex; flex-wrap: wrap; gap: 6px; }
+.layer .mods span { font-family: var(--mono); font-size: 12px; padding: 2px 8px; border-radius: 2px; background: var(--panel); color: var(--ink); }
+.layer .where { font-family: var(--mono); font-size: 11px; color: var(--mist); text-align: right; letter-spacing: 0.06em; }
+.layer.ui { border-color: var(--ember); }
+.layer.ui .lname { color: var(--ember); }
+.stack-note { font-size: 14px; color: var(--mist); margin-bottom: 48px; }
+.codecard { background: var(--deep); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+.codecard .cap { padding: 10px 14px; border-bottom: 1px solid var(--rule); font-family: var(--mono); font-size: 12px; color: var(--mist); }
+.codecard pre { margin: 0; padding: 16px; overflow-x: auto; font-size: 13px; line-height: 1.65; color: var(--ink); }
+.codecard .c { color: #6f7f98; }
+.codecard .k { color: var(--storm); }
+.codecard .f { color: var(--ember); }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 4px; }
+th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mist); font-weight: 500; background: var(--deep); }
+tr:last-child td { border-bottom: 0; }
+td:first-child { font-family: var(--display); font-size: 17px; white-space: nowrap; }
+td.myth { color: var(--ember); }
+.tech td:first-child { font-family: var(--body); font-size: 15px; font-weight: 600; }
+.tech td:nth-child(2) { font-family: var(--mono); font-size: 13px; color: var(--storm); white-space: nowrap; }
+.tech td:last-child { color: var(--mist); }
+
+/* roadmap */
+.road { display: grid; gap: 0; position: relative; }
+.phase { display: grid; grid-template-columns: 90px 1fr; gap: 24px; padding-block: 22px; border-bottom: 1px solid var(--rule); }
+.phase:last-child { border-bottom: 0; }
+.phase .num { font-family: var(--display); font-size: 44px; line-height: 1; color: var(--storm); }
+.phase .num small { display: block; font-family: var(--mono); font-size: 11px; color: var(--mist); letter-spacing: 0.1em; margin-top: 8px; text-transform: uppercase; }
+.phase-body { display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 24px; }
+.phase-body > * { min-width: 0; }
+.phase h3 { margin-bottom: 6px; }
+.phase .what { color: var(--mist); font-size: 15px; }
+.phase .k { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mist); display: block; margin-bottom: 4px; }
+.phase .proof { font-size: 15px; }
+.phase .proof.p { border-left: 2px solid var(--ember); padding-left: 12px; }
+
+/* art */
+.manifesto { font-family: var(--display); font-size: clamp(24px, 3.2vw, 34px); line-height: 1.3; max-width: 30ch; margin-bottom: 48px; text-wrap: balance; }
+.manifesto em { font-style: normal; color: var(--ember); }
+.palette { display: grid; gap: 28px; margin-block: 56px; }
+.swatches { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; }
+.swatches.sky { grid-template-columns: repeat(4, 1fr); max-width: 50%; }
+.sw { display: grid; gap: 6px; }
+.sw i { display: block; aspect-ratio: 1 / 1.1; border-radius: 3px; border: 1px solid rgba(255,255,255,0.06); max-width: 100%; }
+.sw b { font-weight: 600; font-size: 13px; }
+.sw span { font-family: var(--mono); font-size: 11px; color: var(--mist); }
+.moods { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.mood figure { margin: 0; }
+.mood canvas { display: block; width: 100%; aspect-ratio: 16 / 9; max-width: 100%; border-radius: 3px; border: 1px solid var(--rule); background: var(--deep); }
+.mood figcaption { margin-top: 10px; display: grid; gap: 2px; }
+.mood figcaption b { font-family: var(--display); font-weight: 400; font-size: 19px; }
+.mood figcaption span { color: var(--mist); font-size: 14px; }
+.zooms { margin-top: 56px; }
+.zoom { border: 1px solid var(--rule); border-radius: 4px; padding: 20px; display: grid; gap: 10px; align-content: start; }
+.zoom .lvl { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; color: var(--storm); text-transform: uppercase; }
+.zoom p { color: var(--mist); font-size: 15px; }
+.zoom ul { margin: 0; padding-left: 18px; color: var(--ink); font-size: 14px; display: grid; gap: 4px; }
+.glyphs { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin-top: 18px; }
+.glyph { display: grid; justify-items: center; gap: 8px; padding: 18px 8px; border: 1px solid var(--rule); border-radius: 4px; text-align: center; }
+.glyph svg { width: 36px; height: 36px; color: var(--storm); }
+.glyph.hot svg { color: var(--ember); }
+.glyph b { font-size: 14px; font-weight: 600; }
+.glyph span { font-family: var(--mono); font-size: 11px; color: var(--mist); }
+.scroll {
+  background: #1a2233; border: 1px solid var(--rule); border-radius: 4px; padding: 26px 28px;
+  display: grid; gap: 14px;
+}
+.scroll .entry { display: grid; grid-template-columns: 92px 1fr; gap: 14px; }
+.scroll .entry > * { min-width: 0; }
+.scroll .when { font-family: var(--mono); font-size: 12px; color: var(--ember); padding-top: 4px; }
+.scroll p { font-family: var(--display); font-size: 18px; line-height: 1.5; }
+.scroll .voice { color: var(--mist); font-family: var(--body); font-size: 14px; font-style: italic; }
+.next { display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; align-items: start; }
+.next ol { margin: 0; padding-left: 20px; display: grid; gap: 10px; }
+.next li::marker { font-family: var(--mono); color: var(--storm); }
+.tree { font-family: var(--mono); font-size: 13px; line-height: 1.7; color: var(--mist); }
+.tree b { color: var(--ink); font-weight: 500; }
+footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; color: var(--mist); font-size: 13px; }
+
+@media (max-width: 900px) {
+  .hero-head, .loop-wrap, .grid2, .next { grid-template-columns: 1fr; }
+  .grid4 { grid-template-columns: 1fr 1fr; }
+  .grid3 { grid-template-columns: 1fr; }
+  .phase-body { grid-template-columns: 1fr; gap: 12px; }
+  .layer { grid-template-columns: 1fr; gap: 8px; }
+  .layer .where { text-align: left; }
+  .swatches { grid-template-columns: repeat(4, 1fr); }
+  .swatches.sky { max-width: 100%; }
+  .glyphs { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 560px) {
+  .grid4, .moods { grid-template-columns: 1fr; }
+  .phase { grid-template-columns: 1fr; gap: 10px; }
+  .glyphs { grid-template-columns: repeat(2, 1fr); }
+  .scroll { padding: 20px 18px; }
+  .scroll .entry { grid-template-columns: 1fr; gap: 4px; }
+  .hud { font-size: 11px; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="g-calm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></symbol>
+    <symbol id="g-rain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 14.5h10a3.5 3.5 0 0 0 .3-7A5 5 0 0 0 7.8 7 3.8 3.8 0 0 0 7 14.5z"/><path d="M8.5 17.5l-1 3M12.5 17.5l-1 3M16.5 17.5l-1 3"/></symbol>
+    <symbol id="g-storm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 14.5h10a3.5 3.5 0 0 0 .3-7A5 5 0 0 0 7.8 7 3.8 3.8 0 0 0 7 14.5z"/><path d="M12.8 14.5l-2.3 4h3.2l-2.2 4"/></symbol>
+    <symbol id="g-drought" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.3"/><path d="M12 2.5v1.3M5.8 8.5H4.5M19.5 8.5h-1.3M7.4 3.9l.9.9M16.6 3.9l-.9.9M3 16h18M7.5 16l1.8 4.5M13.5 16l-1.2 2 1.8 2.5M18 16l1 3"/></symbol>
+    <symbol id="g-erupt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 21l6.8-9.5 1.4 1.4 1.3-1.6 1.3 1.6 1.4-1.4 6.8 9.5z"/><path d="M12 9.5c-1.2-2 1.2-3 0-5.5M8.8 9c-1.2-1-.4-2.6-1.6-3.8M15.2 9c1.2-1 .4-2.6 1.6-3.8"/></symbol>
+    <symbol id="g-quake" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h4l2-5 3 10 3-8 2 5 2-2h4"/></symbol>
+    <symbol id="g-wind" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h11a3 3 0 1 0-3-3M3 14h15a3 3 0 1 1-3 3M3 19h7"/></symbol>
+  </defs>
+</svg>
+
+<header class="topnav">
+  <div class="wrap">
+    <div class="brand">Firmament</div>
+    <nav aria-label="Sections">
+      <a href="#loop">Core loop</a>
+      <a href="#framework">Framework</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#art">Art direction</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap hero">
+    <div class="hero-head">
+      <div>
+        <div class="eyebrow">Game concept · Draft 1 · Jackathon</div>
+        <h1>Firma<span>ment</span></h1>
+      </div>
+      <p class="lede">A god game where you never touch the people. You command the <em>sky and the ground</em>: rain, drought, storm, fire. A civilization lives under it, adapts to it, and writes its history about you.</p>
+    </div>
+
+    <div class="stage" id="stage">
+      <canvas id="hero" aria-label="Live map of a generated island with drifting weather and glowing settlements"></canvas>
+      <div class="hud" aria-live="polite">
+        <span id="hud-date">Year 212 · Spring</span>
+        <span>Villages <b id="hud-towns">0</b> · People <b id="hud-pop">0</b></span>
+      </div>
+      <div class="powers" role="group" aria-label="Divine powers">
+        <span class="label">Powers</span>
+        <button class="power" data-mode="calm" aria-pressed="true"><svg><use href="#g-calm"/></svg>Calm</button>
+        <button class="power" data-mode="rain" aria-pressed="false"><svg><use href="#g-rain"/></svg>Rain</button>
+        <button class="power" data-mode="storm" aria-pressed="false"><svg><use href="#g-storm"/></svg>Storm surge</button>
+        <button class="power" data-mode="drought" aria-pressed="false"><svg><use href="#g-drought"/></svg>Drought</button>
+        <button class="power" data-mode="erupt" aria-pressed="false"><svg><use href="#g-erupt"/></svg>Eruption</button>
+      </div>
+      <p class="chronicle-line" id="chron"><span class="yr">Y212</span><span id="chron-text">A quiet age.</span></p>
+    </div>
+    <p class="stage-note">Working sketch of the art direction. The island, weather and villages are procedurally generated from seed 4127 in this page. Pick a power to see the world and the villages react.</p>
+  </div>
+
+  <section class="block" id="pitch">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Design pillars</div>
+        <h2>Three rules the whole game is built on</h2>
+      </div>
+      <div class="grid3">
+        <div class="pillar">
+          <h3>Indirect control</h3>
+          <p>You have no units, no build menu and no orders. Every power acts on terrain or weather. People decide for themselves what to do about it.</p>
+        </div>
+        <div class="pillar">
+          <h3>Every act echoes</h3>
+          <p>Each power has a short-term effect and a long-term one, and they usually point in opposite directions. A volcano burns a city and leaves the best farmland on the island.</p>
+        </div>
+        <div class="pillar ember">
+          <h3>They interpret you</h3>
+          <p>The civilization builds a belief about the sky from what you have done to it. Kindness, cruelty and silence each produce a different culture, and that culture is your score.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="loop">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Core loop</div>
+        <h2>One turn of the world</h2>
+        <p class="lede">The game runs in real time, but the simulation thinks in seasons. Each season runs the same four beats.</p>
+      </div>
+      <div class="loop-wrap">
+        <svg viewBox="0 0 420 420" role="img" aria-label="Loop diagram: Read the world, Shape the sky, They adapt, History remembers, then back to Read the world">
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#8fd0e6"/></marker>
+          </defs>
+          <circle cx="210" cy="210" r="150" fill="none" stroke="#26344c" stroke-width="1"/>
+          <path d="M 246 64 A 150 150 0 0 1 356 174" fill="none" stroke="#8fd0e6" stroke-width="1.6" marker-end="url(#arr)"/>
+          <path d="M 356 246 A 150 150 0 0 1 246 356" fill="none" stroke="#8fd0e6" stroke-width="1.6" marker-end="url(#arr)"/>
+          <path d="M 174 356 A 150 150 0 0 1 64 246" fill="none" stroke="#8fd0e6" stroke-width="1.6" marker-end="url(#arr)"/>
+          <path d="M 64 174 A 150 150 0 0 1 174 64" fill="none" stroke="#8fd0e6" stroke-width="1.6" marker-end="url(#arr)"/>
+          <g font-family="Figtree, system-ui, sans-serif" font-size="14" fill="#e3e8f0" text-anchor="middle">
+            <circle cx="210" cy="60" r="7" fill="#8fd0e6"/>
+            <text x="210" y="36">Read the world</text>
+            <circle cx="360" cy="210" r="7" fill="#8fd0e6"/>
+            <text x="360" y="240">Shape the sky</text>
+            <circle cx="210" cy="360" r="7" fill="#f2b257"/>
+            <text x="210" y="392">They adapt</text>
+            <circle cx="60" cy="210" r="7" fill="#f2b257"/>
+            <text x="60" y="240">History</text>
+            <text x="60" y="257">remembers</text>
+          </g>
+          <g text-anchor="middle">
+            <text x="210" y="204" font-family="Marcellus, Georgia, serif" font-size="26" fill="#e3e8f0">1 tick</text>
+            <text x="210" y="230" font-family="JetBrains Mono, monospace" font-size="12" fill="#8d9ab0" letter-spacing="1.5">= ONE SEASON</text>
+          </g>
+        </svg>
+        <div class="loop-steps">
+          <ol>
+            <li><span class="n">1</span><div><h3>Read the world</h3><p>Overlays show rainfall, fertility, hunger and belief. You see which village is starving before they know it.</p></div></li>
+            <li><span class="n">2</span><div><h3>Shape the sky</h3><p>Spend divine energy on a power. Paint rain with a brush, drag a storm track, or place a disaster by hand.</p></div></li>
+            <li><span class="n">3</span><div><h3>They adapt</h3><p>Villages harvest, starve, migrate, build levees or abandon the coast. The simulation decides, using needs and memory.</p></div></li>
+            <li><span class="n">4</span><div><h3>History remembers</h3><p>The event is written into the chronicle and into culture. Belief toward you shifts, and faith refills your energy.</p></div></li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="framework">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Development framework</div>
+        <h2>How the game gets built</h2>
+        <p class="lede">A simulation game lives or dies on whether the simulation can be trusted, tested and tuned. These four rules come before any feature work.</p>
+      </div>
+
+      <div class="grid4 principles">
+        <div class="principle"><span class="tag">Rule A</span><h3>Simulation owns the truth</h3><p>All game state lives in one plain data object. The renderer only reads it and never changes it.</p></div>
+        <div class="principle"><span class="tag">Rule B</span><h3>Systems are pure steps</h3><p>Each system takes state, events and a random source and returns new state. Every one can be unit-tested alone.</p></div>
+        <div class="principle"><span class="tag">Rule C</span><h3>Seeds replay everything</h3><p>One seed plus a list of player actions rebuilds any run exactly. A bug report becomes a replay file.</p></div>
+        <div class="principle"><span class="tag">Rule D</span><h3>Tuning lives in data</h3><p>Disasters, crops, tech unlocks and beliefs are JSON tables. Balancing never needs a code change.</p></div>
+      </div>
+
+      <h3 style="margin-bottom:16px">Architecture</h3>
+      <div class="stack" aria-label="Layer stack, top to bottom">
+        <div class="layer ui"><span class="lname">Player &amp; UI</span><span class="mods"><span>powers</span><span>brushes</span><span>overlays</span><span>time controls</span><span>chronicle</span></span><span class="where">Main thread</span></div>
+        <div class="layer"><span class="lname">Renderer</span><span class="mods"><span>terrain mesh</span><span>contour shader</span><span>cloud layer</span><span>particles</span><span>lights</span></span><span class="where">Main thread · WebGL</span></div>
+        <div class="layer"><span class="lname">Civilization</span><span class="mods"><span>settlements</span><span>needs</span><span>migration</span><span>tech</span><span>belief</span><span>memory</span></span><span class="where">Sim worker</span></div>
+        <div class="layer"><span class="lname">Climate</span><span class="mods"><span>seasons</span><span>wind field</span><span>weather cells</span><span>disasters</span></span><span class="where">Sim worker</span></div>
+        <div class="layer"><span class="lname">Terrain</span><span class="mods"><span>heightmap</span><span>biomes</span><span>rivers</span><span>soil</span><span>erosion</span></span><span class="where">Sim worker</span></div>
+      </div>
+      <p class="stack-note">Each layer reads only from the layers below it. The simulation runs in a Web Worker and posts a snapshot to the renderer after each tick, so a slow frame never slows the world and a heavy season never freezes the screen.</p>
+
+      <div class="grid2">
+        <div class="codecard">
+          <div class="cap">sim/tick.ts · the whole game in one function</div>
+<pre><span class="k">export function</span> <span class="f">tick</span>(w: World, acts: Action[], rng: Rng): World {
+  w = <span class="f">applyPowers</span>(w, acts);  <span class="c">// player edits sky + ground</span>
+  w = <span class="f">climate</span>(w, rng);        <span class="c">// season, wind, weather cells</span>
+  w = <span class="f">terrain</span>(w);             <span class="c">// floods, ash fall, erosion</span>
+  w = <span class="f">ecology</span>(w);             <span class="c">// soil, crops, forests</span>
+  w = <span class="f">society</span>(w, rng);        <span class="c">// growth, hunger, migration</span>
+  w = <span class="f">culture</span>(w);             <span class="c">// tech, belief, memory</span>
+  w.chronicle.<span class="f">push</span>(...<span class="f">narrate</span>(w.events));
+  <span class="k">return</span> w;
+}</pre>
+        </div>
+        <div class="codecard">
+          <div class="cap">sim/types.ts · core data model</div>
+<pre><span class="k">interface</span> Tile {
+  height: number; moisture: number;
+  temp: number;   fertility: number;
+  biome: Biome;   scars: Scar[];   <span class="c">// ash, flood silt</span>
+}
+<span class="k">interface</span> Settlement {
+  pop: number;  food: number;  morale: number;
+  techs: Set&lt;TechId&gt;;
+  belief: { awe: number; fear: number; love: number };
+  memory: Event[];                 <span class="c">// what the sky did</span>
+}</pre>
+        </div>
+      </div>
+
+      <h3 style="margin:48px 0 16px">Tech stack</h3>
+      <div class="tablewrap">
+        <table class="tech">
+          <thead><tr><th>Concern</th><th>Choice</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>Language &amp; build</td><td>TypeScript + Vite</td><td>Types keep the data model honest; instant reloads keep tuning fast.</td></tr>
+            <tr><td>Rendering</td><td>PixiJS (WebGL)</td><td>Fast 2D with custom shaders for contours, water and clouds. Runs in any browser.</td></tr>
+            <tr><td>Simulation thread</td><td>Web Worker</td><td>Keeps the world ticking at 100× speed without dropping frames.</td></tr>
+            <tr><td>Randomness</td><td>Seeded PRNG + simplex noise</td><td>Same seed, same world. Required for replays and tests.</td></tr>
+            <tr><td>Testing</td><td>Vitest + golden runs</td><td>Unit tests per system, plus 500-year runs whose summaries must not drift.</td></tr>
+            <tr><td>Narration</td><td>Claude API (optional)</td><td>Turns the event log into myths and chronicle entries in the civilization's voice.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="roadmap">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Roadmap</div>
+        <h2>Seven milestones, each one playable</h2>
+        <p class="lede">Every milestone ends with something you can open in a browser and play. A milestone is done when its proof passes.</p>
+      </div>
+      <div class="road">
+        <div class="phase">
+          <div class="num">0<small>Foundation</small></div>
+          <div class="phase-body">
+            <div><h3>The empty clock</h3><p class="what">Repo, Vite and TypeScript, seeded RNG, the worker tick loop, pause and speed controls, a debug overlay.</p></div>
+            <div><span class="k">Builds</span><p class="proof">Tick pipeline with empty systems. Save and load of a seed plus action log.</p></div>
+            <div><span class="k">Proof</span><p class="proof p">Two runs from the same seed produce byte-identical state after 1,000 ticks.</p></div>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="num">1<small>Ground</small></div>
+          <div class="phase-body">
+            <div><h3>A place worth saving</h3><p class="what">Heightmap from noise, island mask, biomes, rivers that run downhill. First art pass with contour shading.</p></div>
+            <div><span class="k">Builds</span><p class="proof">Terrain layer and the relief-map shader from the art direction.</p></div>
+            <div><span class="k">Proof</span><p class="proof p">Ten random seeds all look like believable places in a screenshot.</p></div>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="num">2<small>Sky</small></div>
+          <div class="phase-body">
+            <div><h3>Weather you can hold</h3><p class="what">Climate by latitude and altitude, drifting weather cells, four seasons. First three powers: rain, sun, wind.</p></div>
+            <div><span class="k">Builds</span><p class="proof">Climate layer, cloud rendering, power brushes, divine energy meter.</p></div>
+            <div><span class="k">Proof</span><p class="proof p">Painting rain on dry land turns it green within one season.</p></div>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="num">3<small>People</small></div>
+          <div class="phase-body">
+            <div><h3>They live without you</h3><p class="what">Settlements with food, water, shelter and morale. Growth, founding new villages, hunger, migration.</p></div>
+            <div><span class="k">Builds</span><p class="proof">Civilization layer, settlement lights, overlays for hunger and growth.</p></div>
+            <div><span class="k">Proof</span><p class="proof p">With no player input, a civilization lasts 500 years on most seeds and collapses on some.</p></div>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="num">4<small>Wrath</small></div>
+          <div class="phase-body">
+            <div><h3>Disasters that scar</h3><p class="what">Storm surge, earthquake, eruption and plague, each with a cost in energy and a lasting mark on the land.</p></div>
+            <div><span class="k">Builds</span><p class="proof">Disaster tables in JSON, terrain scars, ash and flood silt that change fertility.</p></div>
+            <div><span class="k">Proof</span><p class="proof p">Every disaster leaves something you can still see on the map 100 years later.</p></div>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="num">5<small>Memory</small></div>
+          <div class="phase-body">
+            <div><h3>A culture shaped by you</h3><p class="what">Adversity unlocks tech. Villages remember events. Belief toward the sky drives faith, and faith refills energy.</p></div>
+            <div><span class="k">Builds</span><p class="proof">Tech and belief tables, the chronicle, optional Claude-written myths.</p></div>
+            <div><span class="k">Proof</span><p class="proof p">A gentle player and a cruel player get visibly different cultures from the same seed.</p></div>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="num">6<small>Polish</small></div>
+          <div class="phase-body">
+            <div><h3>Ready to share</h3><p class="what">Sound, onboarding, endings, and share-a-seed links so friends can play the same world.</p></div>
+            <div><span class="k">Builds</span><p class="proof">Audio layer, tutorial island, three endings, URL seeds.</p></div>
+            <div><span class="k">Proof</span><p class="proof p">A new player reaches their first disaster without reading anything.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="ledger">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Consequence ledger</div>
+        <h2>What each power does over time</h2>
+        <p class="lede">This table is the design target for milestones 4 and 5. Each row becomes an entry in the disaster and tech data files.</p>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Power</th><th>Same season</th><th>Within a generation</th><th>In their memory</th></tr></thead>
+          <tbody>
+            <tr><td>Rain</td><td>Harvests rise</td><td>Population boom, new villages founded</td><td class="myth">Rain festivals for "the Giver"</td></tr>
+            <tr><td>Drought</td><td>Famine, villages empty inland</td><td>Irrigation, wells and granaries</td><td class="myth">Water rites; the sky is cruel</td></tr>
+            <tr><td>Storm surge</td><td>Coastal villages drowned</td><td>Stilt houses, levees, a move uphill</td><td class="myth">Flood myth and a chosen bloodline</td></tr>
+            <tr><td>Earthquake</td><td>Buildings collapse</td><td>Better masonry, lighter roofs</td><td class="myth">Fear of the ground; earth cults</td></tr>
+            <tr><td>Eruption</td><td>Towns burned, a year without summer</td><td>Black soil, obsidian tools</td><td class="myth">The mountain becomes a god</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="art">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Visual art concept</div>
+        <h2>Living Atlas</h2>
+      </div>
+      <p class="manifesto">The world looks like a hand-tinted survey map that has started to breathe. Weather is <em>ink wash</em> drifting over the paper, and people are the <em>only warm light</em> on it.</p>
+
+      <div class="grid3">
+        <div class="pillar"><h3>Readable from orbit</h3><p>Contour bands and hillshade make height obvious at a glance. You can tell fertile lowland from barren rock without opening an overlay.</p></div>
+        <div class="pillar"><h3>Weather is translucent</h3><p>Clouds are soft, semi-transparent washes with a cast shadow. They never hide the land completely, so you always see what your storm is doing.</p></div>
+        <div class="pillar ember"><h3>People are light</h3><p>Villages are the only warm color on the map. When they thrive they glow; when they die the light goes out and leaves a ring.</p></div>
+      </div>
+
+      <div class="palette">
+        <div>
+          <div class="eyebrow" style="margin-bottom:12px">Land palette · by elevation</div>
+          <div class="swatches">
+            <div class="sw"><i style="background:#122a4a"></i><b>Abyss</b><span>#122A4A</span></div>
+            <div class="sw"><i style="background:#34708c"></i><b>Shoal</b><span>#34708C</span></div>
+            <div class="sw"><i style="background:#d6c496"></i><b>Strand</b><span>#D6C496</span></div>
+            <div class="sw"><i style="background:#88a85c"></i><b>Meadow</b><span>#88A85C</span></div>
+            <div class="sw"><i style="background:#407048"></i><b>Grove</b><span>#407048</span></div>
+            <div class="sw"><i style="background:#968c62"></i><b>Upland</b><span>#968C62</span></div>
+            <div class="sw"><i style="background:#847c76"></i><b>Scree</b><span>#847C76</span></div>
+            <div class="sw"><i style="background:#eceef0"></i><b>Cap</b><span>#ECEEF0</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="eyebrow" style="margin-bottom:12px">Sky and life · reserved meanings</div>
+          <div class="swatches sky">
+            <div class="sw"><i style="background:#8fd0e6"></i><b>Storm</b><span>Your power</span></div>
+            <div class="sw"><i style="background:#f2b257"></i><b>Ember</b><span>Human life</span></div>
+            <div class="sw"><i style="background:#e0725a"></i><b>Blight</b><span>Fire, danger</span></div>
+            <div class="sw"><i style="background:#5c5856"></i><b>Ash</b><span>Ruin, scars</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="eyebrow" style="margin-bottom:14px">Four moods · same island, same seed</div>
+      <div class="moods">
+        <div class="mood"><figure><canvas data-mode="rain" aria-label="The island in a wet age"></canvas><figcaption><b>Age of Plenty</b><span>Saturated greens, light clouds, every village lit.</span></figcaption></figure></div>
+        <div class="mood"><figure><canvas data-mode="drought" aria-label="The island in drought"></canvas><figcaption><b>The Long Dry</b><span>Ochre land, a lower sea, inland lights dimming.</span></figcaption></figure></div>
+        <div class="mood"><figure><canvas data-mode="storm" aria-label="The island under a storm surge"></canvas><figcaption><b>The Deluge</b><span>Slate clouds and rain, a higher sea, drowned coastal rings.</span></figcaption></figure></div>
+        <div class="mood"><figure><canvas data-mode="erupt" aria-label="The island during an eruption"></canvas><figcaption><b>Ashfall</b><span>A red crater, an ash plume on the wind, burned towns.</span></figcaption></figure></div>
+      </div>
+
+      <div class="zooms">
+        <div class="eyebrow" style="margin-bottom:14px">Three zoom levels</div>
+        <div class="grid3">
+          <div class="zoom"><span class="lvl">Orbit · whole island</span><h3>The map</h3><p>Where you spend most of the game. Strategy and weather.</p><ul><li>Contour relief and biome color</li><li>Cloud washes and storm tracks</li><li>Villages as points of light</li></ul></div>
+          <div class="zoom"><span class="lvl">Province · one valley</span><h3>The diorama</h3><p>Zoom in to see what your choices built.</p><ul><li>Fields as stitched color patches</li><li>Roofs as tiny inked glyphs</li><li>Levees, terraces, ruins appear</li></ul></div>
+          <div class="zoom"><span class="lvl">Hearth · one village</span><h3>The vignette</h3><p>Short story moments, triggered by big events.</p><ul><li>Painted panel, like a book plate</li><li>Named leaders and prophets</li><li>One line of their voice</li></ul></div>
+        </div>
+      </div>
+
+      <div style="margin-top:56px">
+        <div class="eyebrow">Power glyphs · interface</div>
+        <p class="muted" style="margin-top:8px; max-width:62ch">Powers are single-stroke engraved glyphs, like marks on an old chart. Cyan for weather you shape, ember for powers that cost lives.</p>
+        <div class="glyphs">
+          <div class="glyph"><svg><use href="#g-calm"/></svg><b>Calm</b><span>free</span></div>
+          <div class="glyph"><svg><use href="#g-rain"/></svg><b>Rain</b><span>2 energy</span></div>
+          <div class="glyph"><svg><use href="#g-wind"/></svg><b>Wind</b><span>2 energy</span></div>
+          <div class="glyph"><svg><use href="#g-drought"/></svg><b>Drought</b><span>4 energy</span></div>
+          <div class="glyph hot"><svg><use href="#g-storm"/></svg><b>Storm</b><span>6 energy</span></div>
+          <div class="glyph hot"><svg><use href="#g-quake"/></svg><b>Quake</b><span>8 energy</span></div>
+          <div class="glyph hot"><svg><use href="#g-erupt"/></svg><b>Eruption</b><span>12 energy</span></div>
+        </div>
+      </div>
+
+      <div class="grid2" style="margin-top:56px; align-items:start">
+        <div>
+          <div class="eyebrow" style="margin-bottom:12px">The chronicle · sample</div>
+          <div class="scroll">
+            <div class="entry"><span class="when">Y 188 · Spring</span><div><p>The rains came early to the Vell valley. The granaries could not hold it all.</p></div></div>
+            <div class="entry"><span class="when">Y 203 · Autumn</span><div><p>The sea rose in one night and took Aldmouth. Those who lived climbed to the hills and did not come back down.</p></div></div>
+            <div class="entry"><span class="when">Y 211 · Winter</span><div><p>The elders of Highfold built a shrine facing the sky.</p><p class="voice">"It gives, and it takes. We will be ready for both."</p></div></div>
+          </div>
+        </div>
+        <div style="display:grid; gap:20px">
+          <div>
+            <div class="eyebrow" style="margin-bottom:8px">Type</div>
+            <p class="muted">An engraved serif for place names, chronicle text and headings, so the world reads like a carved record. A clean sans for the interface, and a monospace for dates and numbers.</p>
+          </div>
+          <div>
+            <div class="eyebrow" style="margin-bottom:8px">Sound</div>
+            <p class="muted">Low drones for the sky that change with the weather. Small wooden and bell sounds for villages. Disasters arrive with silence first, then the sound.</p>
+          </div>
+          <div>
+            <div class="eyebrow" style="margin-bottom:8px">Motion</div>
+            <p class="muted">The land never animates on its own. Only weather moves, and lights flicker. Change on the ground happens over seasons, so it feels earned.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="next">
+    <div class="wrap next">
+      <div>
+        <div class="eyebrow">First build</div>
+        <h2 style="margin:14px 0 20px">Milestones 0 and 1 first</h2>
+        <ol>
+          <li>Scaffold the TypeScript, Vite and PixiJS project in this repo.</li>
+          <li>Port the generator on this page into <code>sim/terrain.ts</code> with tests.</li>
+          <li>Build the tick worker, time controls and seed replay.</li>
+          <li>Write the relief shader so the real game matches the moods above.</li>
+          <li>Show ten seeds side by side and tune until every one is a place.</li>
+        </ol>
+      </div>
+      <div class="codecard">
+        <div class="cap">Planned repo layout</div>
+<pre class="tree"><b>jackathon/</b>
+├─ <b>src/sim/</b>       tick, terrain, climate, society
+├─ <b>src/render/</b>    pixi stage, shaders, particles
+├─ <b>src/ui/</b>        powers, overlays, chronicle
+├─ <b>data/</b>          disasters, techs, beliefs (JSON)
+├─ <b>tests/</b>         system tests, golden runs
+└─ <b>docs/</b>          this concept</pre>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">Firmament concept · draft 1 · November 2026</div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var SEED = 4127, GW = 320, GH = 180, CW = 128, CH = 72;
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function hash(x, y, s) {
+    var h = (x * 374761393 + y * 668265263 + s * 1442695041) | 0;
+    h = Math.imul(h ^ (h >>> 13), 1274126177);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+  function noise(x, y, s) {
+    var xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+    var u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+    var a = hash(xi, yi, s), b = hash(xi + 1, yi, s), c = hash(xi, yi + 1, s), d = hash(xi + 1, yi + 1, s);
+    return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+  }
+  function fbm(x, y, s, o) {
+    var sum = 0, amp = 1, f = 1, n = 0;
+    for (var i = 0; i < o; i++) { sum += amp * noise(x * f, y * f, s + i * 31); n += amp; amp *= 0.5; f *= 2.03; }
+    return sum / n;
+  }
+  function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+  function sstep(a, b, x) { var t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); }
+  function mix(c1, c2, t) { return [c1[0] + (c2[0] - c1[0]) * t, c1[1] + (c2[1] - c1[1]) * t, c1[2] + (c2[2] - c1[2]) * t]; }
+
+  /* ---------- world ---------- */
+  var H = new Float32Array(GW * GH), M = new Float32Array(GW * GH);
+  var vx = 0, vy = 0, vmax = -1;
+  for (var y = 0; y < GH; y++) for (var x = 0; x < GW; x++) {
+    var nx = x / GW, ny = y / GH;
+    var e = fbm(nx * 4.2, ny * 2.4, SEED, 6);
+    var dx = (nx - 0.5) * 2, dy = (ny - 0.5) * 2;
+    var d2 = dx * dx * 0.85 + dy * dy * 1.15;
+    e = e * 1.15 + 0.1 - d2 * 0.5;
+    var i = y * GW + x;
+    H[i] = e;
+    M[i] = clamp((fbm(nx * 3 + 11, ny * 1.8 + 7, SEED + 500, 4) - 0.3) / 0.4, 0, 1);
+    if (e > vmax) { vmax = e; vx = x; vy = y; }
+  }
+  var SEA = 0.5;
+  var MODES = {
+    calm:    { sea: 0.50, cloud: { th: 0.60, col: [250, 250, 252], a: 0.82, sp: 0.020 } },
+    rain:    { sea: 0.50, cloud: { th: 0.52, col: [218, 226, 234], a: 0.78, sp: 0.028 } },
+    storm:   { sea: 0.535, cloud: { th: 0.44, col: [78, 92, 114], a: 0.86, sp: 0.045 } },
+    drought: { sea: 0.47, cloud: { th: 0.76, col: [255, 244, 228], a: 0.45, sp: 0.012 } },
+    erupt:   { sea: 0.50, cloud: { th: 0.64, col: [128, 118, 112], a: 0.82, sp: 0.022 } }
+  };
+  var P = {
+    abyss: [18, 42, 74], shoal: [52, 112, 140], strand: [214, 196, 150], meadow: [136, 168, 92],
+    grove: [64, 112, 72], upland: [150, 140, 98], scree: [132, 124, 118], cap: [236, 238, 240],
+    dry: [198, 160, 98], ash: [92, 88, 86], lush: [96, 150, 74], foam: [205, 225, 232]
+  };
+
+  var terrainCache = {};
+  function terrain(mode) {
+    if (terrainCache[mode]) return terrainCache[mode];
+    var cfg = MODES[mode], sea = cfg.sea;
+    var cv = document.createElement("canvas"); cv.width = GW; cv.height = GH;
+    var cx = cv.getContext("2d"), img = cx.createImageData(GW, GH), D = img.data;
+    for (var y = 0; y < GH; y++) for (var x = 0; x < GW; x++) {
+      var i = y * GW + x, h = H[i], m = M[i], el = h - sea, c;
+      var hl = H[y * GW + Math.max(0, x - 1)], hr = H[y * GW + Math.min(GW - 1, x + 1)];
+      var hu = H[Math.max(0, y - 1) * GW + x], hd = H[Math.min(GH - 1, y + 1) * GW + x];
+      if (el < 0) {
+        c = mix(P.shoal, P.abyss, Math.min(1, -el / 0.2));
+        if (hr - sea >= 0 || hl - sea >= 0 || hu - sea >= 0 || hd - sea >= 0) c = mix(c, P.foam, 0.45);
+        if (mode === "drought") c = mix(c, [70, 120, 130], 0.2);
+      } else {
+        if (el < 0.018) c = P.strand;
+        else if (el < 0.16) c = mix(P.meadow, P.grove, clamp((m - 0.35) * 2.2, 0, 1));
+        else if (el < 0.25) c = mix(P.grove, P.upland, sstep(0.16, 0.22, el));
+        else if (el < 0.33) c = P.scree;
+        else c = P.cap;
+        if (mode === "drought" && el < 0.25) c = mix(c, P.dry, 0.55 + (1 - m) * 0.25);
+        if (mode === "rain" && el > 0.018 && el < 0.2) c = mix(c, P.lush, 0.3);
+        var shade = clamp(1 + ((hl - hr) + (hu - hd)) * 7, 0.62, 1.32);
+        c = [c[0] * shade, c[1] * shade, c[2] * shade];
+        var band = Math.floor(h * 30);
+        if (band !== Math.floor(hr * 30) || band !== Math.floor(hd * 30)) c = [c[0] * 0.84, c[1] * 0.84, c[2] * 0.84];
+      }
+      if (mode === "storm") c = mix([c[0] * 0.8, c[1] * 0.8, c[2] * 0.8], [36, 54, 82], 0.18);
+      if (mode === "erupt") {
+        c = mix(c, P.ash, 0.32);
+        var dv = Math.hypot(x - vx, (y - vy) * 1.2);
+        if (dv < 26) c = mix(c, [40, 34, 32], (1 - dv / 26) * 0.6);
+        if (dv < 7) c = mix(c, [240, 110, 50], 1 - dv / 7);
+      }
+      var o = i * 4; D[o] = c[0]; D[o + 1] = c[1]; D[o + 2] = c[2]; D[o + 3] = 255;
+    }
+    cx.putImageData(img, 0, 0);
+    terrainCache[mode] = cv;
+    return cv;
+  }
+
+  /* ---------- settlements ---------- */
+  var towns = [];
+  (function () {
+    var cands = [];
+    for (var y = 4; y < GH - 4; y += 2) for (var x = 4; x < GW - 4; x += 2) {
+      var i = y * GW + x, el = H[i] - SEA;
+      if (el > 0.006 && el < 0.12) cands.push({ x: x, y: y, s: M[i] * (1 - Math.abs(el - 0.045) / 0.08) + hash(x, y, 9) * 0.15, h: H[i], m: M[i] });
+    }
+    cands.sort(function (a, b) { return b.s - a.s; });
+    for (var k = 0; k < cands.length && towns.length < 16; k++) {
+      var c = cands[k], ok = true;
+      for (var j = 0; j < towns.length; j++) if (Math.hypot(towns[j].x - c.x, towns[j].y - c.y) < 24) { ok = false; break; }
+      if (ok) { c.pop = Math.round(300 + Math.max(0, c.s) * 2400); c.ph = hash(c.x, c.y, 3) * 6.28; towns.push(c); }
+    }
+  })();
+  function townState(t, mode) {
+    if (mode === "storm" && t.h < MODES.storm.sea + 0.004) return { k: "lost", pop: 0 };
+    if (mode === "erupt" && Math.hypot(t.x - vx, t.y - vy) < 48) return { k: "burned", pop: 0 };
+    if (mode === "drought") return t.m < 0.5 ? { k: "dim", pop: Math.round(t.pop * 0.35) } : { k: "live", pop: Math.round(t.pop * 0.8) };
+    if (mode === "rain") return { k: "live", pop: Math.round(t.pop * 1.3) };
+    if (mode === "storm") return { k: "live", pop: Math.round(t.pop * 0.9) };
+    return { k: "live", pop: t.pop };
+  }
+
+  /* ---------- clouds ---------- */
+  function makeCloudLayer() {
+    var a = document.createElement("canvas"), b = document.createElement("canvas");
+    a.width = b.width = CW; a.height = b.height = CH;
+    return { cloud: a, shadow: b, ci: a.getContext("2d").createImageData(CW, CH), si: b.getContext("2d").createImageData(CW, CH) };
+  }
+  function computeClouds(L, mode, t) {
+    var cfg = MODES[mode].cloud, C = L.ci.data, S = L.si.data;
+    var vxn = vx / GW, vyn = vy / GH;
+    for (var y = 0; y < CH; y++) for (var x = 0; x < CW; x++) {
+      var nx = x / CW, ny = y / CH;
+      var c = fbm(nx * 5 + t * cfg.sp * 10, ny * 2.8, SEED + 900, 4) * 0.65 + fbm(nx * 3 - t * cfg.sp * 6 + 20, ny * 1.7 + 5, SEED + 950, 3) * 0.35;
+      var col = cfg.col, plume = 0;
+      if (mode === "erupt") {
+        var ddx = nx - vxn;
+        if (ddx > -0.02) {
+          var dd = Math.max(0, ddx), w = 0.025 + dd * 0.32, off = ny - vyn + dd * 0.18;
+          plume = Math.exp(-(off * off) / (w * w)) * Math.exp(-dd * 1.8);
+          c += plume * 0.5;
+          col = mix(col, [58, 50, 48], clamp(plume * 1.5, 0, 1));
+        }
+      }
+      var al = sstep(cfg.th, cfg.th + 0.16, c) * cfg.a;
+      var lit = 0.86 + sstep(cfg.th, cfg.th + 0.3, c) * 0.14;
+      var o = (y * CW + x) * 4;
+      C[o] = col[0] * lit; C[o + 1] = col[1] * lit; C[o + 2] = col[2] * lit; C[o + 3] = al * 255;
+      S[o] = 6; S[o + 1] = 12; S[o + 2] = 22; S[o + 3] = al * 255 * 0.42;
+    }
+    L.cloud.getContext("2d").putImageData(L.ci, 0, 0);
+    L.shadow.getContext("2d").putImageData(L.si, 0, 0);
+  }
+
+  /* ---------- scene ---------- */
+  function Scene(canvas, mode, live) {
+    this.cv = canvas; this.ctx = canvas.getContext("2d"); this.mode = mode; this.live = live;
+    this.L = makeCloudLayer(); this.t = 3; this.drops = []; this.flash = 0; this.bolt = null; this.nextBolt = 1.5;
+    this.resize();
+  }
+  Scene.prototype.resize = function () {
+    var r = this.cv.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var w = Math.max(200, Math.round(r.width * dpr)), h = Math.round(w * 9 / 16);
+    if (this.cv.width !== w) { this.cv.width = w; this.cv.height = h; }
+    this.w = w; this.h = h;
+    this.seedDrops();
+  };
+  Scene.prototype.seedDrops = function () {
+    this.drops = [];
+    var n = this.mode === "storm" ? 220 : this.mode === "rain" ? 130 : 0;
+    for (var i = 0; i < n; i++) this.drops.push({ x: hash(i, 1, 77) * this.w * 1.2, y: hash(i, 2, 77) * this.h, l: 8 + hash(i, 3, 77) * 14, s: 0.7 + hash(i, 4, 77) * 0.6 });
+  };
+  Scene.prototype.draw = function (dt) {
+    var ctx = this.ctx, w = this.w, h = this.h, mode = this.mode, sx = w / GW, sy = h / GH, k = w / 900;
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+    ctx.globalCompositeOperation = "source-over";
+    ctx.drawImage(terrain(mode), 0, 0, w, h);
+
+    if (mode === "erupt") {
+      var gx = (vx + 0.5) * sx, gy = (vy + 0.5) * sy, pr = 60 * k * (1 + 0.08 * Math.sin(this.t * 3));
+      var g = ctx.createRadialGradient(gx, gy, 0, gx, gy, pr);
+      g.addColorStop(0, "rgba(255,150,70,0.9)"); g.addColorStop(0.35, "rgba(224,90,50,0.45)"); g.addColorStop(1, "rgba(224,90,50,0)");
+      ctx.globalCompositeOperation = "lighter"; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(gx, gy, pr, 0, 6.29); ctx.fill();
+      ctx.globalCompositeOperation = "source-over";
+    }
+
+    for (var i = 0; i < towns.length; i++) {
+      var tn = towns[i], st = townState(tn, mode), px = (tn.x + 0.5) * sx, py = (tn.y + 0.5) * sy;
+      if (st.k === "lost") {
+        ctx.strokeStyle = "rgba(225,235,245,0.65)"; ctx.lineWidth = 1.4 * k + 0.4;
+        ctx.beginPath(); ctx.arc(px, py, 6 * k + 2, 0, 6.29); ctx.stroke();
+        continue;
+      }
+      if (st.k === "burned") {
+        ctx.strokeStyle = "rgba(224,114,90,0.85)"; ctx.lineWidth = 1.6 * k + 0.4; var q = 4 * k + 2;
+        ctx.beginPath(); ctx.moveTo(px - q, py - q); ctx.lineTo(px + q, py + q); ctx.moveTo(px + q, py - q); ctx.lineTo(px - q, py + q); ctx.stroke();
+        continue;
+      }
+      var fl = 0.85 + 0.15 * Math.sin(this.t * 2.3 + tn.ph);
+      var base = (4 + Math.sqrt(st.pop) / 7) * k + 2;
+      var r = base * (st.k === "dim" ? 0.7 : 1) * fl * 2.4;
+      var a = st.k === "dim" ? 0.5 : 0.85;
+      var gg = ctx.createRadialGradient(px, py, 0, px, py, r);
+      gg.addColorStop(0, "rgba(255,214,140," + a + ")"); gg.addColorStop(0.3, "rgba(242,178,87," + a * 0.55 + ")"); gg.addColorStop(1, "rgba(242,178,87,0)");
+      ctx.globalCompositeOperation = "lighter"; ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(px, py, r, 0, 6.29); ctx.fill();
+      ctx.globalCompositeOperation = "source-over";
+      ctx.fillStyle = st.k === "dim" ? "rgba(255,226,170,0.55)" : "rgba(255,240,205,1)";
+      ctx.beginPath(); ctx.arc(px, py, 1.3 * k + 1, 0, 6.29); ctx.fill();
+    }
+
+    if (this.live || !this.cloudsDone) { computeClouds(this.L, mode, this.t); this.cloudsDone = true; }
+    ctx.globalAlpha = 1;
+    ctx.drawImage(this.L.shadow, w * 0.012, h * 0.022, w, h);
+    ctx.drawImage(this.L.cloud, 0, 0, w, h);
+
+    if (mode === "storm") { ctx.fillStyle = "rgba(10,18,32,0.22)"; ctx.fillRect(0, 0, w, h); }
+    if (mode === "drought") { ctx.fillStyle = "rgba(242,178,87,0.07)"; ctx.fillRect(0, 0, w, h); }
+
+    if (this.drops.length) {
+      ctx.strokeStyle = mode === "storm" ? "rgba(190,215,235,0.42)" : "rgba(210,230,245,0.35)";
+      ctx.lineWidth = Math.max(1, k); ctx.beginPath();
+      var spd = (mode === "storm" ? 900 : 600) * k;
+      for (var j = 0; j < this.drops.length; j++) {
+        var dr = this.drops[j];
+        if (this.live) { dr.y += dr.s * spd * dt; dr.x -= dr.s * spd * dt * 0.25; if (dr.y > h) { dr.y -= h + 20; dr.x = Math.random() * w * 1.2; } if (dr.x < -20) dr.x += w * 1.2; }
+        ctx.moveTo(dr.x, dr.y); ctx.lineTo(dr.x - dr.l * k * 0.25, dr.y + dr.l * k);
+      }
+      ctx.stroke();
+    }
+
+    if (mode === "storm" && this.live) {
+      this.nextBolt -= dt;
+      if (this.nextBolt <= 0) {
+        this.nextBolt = 1.8 + Math.random() * 2.5; this.flash = 1;
+        var bx = w * (0.2 + Math.random() * 0.6), by = 0, pts = [[bx, by]];
+        var end = h * (0.35 + Math.random() * 0.4);
+        while (by < end) { by += h * 0.05; bx += (Math.random() - 0.5) * w * 0.04; pts.push([bx, by]); }
+        this.bolt = pts;
+      }
+      if (this.flash > 0.02) {
+        ctx.fillStyle = "rgba(215,232,255," + this.flash * 0.28 + ")"; ctx.fillRect(0, 0, w, h);
+        if (this.bolt) {
+          ctx.strokeStyle = "rgba(240,248,255," + this.flash + ")"; ctx.lineWidth = 2 * k + 0.6; ctx.beginPath();
+          ctx.moveTo(this.bolt[0][0], this.bolt[0][1]);
+          for (var b = 1; b < this.bolt.length; b++) ctx.lineTo(this.bolt[b][0], this.bolt[b][1]);
+          ctx.stroke();
+        }
+        this.flash *= Math.pow(0.02, dt);
+      }
+    }
+
+    var vg = ctx.createRadialGradient(w / 2, h / 2, h * 0.35, w / 2, h / 2, w * 0.62);
+    vg.addColorStop(0, "rgba(8,13,22,0)"); vg.addColorStop(1, "rgba(8,13,22,0.55)");
+    ctx.fillStyle = vg; ctx.fillRect(0, 0, w, h);
+  };
+  Scene.prototype.setMode = function (m) { this.mode = m; this.cloudsDone = false; this.flash = 0; this.nextBolt = 0.6; this.seedDrops(); };
+
+  /* ---------- hero ---------- */
+  var hero = new Scene(document.getElementById("hero"), "calm", !reduce);
+  var LINES = {
+    calm: "A quiet age. Harvests are steady and the villages grow slowly along the rivers.",
+    rain: "The rains came early. Granaries overflow and the valley villages swell.",
+    storm: "The sea rose in one night. The coastal villages are gone; survivors climb to the hills.",
+    drought: "The third dry year. Inland wells fail and families walk toward the coast.",
+    erupt: "The mountain woke. Ash covers the north, but the soil will be black and rich for a century."
+  };
+  var SEASONS = ["Spring", "Summer", "Autumn", "Winter"], year = 212, season = 0, seasonClock = 0;
+  var hudDate = document.getElementById("hud-date"), hudTowns = document.getElementById("hud-towns"), hudPop = document.getElementById("hud-pop");
+  var chronYr = document.querySelector("#chron .yr"), chronText = document.getElementById("chron-text");
+  function updateHud() {
+    var alive = 0, pop = 0;
+    for (var i = 0; i < towns.length; i++) { var s = townState(towns[i], hero.mode); if (s.pop > 0) { alive++; pop += s.pop; } }
+    hudTowns.textContent = alive; hudPop.textContent = pop.toLocaleString("en-US");
+    hudDate.textContent = "Year " + year + " · " + SEASONS[season];
+    chronYr.textContent = "Y" + year;
+  }
+  function setPower(m) {
+    hero.setMode(m);
+    chronText.textContent = LINES[m];
+    var btns = document.querySelectorAll(".power");
+    for (var i = 0; i < btns.length; i++) btns[i].setAttribute("aria-pressed", btns[i].getAttribute("data-mode") === m ? "true" : "false");
+    updateHud();
+    if (reduce) hero.draw(0);
+  }
+  document.querySelectorAll(".power").forEach(function (b) { b.addEventListener("click", function () { setPower(b.getAttribute("data-mode")); }); });
+  chronText.textContent = LINES.calm;
+  updateHud();
+
+  var visible = true, last = 0;
+  if ("IntersectionObserver" in window) new IntersectionObserver(function (es) { visible = es[0].isIntersecting; }).observe(hero.cv);
+  function frame(ts) {
+    var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016; last = ts;
+    if (visible) {
+      hero.t += dt; hero.draw(dt);
+      seasonClock += dt;
+      if (seasonClock > 2.2) { seasonClock = 0; season = (season + 1) % 4; if (season === 0) year++; updateHud(); }
+    }
+    requestAnimationFrame(frame);
+  }
+  hero.draw(0.016);
+  if (!reduce) requestAnimationFrame(frame);
+
+  /* ---------- mood panels ---------- */
+  var panels = [];
+  document.querySelectorAll(".mood canvas").forEach(function (c, idx) {
+    var s = new Scene(c, c.getAttribute("data-mode"), false);
+    s.t = 4 + idx * 1.7; s.flash = 0; panels.push(s); s.draw(0);
+  });
+
+  var rt;
+  window.addEventListener("resize", function () {
+    clearTimeout(rt);
+    rt = setTimeout(function () {
+      hero.resize(); hero.draw(0);
+      panels.forEach(function (p) { p.resize(); p.cloudsDone = false; p.draw(0); });
+    }, 120);
+  });
+})();
+</script>
