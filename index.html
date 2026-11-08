@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Beyond Civilization</title>
+  <meta name="description" content="A god game of indirect control. Five islands, five tribes, one founding pair each. Shape the weather and watch them reach beyond the horizon.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="g-calm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></symbol>
+      <symbol id="g-rain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 14.5h10a3.5 3.5 0 0 0 .3-7A5 5 0 0 0 7.8 7 3.8 3.8 0 0 0 7 14.5z"/><path d="M8.5 17.5l-1 3M12.5 17.5l-1 3M16.5 17.5l-1 3"/></symbol>
+      <symbol id="g-storm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 14.5h10a3.5 3.5 0 0 0 .3-7A5 5 0 0 0 7.8 7 3.8 3.8 0 0 0 7 14.5z"/><path d="M12.8 14.5l-2.3 4h3.2l-2.2 4"/></symbol>
+      <symbol id="g-drought" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.3"/><path d="M12 2.5v1.3M5.8 8.5H4.5M19.5 8.5h-1.3M7.4 3.9l.9.9M16.6 3.9l-.9.9M3 16h18M7.5 16l1.8 4.5M13.5 16l-1.2 2 1.8 2.5M18 16l1 3"/></symbol>
+      <symbol id="g-eruption" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 21l6.8-9.5 1.4 1.4 1.3-1.6 1.3 1.6 1.4-1.4 6.8 9.5z"/><path d="M12 9.5c-1.2-2 1.2-3 0-5.5M8.8 9c-1.2-1-.4-2.6-1.6-3.8M15.2 9c1.2-1 .4-2.6 1.6-3.8"/></symbol>
+      <symbol id="g-quake" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h4l2-5 3 10 3-8 2 5 2-2h4"/></symbol>
+      <symbol id="g-wind" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h11a3 3 0 1 0-3-3M3 14h15a3 3 0 1 1-3 3M3 19h7"/></symbol>
+      <symbol id="g-plague" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 3v4.5M12 16.5V21M3 12h4.5M16.5 12H21M5.6 5.6l3.2 3.2M15.2 15.2l3.2 3.2M5.6 18.4l3.2-3.2M15.2 8.8l3.2-3.2"/><circle cx="12" cy="3" r="1"/><circle cx="12" cy="21" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="21" cy="12" r="1"/></symbol>
+      <symbol id="g-omen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="8" r="2.6"/><path d="M14 10L4 20M12.5 8.5L6 15M15.5 11.5L9 18"/></symbol>
+    </defs>
+  </svg>
+
+  <div id="app">
+    <header id="topbar">
+      <div class="brand">Beyond Civilization</div>
+      <div class="date"><span id="date">Year 0 · Spring</span></div>
+      <div class="speed" role="group" aria-label="Game speed">
+        <button type="button" class="sp" data-speed="0" title="Pause (space)">❚❚</button>
+        <button type="button" class="sp" data-speed="1" aria-pressed="true" title="1 season every 2 seconds">1×</button>
+        <button type="button" class="sp" data-speed="2" title="2 seasons a second">4×</button>
+        <button type="button" class="sp" data-speed="3" title="8 seasons a second">16×</button>
+        <button type="button" class="sp" data-speed="4" title="32 seasons a second">64×</button>
+      </div>
+      <div class="energy" title="Divine energy. Refills from the faith of your people.">
+        <span class="lbl">Energy</span>
+        <div class="meter"><i id="energy-bar"></i></div>
+        <span id="energy-num" class="num">12</span>
+        <span class="faith">Faith <b id="faith">0.0</b></span>
+      </div>
+      <div class="stats"><span>People <b id="st-pop">10</b></span><span>Tribes <b id="st-tribes">5</b></span><span>Villages <b id="st-villages">5</b></span></div>
+      <div class="menu">
+        <button type="button" id="btn-save" class="ghost">Save</button>
+        <button type="button" id="btn-load" class="ghost">Load</button>
+        <button type="button" id="btn-new" class="ghost">New world</button>
+        <button type="button" id="btn-share" class="ghost" title="Copy a link to this world's seed">Share seed</button>
+        <button type="button" id="btn-sound" class="ghost" aria-pressed="false" title="Sound">Sound off</button>
+        <button type="button" id="btn-help" class="ghost" aria-label="How to play">?</button>
+      </div>
+    </header>
+
+    <nav id="powers" aria-label="Divine powers"></nav>
+
+    <main id="mapwrap">
+      <div id="map"></div>
+      <div class="scalebar" aria-hidden="true"><span id="scale-label">10 km</span><i id="scale-bar"></i></div>
+      <div class="zoomctl">
+        <button type="button" id="zin" aria-label="Zoom in">+</button>
+        <button type="button" id="zout" aria-label="Zoom out">−</button>
+      </div>
+      <div id="armed" hidden></div>
+      <div id="toast" role="status" aria-live="polite"></div>
+    </main>
+
+    <aside id="inspector" aria-label="Inspector">
+      <div>
+        <div class="eyebrow">Zoom level</div>
+        <div id="ladder" class="ladder"></div>
+        <p id="levelnote" class="levelnote"></p>
+      </div>
+      <div id="card" class="card"></div>
+    </aside>
+
+    <footer id="chronicle">
+      <div class="chron-head">
+        <span class="eyebrow">Chronicle</span>
+        <div class="filters" role="group" aria-label="Filter chronicle">
+          <button type="button" class="flt" data-f="all" aria-pressed="true">All</button>
+          <button type="button" class="flt" data-f="people">People</button>
+          <button type="button" class="flt" data-f="voyage">Sea</button>
+          <button type="button" class="flt" data-f="war">War</button>
+          <button type="button" class="flt" data-f="plague">Plague</button>
+          <button type="button" class="flt" data-f="tech">Ideas</button>
+          <button type="button" class="flt" data-f="power">Your acts</button>
+        </div>
+      </div>
+      <ol id="chron-list"></ol>
+    </footer>
+  </div>
+
+  <div id="intro" class="modal" role="dialog" aria-modal="true" aria-labelledby="intro-title">
+    <div class="sheet intro-sheet">
+      <div class="intro-art" id="intro-art"></div>
+      <div class="intro-body">
+        <div class="eyebrow">A god game of indirect control</div>
+        <h1 id="intro-title">Beyond Civilization</h1>
+        <p class="lede">Five islands. Five tribes, each grown from one man and one woman. You never give orders. You command the sky, the sea and the sickness, and they decide what to do about it.</p>
+        <ul class="howto">
+          <li><b>Zoom</b> from the whole archipelago down to one fisher. Scroll, pinch or use + and −.</li>
+          <li><b>Choose a power</b> on the left, then click the map to cast it. Energy refills from their faith.</li>
+          <li><b>Watch</b> them marry, build boats, feud and fall sick. Click villages and named people to read their story.</li>
+          <li><b>The long test:</b> can they ever reach the Far Shore, out of sight across the deep sea?</li>
+        </ul>
+        <label class="seedrow" for="seed-input">World seed <input id="seed-input" inputmode="numeric" autocomplete="off"></label>
+        <div class="row">
+          <button type="button" id="btn-begin" class="primary">Begin</button>
+          <button type="button" id="btn-continue" class="ghost" hidden>Continue saved world</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ending" class="modal" role="dialog" aria-modal="true" aria-labelledby="ending-title" hidden>
+    <div class="sheet">
+      <div class="eyebrow" id="ending-when"></div>
+      <h2 id="ending-title"></h2>
+      <p id="ending-text" class="lede"></p>
+      <div class="row"><button type="button" id="btn-keep" class="primary">Keep watching</button></div>
+    </div>
+  </div>
+
+  <div id="logmodal" class="modal" role="dialog" aria-modal="true" aria-labelledby="log-title" hidden>
+    <div class="sheet wide">
+      <div class="row between"><h2 id="log-title">The full chronicle</h2><button type="button" id="btn-closelog" class="ghost">Close</button></div>
+      <ol id="log-full"></ol>
+    </div>
+  </div>
+
+  <div id="tip" class="tip" hidden><p id="tip-text"></p><div class="row"><span id="tip-step" class="eyebrow"></span><button type="button" id="tip-next" class="ghost">Next</button></div></div>
+
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>

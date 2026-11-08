@@ -1,0 +1,22 @@
+[
+  { "home": "hearth", "name": "Hearth folk", "tail": "#7d5fae", "tip": "#f4f1ea", "line": "#a98ad8", "skin": "#e7b88c", "cloth": "#2c2733", "top": "#c4473a", "sash": "#c4473a", "hair": "#2b2230",
+    "founders": ["Toru", "Ama"], "traits": { "bold": 0.35, "curious": 0.45, "wary": 0.4, "patient": 0.8 },
+    "syllables": ["to", "ru", "a", "ma", "pel", "is", "ka", "ren", "vo", "li", "sa", "dun"],
+    "trait": "Patient farmers. Slow to anger, slow to sail." },
+  { "home": "kelp", "name": "Kelp folk", "tail": "#3f9097", "tip": "#f4f1ea", "line": "#5fbfc6", "skin": "#c98e62", "cloth": "#23384a", "top": "#e0b04a", "sash": "#e0b04a", "hair": "#1e1a22",
+    "founders": ["Rook", "Nai"], "traits": { "bold": 0.55, "curious": 0.8, "wary": 0.3, "patient": 0.4 },
+    "syllables": ["na", "i", "ro", "ok", "wren", "te", "o", "mar", "ee", "lu", "ki", "sho"],
+    "trait": "Fishers and tide-readers. Curious about the sea." },
+  { "home": "thorn", "name": "Thorn folk", "tail": "#b45a32", "tip": "#f6e3c4", "line": "#d8805a", "skin": "#f0c9a2", "cloth": "#3a2c24", "top": "#5d7a4a", "sash": "#5d7a4a", "hair": "#5a2e1c",
+    "founders": ["Bryn", "Senna"], "traits": { "bold": 0.6, "curious": 0.35, "wary": 0.6, "patient": 0.5 },
+    "syllables": ["bryn", "sen", "na", "har", "dek", "ul", "ga", "thor", "mi", "ro", "kel", "ta"],
+    "trait": "Builders and woodcutters. Proud, and they hold grudges." },
+  { "home": "gull", "name": "Gull folk", "tail": "#8a92a4", "tip": "#ffffff", "line": "#b8c0d0", "skin": "#d9a77c", "cloth": "#2b3040", "top": "#8fd0e6", "sash": "#5a8fb0", "hair": "#2b2230",
+    "founders": ["Iku", "Weya"], "traits": { "bold": 0.3, "curious": 0.6, "wary": 0.5, "patient": 0.7 },
+    "syllables": ["i", "ku", "we", "ya", "sil", "a", "vi", "en", "ho", "la", "fe", "ri"],
+    "trait": "Watchers and sky-readers. First to notice your signs." },
+  { "home": "far", "name": "Far Folk", "tail": "#2f2a35", "tip": "#f2b257", "line": "#f2b257", "skin": "#a8714c", "cloth": "#4a2a22", "top": "#e0725a", "sash": "#e0725a", "hair": "#151116",
+    "founders": ["Oro", "Lumi"], "traits": { "bold": 0.75, "curious": 0.4, "wary": 0.75, "patient": 0.3 },
+    "syllables": ["o", "ro", "lu", "mi", "se", "fa", "kaa", "ush", "ta", "mo", "zan", "ek"],
+    "trait": "Hunters and obsidian knappers. Bold, wary of strangers." }
+]

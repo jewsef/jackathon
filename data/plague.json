@@ -1,0 +1,5 @@
+{
+  "fever": { "name": "Marsh fever", "mort": 0.05, "spread": 0.5, "duration": 3 },
+  "cough": { "name": "Red cough", "mort": 0.18, "spread": 0.65, "duration": 3 },
+  "grey": { "name": "Grey death", "mort": 0.62, "spread": 0.8, "duration": 3 }
+}

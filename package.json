@@ -1,0 +1,22 @@
+{
+  "name": "beyond-civilization",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Beyond Civilization: a god game of indirect control over an archipelago of five tribes.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.6",
+    "vitest": "^5.1.0"
+  },
+  "dependencies": {
+    "pixi.js": "^8.22.0"
+  }
+}

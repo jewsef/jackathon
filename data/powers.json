@@ -1,0 +1,11 @@
+[
+  { "id": "calm", "name": "Calm", "cost": 0, "radius": 1.8, "duration": 4, "kind": "weather", "desc": "Still air, clear nights, safe crossings. Sky-watchers count stars." },
+  { "id": "rain", "name": "Rain", "cost": 2, "radius": 1.4, "duration": 4, "kind": "weather", "desc": "A wet year. Harvests and forests grow." },
+  { "id": "wind", "name": "East wind", "cost": 2, "radius": 3.0, "duration": 4, "kind": "weather", "desc": "Steady wind to the east. Boats sail faster, and some are blown off course." },
+  { "id": "omen", "name": "Omen", "cost": 3, "radius": 0.6, "duration": 0, "kind": "sign", "desc": "A comet or a red moon. The sky-speaker explains what it means." },
+  { "id": "drought", "name": "Drought", "cost": 4, "radius": 1.6, "duration": 4, "kind": "weather", "desc": "A dry year. Fields fail and people move or raid." },
+  { "id": "storm", "name": "Storm", "cost": 6, "radius": 1.4, "duration": 1, "kind": "wrath", "desc": "Wind and waves. Boats sink, coasts flood." },
+  { "id": "quake", "name": "Quake", "cost": 8, "radius": 1.0, "duration": 0, "kind": "wrath", "desc": "The ground shakes. Houses and walls fall." },
+  { "id": "plague", "name": "Plague", "cost": 10, "radius": 0.6, "duration": 0, "kind": "wrath", "desc": "Sickness in one village. It spreads only along contact." },
+  { "id": "eruption", "name": "Eruption", "cost": 12, "radius": 1.0, "duration": 60, "kind": "wrath", "desc": "The island's peak wakes. Fire nearby, ash beyond, rich soil later." }
+]

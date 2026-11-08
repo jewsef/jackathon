@@ -1,0 +1,83 @@
+import type { IsleId } from "./terrain";
+
+export type Job = "gatherer" | "farmer" | "fisher" | "builder" | "leader" | "doctor" | "priest" | "warrior" | "boatwright";
+export const JOBS: Job[] = ["gatherer", "farmer", "fisher", "builder", "leader", "doctor", "priest", "warrior", "boatwright"];
+export type Stage = "band" | "camp" | "village" | "town" | "chiefdom";
+export const STAGES: Stage[] = ["band", "camp", "village", "town", "chiefdom"];
+export type PowerId = "calm" | "rain" | "wind" | "omen" | "drought" | "storm" | "quake" | "plague" | "eruption";
+export type StrainId = "fever" | "cough" | "grey";
+export type BeliefKey = "awe" | "fear" | "love";
+
+export interface Action { tick: number; power: PowerId; x: number; y: number; strain?: StrainId; }
+
+export interface Sickness { strain: StrainId; t: number; startPop: number; from: number | null; }
+
+/** A settlement: the crowd, stored only as numbers. */
+export interface Village {
+  id: number; name: string; tribe: number; isle: IsleId;
+  x: number; y: number; px: number; py: number; coastal: boolean; fert: number; founded: number;
+  /** People by age in years (index 0..79), men and women. men/women/elders are derived counts. */
+  m: number[]; f: number[]; men: number; women: number; elders: number;
+  food: number; jobs: Record<Job, number>; stage: Stage;
+  kin: number; blood: Record<string, number>;
+  houses: number; granary: number; defense: number;
+  morale: number; hungry: number; threat: number;
+  sick: Sickness | null; immune: number;
+  mods: { farm: number; fish: number; gather: number };
+  lost: boolean; lostReason?: string; peak: number;
+}
+
+export interface Tribe {
+  id: number; name: string; home: IsleId; parent: number | null; alive: boolean;
+  tail: string; tip: string; line: string; skin: string; cloth: string; top: string; sash: string; hair: string;
+  traits: { bold: number; curious: number; wary: number; patient: number };
+  syllables: string[];
+  techs: string[]; progress: Record<string, number>;
+  belief: Record<BeliefKey, number>;
+  known: IsleId[];
+  drivers: { raftLoss: number; capsize: number; windSeasons: number; calmSeasons: number; plagueSurvived: number; raids: number; hunger: number; omenVoyage: number; farReturn: number };
+  memory: string[];
+}
+
+export interface Relation {
+  a: number; b: number; met: boolean; metTick: number; attitude: number; grudge: number;
+  war: boolean; warTicks: number; losses: number; alliance: boolean; marriages: number; trades: number; speaker: boolean;
+}
+
+export interface Route { id: number; a: number; b: number; kind: "trade" | "marriage" | "kin"; strength: number; tier: number; }
+
+export interface Voyage {
+  id: number; tribe: number; from: number; fx: number; fy: number; tx: number; ty: number;
+  target: IsleId; targetVillage: number | null; purpose: "explore" | "trade" | "marriage" | "colony" | "drift" | "raid";
+  crew: number; tier: number; dist: number; progress: number; leg: "out" | "back"; found: boolean; captain: number | null;
+  sick: StrainId | null; settlers: number; doomed?: boolean;
+}
+
+export interface Agent {
+  id: number; name: string; sex: "m" | "f"; born: number; role: string; village: number; tribe: number;
+  alive: boolean; died: number | null; goal: string; memory: string[]; founder: boolean; ambition: number;
+}
+
+export interface Effect { id: number; power: PowerId; x: number; y: number; r: number; ticks: number; age: number; }
+
+export type ChronKind = "birth" | "death" | "tech" | "war" | "plague" | "voyage" | "power" | "omen" | "contact" | "village" | "end" | "misc";
+export interface ChronEntry { tick: number; text: string; kind: ChronKind; x?: number; y?: number; }
+
+export interface Fx { kind: "lightning" | "quake" | "eruption" | "omen" | "plague" | "battle" | "lost" | "found"; x: number; y: number; tick: number; }
+
+export interface Ending { id: "silence" | "farshore" | "unity" | "longage"; tick: number; title: string; text: string; }
+
+export interface World {
+  seed: number; tick: number; rngState: number; nextId: number;
+  tribes: Tribe[]; villages: Village[]; relations: Relation[]; routes: Route[];
+  voyages: Voyage[]; agents: Agent[]; effects: Effect[];
+  climate: Record<IsleId, { base: number; rain: number; storm: boolean; calm: boolean; wind: number }>;
+  energy: number; faith: number;
+  chronicle: ChronEntry[]; events: ChronEntry[]; fx: Fx[];
+  contacts: { a: number; b: number; via: string }[];
+  endings: Ending[];
+}
+
+export const yearOf = (tick: number) => Math.floor(tick / 4);
+export const SEASONS = ["Spring", "Summer", "Autumn", "Winter"];
+export const seasonOf = (tick: number) => SEASONS[tick % 4];
