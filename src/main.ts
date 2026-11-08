@@ -95,7 +95,10 @@ async function start(seed: number, fromSave: boolean) {
   const send = (m: ToWorker) => worker.postMessage(m);
   let world: Snap | null = null, sel: Selection = null, lastCard = 0, endingsSeen = 0, speed = 1;
   const chron = new Chronicle($("chron-list"), $("log-full"));
-  chron.onGo = (x, y) => map.flyTo(x, y, Math.max(map.cam.z, 3));
+  let cardHold = false;
+  $("card").addEventListener("pointerdown", () => { cardHold = true; });
+  window.addEventListener("pointerup", () => setTimeout(() => { cardHold = false; }, 60));
+  chron.onGo = (x, y) => { if (map instanceof MapView3D) map.follow(null); map.flyTo(x, y, Math.max(map.cam.z, 3)); };
   const powers = new PowersBar($("powers"));
 
   // ---- worker messages
@@ -107,7 +110,7 @@ async function start(seed: number, fromSave: boolean) {
       else chron.add(m.entries);
       map.setWorld(world, m.fx);
       hud(); react(m.fx, m.entries);
-      if (performance.now() - lastCard > 400) { lastCard = performance.now(); renderCard($("card"), world, sel, terrain); }
+      if (!cardHold && performance.now() - lastCard > 400) { lastCard = performance.now(); renderCard($("card"), world, sel, terrain); }
       if (world.endings.length > endingsSeen) {
         const end = world.endings[world.endings.length - 1]; endingsSeen = world.endings.length;
         $("ending-when").textContent = `Year ${yearOf(end.tick)}`; $("ending-title").textContent = end.title; $("ending-text").textContent = end.text;
@@ -168,7 +171,7 @@ async function start(seed: number, fromSave: boolean) {
   };
   window.addEventListener("keydown", (e) => {
     if (e.target instanceof HTMLInputElement) return;
-    if (e.key === "Escape") { powers.arm(null); $("logmodal").hidden = true; }
+    if (e.key === "Escape") { powers.arm(null); $("logmodal").hidden = true; if (map instanceof MapView3D) map.follow(null); }
     if (e.key === " ") { e.preventDefault(); setSpeed(speed === 0 ? 1 : 0); }
     if (e.key.startsWith("Arrow") && !(map instanceof MapView3D)) e.preventDefault();
   });
@@ -181,6 +184,17 @@ async function start(seed: number, fromSave: boolean) {
   };
   map.onSelect = (s) => select(s);
   $("card").addEventListener("click", (e) => {
+    const fb = (e.target as HTMLElement).closest("[data-follow]");
+    if (fb && sel && world) {
+      const target = sel;
+      if (map instanceof MapView3D) {
+        map.follow(() => (world ? selectionPos(world, target, terrain) : null));
+        const p0 = selectionPos(world, target, terrain);
+        if (p0) map.flyTo(p0[0], p0[1], Math.max(map.cam.z, target.kind === "village" ? 6 : 12));
+        toast("Following. Move the camera or press Esc to stop.");
+      } else { const p0 = selectionPos(world, target, terrain); if (p0) map.flyTo(p0[0], p0[1], Math.max(map.cam.z, 8)); }
+      return;
+    }
     const b = (e.target as HTMLElement).closest("[data-sel]") as HTMLElement | null;
     if (!b) return;
     const [k, id] = b.dataset.sel!.split(":");
@@ -254,7 +268,7 @@ async function start(seed: number, fromSave: boolean) {
 
   (window as any).__bc = { map, get world() { return world; }, send };
   // keep the inspector following a moving selection
-  setInterval(() => { if (world && sel) renderCard($("card"), world, sel, terrain); }, 1000);
+  setInterval(() => { if (world && sel && !cardHold) renderCard($("card"), world, sel, terrain); }, 1000);
 }
 
 void boot();

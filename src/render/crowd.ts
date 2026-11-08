@@ -108,3 +108,13 @@ export function figurePos(p: Figure, t: number): [number, number, boolean] {
   if (idle) { x += Math.sin(t * 0.8 + p.ph) * 0.004; y += Math.cos(t * 0.6 + p.ph) * 0.003; }
   return [x, y, !idle];
 }
+
+export type FigureState = "home" | "out" | "work" | "back";
+/** Position plus what the figure is doing, for animation: resting at home, walking out, working, walking back. */
+export function figureState(p: Figure, t: number): { x: number; y: number; state: FigureState; hx: number; hy: number } {
+  const cyc = (t * p.sp + p.ph) % 4;
+  const [x, y] = figurePos(p, t);
+  const state: FigureState = cyc < 1 ? "home" : cyc < 2 ? "out" : cyc < 3 ? "work" : "back";
+  const tx = state === "back" ? p.hx : p.tx, ty = state === "back" ? p.hy : p.ty;
+  return { x, y, state, hx: tx - x, hy: ty - y };
+}

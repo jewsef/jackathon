@@ -64,7 +64,8 @@ const frag = /* glsl */ `
     col = col * (skyColor * 0.6 + sunColor * 0.45 * dayLight + 0.1) + fres * skyColor * 0.35 + spec * sunColor * 0.9;
     // foam at the shore and on stormy water
     float shore = 1.0 - smoothstep(0.0, 0.018, depth);
-    float foam = shore * (0.55 + 0.45 * sin(depth * 400.0 - time * 2.5)) + smoothstep(1.2, 2.5, vRough) * step(0.72, n1);
+    float caps = step(0.84, vnoise(q * 4.0 + vec2(time * 1.4, -time))) * step(0.5, vnoise(q * 0.7 - time * 0.2));
+    float foam = shore * (0.55 + 0.45 * sin(depth * 400.0 - time * 2.5)) + smoothstep(1.2, 2.5, vRough) * caps;
     col = mix(col, vec3(0.92, 0.96, 0.97) * (0.4 + 0.6 * dayLight), clamp(foam, 0.0, 1.0) * 0.8);
     float alpha = inside ? clamp(0.3 + depth * 4.5, 0.3, 1.0) : 1.0;
     alpha = max(alpha, foam * 0.85);

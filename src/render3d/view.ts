@@ -47,6 +47,9 @@ export class MapView3D implements MapLike {
   private edgeScroll = (() => { try { return localStorage.getItem("bc.edge") !== "off"; } catch { return true; } })();
   private mini = document.createElement("canvas"); private miniBase!: HTMLCanvasElement; private compass = document.createElement("button");
   private trackpadUntil = 0;
+  private pendingStrikes: Fx[] = [];
+  private followFn: (() => [number, number] | null) | null = null;
+  onFollowEnd: () => void = () => {};
   private fxList: { fx: Fx; t0: number }[] = [];
   private shake = 0; private flash = 0;
   private pickables: { x: number; y: number; r: number; sel: Selection }[] = [];
@@ -87,6 +90,10 @@ export class MapView3D implements MapLike {
     this.renderer.setAnimationLoop(() => this.frame());
   }
 
+  /** Keep the camera on a moving target (a person, a boat, a village) until the player moves the camera. */
+  follow(fn: (() => [number, number] | null) | null) { this.followFn = fn; this.fly = null; }
+  following() { return this.followFn !== null; }
+  private stopFollow() { if (this.followFn) { this.followFn = null; this.onFollowEnd(); } }
   setDayCycle(on: boolean) { this.skySys.locked = !on; }
   dayCycleOn() { return !this.skySys.locked; }
   refresh() { this.staticDirty = true; }
@@ -96,7 +103,7 @@ export class MapView3D implements MapLike {
     for (const f of fx) {
       this.fxList.push({ fx: f, t0: now });
       if (f.kind === "quake") this.shake = 1.2;
-      if (f.kind === "lightning") this.flash = 1;
+      if (f.kind === "lightning") { this.flash = 0.6; this.pendingStrikes.push(f); }
     }
     if (this.fxList.length > 60) this.fxList.splice(0, this.fxList.length - 60);
     this.shared.season.value = w.tick % 4;
@@ -207,7 +214,7 @@ export class MapView3D implements MapLike {
       if (orbit) { this.yaw -= dx * 0.006; this.tilt = clamp(this.tilt + dy * 0.15, -40, 25); this.moved(); return; }
       if (panFrom) {
         const now = this.groundAt(this.mouse.x, this.mouse.y);
-        if (now) { this.cam.x += panFrom[0] - now[0]; this.cam.y += panFrom[1] - now[1]; this.clampCam(); this.placeCamera(); }
+        if (now) { this.stopFollow(); this.cam.x += panFrom[0] - now[0]; this.cam.y += panFrom[1] - now[1]; this.clampCam(); this.placeCamera(); }
         this.moved();
       }
     });
@@ -242,6 +249,7 @@ export class MapView3D implements MapLike {
 
   /** Pan in screen directions: +right / +down, in world units. */
   private panBy(right: number, down: number) {
+    this.stopFollow();
     const c = Math.cos(this.yaw), s = Math.sin(this.yaw);
     this.cam.x += right * c - down * s;
     this.cam.y += right * s + down * c;
@@ -290,7 +298,7 @@ export class MapView3D implements MapLike {
     const go = (e: PointerEvent) => {
       const r = this.mini.getBoundingClientRect();
       const x = ((e.clientX - r.left) / r.width) * (WX + 2) - 1, y = ((e.clientY - r.top) / r.height) * (WY + 1.125) - 0.5625;
-      this.fly = null; this.cam.x = x; this.cam.y = y; this.clampCam(); this.moved();
+      this.fly = null; this.stopFollow(); this.cam.x = x; this.cam.y = y; this.clampCam(); this.moved();
     };
     this.mini.addEventListener("pointerdown", (e) => { try { this.mini.setPointerCapture(e.pointerId); } catch { /* ignore */ } go(e); });
     this.mini.addEventListener("pointermove", (e) => { if (e.buttons) go(e); });
@@ -390,6 +398,11 @@ export class MapView3D implements MapLike {
     }
     if (this.shake > 0) this.shake -= dt;
     this.motion(dt);
+    if (this.followFn && !this.fly) {
+      const p = this.followFn();
+      if (!p) this.stopFollow();
+      else { const k = Math.min(1, dt * 4); this.cam.x += (p[0] - this.cam.x) * k; this.cam.y += (p[1] - this.cam.y) * k; this.moved(); }
+    }
     this.placeCamera();
     this.shared.time.value = this.t;
     this.day = this.skySys.update(dt, this.shared, this.scene);
@@ -400,11 +413,13 @@ export class MapView3D implements MapLike {
     const w = this.world;
     if (w) {
       this.pushEffects(w);
-      if (this.staticDirty) { this.actors.updateStatic(w); this.staticDirty = false; }
+      if (this.staticDirty) { this.actors.updateStatic(w, this.selection); this.staticDirty = false; }
       const z = this.cam.z;
       this.actors.setVillagesVisible(z > 1.7);
       this.actors.setPeopleVisible(z > 4.2);
-      this.actors.updateDynamic(w, this.t, z, this.inView, this.camera.position.y, this.day);
+      this.actors.setRoutesVisible(z < 9);
+      for (const f of this.pendingStrikes.splice(0)) this.actors.strike(f, w, this.t);
+      this.actors.updateDynamic(w, this.t, z, this.inView, this.camera.position.y, this.day, this.cam, this.dist());
     }
     this.renderer.render(this.scene, this.camera);
     this.drawOverlay(dt);
@@ -483,20 +498,6 @@ export class MapView3D implements MapLike {
   }
 
   private drawWeather(g: CanvasRenderingContext2D, w: Snap, dt: number) {
-    const wet = w.effects.filter((e) => e.power === "rain" || e.power === "storm");
-    if (wet.length) {
-      if (!this.drops.length) for (let i = 0; i < 320; i++) this.drops.push({ x: Math.random() * this.W * 1.2, y: Math.random() * this.H, l: 8 + Math.random() * 14, s: 0.7 + Math.random() * 0.6 });
-      g.strokeStyle = "rgba(200,220,236,0.38)"; g.lineWidth = 1; g.beginPath();
-      for (const d of this.drops) {
-        d.y += d.s * 700 * dt; d.x -= d.s * 175 * dt;
-        if (d.y > this.H) { d.y -= this.H + 20; d.x = Math.random() * this.W * 1.2; }
-        if (d.x < -20) d.x += this.W * 1.2;
-        const gp = this.seaAt(d.x, d.y + d.l);
-        if (!gp || !wet.some((e) => Math.hypot(gp[0] - e.x, gp[1] - e.y) < e.r)) continue;
-        g.moveTo(d.x, d.y); g.lineTo(d.x - d.l * 0.25, d.y + d.l);
-      }
-      g.stroke();
-    } else this.drops = [];
     if (w.effects.some((e) => e.power === "storm")) { g.fillStyle = "rgba(10,18,32,0.16)"; g.fillRect(0, 0, this.W, this.H); }
     const windy = w.effects.filter((e) => e.power === "wind");
     if (windy.length && this.cam.z < 6) {
@@ -518,12 +519,7 @@ export class MapView3D implements MapLike {
     for (const { fx, t0 } of this.fxList) {
       const age = (now - t0) / 1000, [x, y] = this.toScreen(fx.x, fx.y);
       g.lineWidth = 2.5;
-      if (fx.kind === "lightning" && age < 0.5) {
-        let bx = x + (hash3(fx.tick, 1, 3) - 0.5) * 80, by = Math.max(0, y - 320);
-        g.strokeStyle = `rgba(242,248,255,${1 - age * 2})`; g.beginPath(); g.moveTo(bx, by);
-        while (by < y) { by += 24; bx += (Math.random() - 0.5) * 22; g.lineTo(bx, by); }
-        g.stroke();
-      } else if (fx.kind === "eruption") { g.strokeStyle = `rgba(224,114,90,${Math.max(0, 1 - age / 3)})`; g.beginPath(); g.arc(x, y, 20 + age * 70, 0, Math.PI * 2); g.stroke(); }
+      if (fx.kind === "eruption") { g.strokeStyle = `rgba(224,114,90,${Math.max(0, 1 - age / 3)})`; g.beginPath(); g.arc(x, y, 20 + age * 70, 0, Math.PI * 2); g.stroke(); }
       else if (fx.kind === "quake") { g.strokeStyle = `rgba(200,178,138,${Math.max(0, 0.6 - age / 2)})`; for (let k = 0; k < 3; k++) { g.beginPath(); g.arc(x, y, (age * 120 + k * 30) % 160, 0, Math.PI * 2); g.stroke(); } }
       else if (fx.kind === "omen" && age < 2.6) {
         const u = age / 2.6, cx = -60 + u * (this.W + 120), cy = 40 + u * 80;

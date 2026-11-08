@@ -112,6 +112,7 @@ export function renderCard(el: HTMLElement, w: Snap, sel: Selection, terrain: Te
   else if (sel.kind === "tribe") html = tribeCard(w, w.tribes[sel.id], terrain);
   else if (sel.kind === "isle") html = isleCard(w, sel.id, terrain);
   else if (sel.kind === "voyage") html = voyageCard(w, sel.id, terrain);
+  if (sel && (sel.kind === "agent" || sel.kind === "voyage" || sel.kind === "village")) html += `<p><button type="button" class="ghost followbtn" data-follow="1">Follow with the camera</button></p>`;
   if (sel) html += `<p><button type="button" class="link" data-sel="none">Back to all tribes</button></p>`;
   if (el.innerHTML !== html) el.innerHTML = html;
 }

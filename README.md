@@ -21,6 +21,7 @@ npm test           # simulation and milestone tests
   - **Edge scrolling**: push the mouse to the map edge (toggle under the minimap)
   - **Minimap**: click or drag to jump; the outline shows what the camera sees
   - **Double-click** the ground to fly there
+  - **Follow**: select a person, boat or village and press *Follow with the camera* (Esc or any camera move stops it)
 - **Day/night** toggles the day cycle; at night village hearths light the islands.
 - **2D map** is still available from the top bar. For slower machines set `localStorage["bc.quality"] = "low"` in the browser console and reload.
 - **Pick a power** on the left, then click the map. Energy refills from the faith of your people.
@@ -110,7 +111,7 @@ Boat ladder: log raft → dugout canoe → outrigger → woven sail → star nav
 | Phase | Status | What |
 |---|---|---|
 | 1. 3D foundation | **done** | Three.js scene; terrain mesh from the simulation's height function with the painted Living Atlas texture and a sharper detail texture when zoomed; animated ocean with depth, foam and storm waves; sky, sun, stars and a day/night cycle; seasons (autumn gold, winter snow); powers tinting the land; instanced trees, houses (wall material by island), fields, palisades, granaries, 3D Tailfolk, boats, village lights, clouds, eruption smoke; orbit camera. Same simulation and tests. |
-| 2. 3D life | next | Walk and work animations, building variety per tribe, boat wakes, volumetric storms, follow-cam. |
+| 2. 3D life | **done** | Rigged Tailfolk (hips, shoulders, tail root) with walk cycles and work actions per job (hoeing, hammering, picking, casting, praying, gesturing; children run); island building styles (Hearth brick gables, Kelp reed huts on stilts, Thornholm timber longhouses, Gull Rock round stone houses, Far Shore hide lodges; tents for bands) and landmarks (barn, drying racks, great hall, stone circle, totem); palisades, towers and stone walls; chimney smoke; boat wakes and paddling crews; 3D rain, storm cloud columns and lightning strikes; trade routes and the selected tribe's known world on the sea; follow camera. |
 | 3. Ages foundation | planned | Island resources (grain and clay/brick on Hearth, fish and salt on Kelp Isle, hardwood on Thornholm, stone and herbs on Gull Rock, flint, copper and later coal and oil on the Far Shore); stockpiles; buildings that cost resources; resource affinity for research; depletion. Ages 1 to 3 (early humans to Bronze). |
 | 4. Building kits | planned | Procedural 3D buildings per age and tribe; cities and roads on the terrain. |
 | 5. Ages 4 to 5 | planned | Classical and Age of Sail; the world grows when ocean ships arrive. |
