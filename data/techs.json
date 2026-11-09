@@ -446,5 +446,130 @@
    "printing"
   ],
   "desc": "Printed charts. A tribe learns every coast its friends have seen."
+ },
+ {
+  "id": "steam",
+  "name": "The steam engine",
+  "group": "craft",
+  "age": 5,
+  "prereq": [
+   "printing",
+   "gunpowder",
+   "carrack"
+  ],
+  "needs": {
+   "coal": 15,
+   "iron": 15
+  },
+  "strict": true,
+  "desc": "Coal boils water and the steam drives pistons. Mines are pumped dry and the Industrial age begins."
+ },
+ {
+  "id": "steel",
+  "name": "Steel",
+  "group": "craft",
+  "prereq": [
+   "steam"
+  ],
+  "needs": {
+   "coal": 10,
+   "iron": 20
+  },
+  "desc": "Iron refined in roaring furnaces. Stronger tools, rails and hulls."
+ },
+ {
+  "id": "factory",
+  "name": "Factories",
+  "group": "craft",
+  "prereq": [
+   "steam",
+   "coinage"
+  ],
+  "needs": {
+   "coal": 20,
+   "iron": 20
+  },
+  "desc": "Engines drive looms and lathes. Towns make far more, and burn far more coal."
+ },
+ {
+  "id": "railway",
+  "name": "Railways",
+  "group": "craft",
+  "prereq": [
+   "steam",
+   "steel",
+   "roads"
+  ],
+  "needs": {
+   "steel": 20,
+   "coal": 10
+  },
+  "desc": "Iron roads and locomotives join the towns of an island."
+ },
+ {
+  "id": "steamship",
+  "name": "Steamships",
+  "group": "sea",
+  "prereq": [
+   "steam",
+   "steel",
+   "carrack"
+  ],
+  "needs": {
+   "steel": 15,
+   "coal": 10
+  },
+  "desc": "Steel hulls, screws and funnels. They cross the ocean on schedule, whatever the wind."
+ },
+ {
+  "id": "vaccines",
+  "name": "Vaccines",
+  "group": "knowledge",
+  "prereq": [
+   "printing",
+   "herbs"
+  ],
+  "needs": {
+   "herbs": 15
+  },
+  "desc": "A little of the sickness, to teach the body to fight it. Plagues kill a fraction of what they did."
+ },
+ {
+  "id": "rifles",
+  "name": "Rifles",
+  "group": "war",
+  "prereq": [
+   "gunpowder",
+   "steel"
+  ],
+  "needs": {
+   "steel": 5
+  },
+  "desc": "Rifled barrels and cartridges. Armies hit harder, from further away."
+ },
+ {
+  "id": "telegraph",
+  "name": "The telegraph",
+  "group": "knowledge",
+  "prereq": [
+   "railway",
+   "copperworking"
+  ],
+  "needs": {
+   "copper": 15
+  },
+  "desc": "Messages along copper wires, faster than any horse or ship. Ideas spread quickly."
+ },
+ {
+  "id": "fertilizer",
+  "name": "Fertilizer",
+  "group": "craft",
+  "prereq": [
+   "factory"
+  ],
+  "needs": {
+   "coal": 10
+  },
+  "desc": "Factory-made fertilizer. Harvests rise, and so do the towns."
  }
 ]

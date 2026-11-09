@@ -428,6 +428,10 @@ export class MapView3D implements MapLike {
     if ((this.horizonK >= 0.5) !== this.miniOpen) { this.miniOpen = this.horizonK >= 0.5; this.buildMiniBase(); }
     this.placeCamera();
     this.shared.time.value = this.t;
+    if (this.world) {
+      this.skySys.haze = Math.min(0.45, Math.max(0, (this.world.co2 - 290) / 450));
+      this.shared.warming.value = this.world.warming ?? 0;
+    }
     this.day = this.skySys.update(dt, this.shared, this.scene);
     const fogFar = Math.max(6, this.dist() * 4.5);
     this.shared.fogNear.value = fogFar * 0.45; this.shared.fogFar.value = fogFar;

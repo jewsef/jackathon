@@ -1,7 +1,7 @@
 import type { World, Action } from "./types";
 import { Rng } from "./rng";
 import { applyPowers } from "./powers";
-import { climate, terrainStep } from "./climate";
+import { climate, terrainStep, pollution } from "./climate";
 import { ecology } from "./ecology";
 import { society } from "./society";
 import { plague } from "./plague";
@@ -35,6 +35,7 @@ export function tick(w: World, acts: Action[] = []): World {
   w = ecology(w);                  // soil, crops, forests, fish
   w = society(w, rng);             // villages: growth, hunger, jobs
   w = economy(w, rng);             // resources, crafting, building, trade
+  pollution(w, rng);               // coal smoke over towns, carbon and warming
   w = plague(w, rng);              // sickness along contact
   w = conflict(w, rng);            // grudges, raids, wars
   w = politics(w, rng);            // factions, rulers, uprisings, tribute

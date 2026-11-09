@@ -1,9 +1,9 @@
 import type { IsleId } from "./terrain";
 
-export type Job = "gatherer" | "farmer" | "fisher" | "builder" | "leader" | "doctor" | "priest" | "warrior" | "boatwright" | "woodcutter" | "quarrier" | "miner" | "smith";
-export const JOBS: Job[] = ["gatherer", "farmer", "fisher", "builder", "leader", "doctor", "priest", "warrior", "boatwright", "woodcutter", "quarrier", "miner", "smith"];
-export type Res = "wood" | "stone" | "clay" | "brick" | "fiber" | "salt" | "herbs" | "flint" | "copper" | "tin" | "bronze" | "iron" | "spice";
-export const RES: Res[] = ["wood", "stone", "clay", "brick", "fiber", "salt", "herbs", "flint", "copper", "tin", "bronze", "iron", "spice"];
+export type Job = "gatherer" | "farmer" | "fisher" | "builder" | "leader" | "doctor" | "priest" | "warrior" | "boatwright" | "woodcutter" | "quarrier" | "miner" | "smith" | "worker";
+export const JOBS: Job[] = ["gatherer", "farmer", "fisher", "builder", "leader", "doctor", "priest", "warrior", "boatwright", "woodcutter", "quarrier", "miner", "smith", "worker"];
+export type Res = "wood" | "stone" | "clay" | "brick" | "fiber" | "salt" | "herbs" | "flint" | "copper" | "tin" | "bronze" | "iron" | "spice" | "coal" | "steel";
+export const RES: Res[] = ["wood", "stone", "clay", "brick", "fiber", "salt", "herbs", "flint", "copper", "tin", "bronze", "iron", "spice", "coal", "steel"];
 export type RegimeType = "elders" | "chief" | "council" | "priestking" | "warlord";
 export type FactionId = "farmers" | "seafarers" | "warriors" | "priests" | "crafters";
 export const FACTIONS: FactionId[] = ["farmers", "seafarers", "warriors", "priests", "crafters"];
@@ -35,6 +35,8 @@ export interface Village {
   mods: { farm: number; fish: number; gather: number };
   lost: boolean; lostReason?: string; peak: number;
   stock: Record<Res, number>; monument: number;
+  /** Coal smoke hanging over the village, 0 (clean) to 1 (choking). */
+  smog: number;
 }
 
 export interface Tribe {
@@ -73,7 +75,7 @@ export interface Agent {
 
 export interface Effect { id: number; power: PowerId; x: number; y: number; r: number; ticks: number; age: number; }
 
-export type ChronKind = "birth" | "death" | "tech" | "war" | "plague" | "voyage" | "power" | "omen" | "contact" | "village" | "end" | "misc" | "politics" | "age";
+export type ChronKind = "birth" | "death" | "tech" | "war" | "plague" | "voyage" | "power" | "omen" | "contact" | "village" | "end" | "misc" | "politics" | "age" | "climate";
 export interface ChronEntry { tick: number; text: string; kind: ChronKind; x?: number; y?: number; }
 
 export interface Fx { kind: "lightning" | "quake" | "eruption" | "omen" | "plague" | "battle" | "lost" | "found" | "uprising" | "age"; x: number; y: number; tick: number; }
@@ -87,6 +89,8 @@ export interface World {
   climate: Record<IsleId, { base: number; rain: number; storm: boolean; calm: boolean; wind: number }>;
   energy: number; faith: number;
   horizon: boolean;
+  /** Carbon dioxide in the air, in ppm (280 before industry), and the warming it causes, in degrees C. */
+  co2: number; warming: number;
   deposits: Record<IsleId, Record<Res, number>>; depositBase: Record<IsleId, Record<Res, number>>;
   chronicle: ChronEntry[]; events: ChronEntry[]; fx: Fx[];
   contacts: { a: number; b: number; via: string }[];

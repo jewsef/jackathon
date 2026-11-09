@@ -31,7 +31,7 @@ const STRAW = "#e6d49a";
 /** People are simple solid figures, coloured by what they do. */
 export const JOB_COLOR: Record<string, string> = {
   gatherer: "#8fbf6a", farmer: "#e0c04a", fisher: "#4fa3d1", builder: "#d08a4b", woodcutter: "#4f7d3a", quarrier: "#a3a7ad",
-  miner: "#6d5f7a", smith: "#ff7a3d", boatwright: "#3fc0b0", warrior: "#c83a3a", doctor: "#f4f4f4", priest: "#a98ad8",
+  miner: "#6d5f7a", smith: "#ff7a3d", worker: "#5c6f8a", boatwright: "#3fc0b0", warrior: "#c83a3a", doctor: "#f4f4f4", priest: "#a98ad8",
   leader: "#f2b257", child: "#efe6cf", elder: "#9b938b", idle: "#cfc6b8"
 };
 export const RULER_COLOR = "#ffd84d", HEAD_COLOR = "#ff9f40";
@@ -117,6 +117,23 @@ export function pose(state: FigureState | "idle", job: string, t: number, ph: nu
 }
 
 /** Everything that stands on the map. Positions come from the world snapshot and the crowd sampler. */
+/** Position and heading at distance d along a railway line. */
+function railAt(r: { pts: [number, number][]; len: number[] }, d: number): [number, number, number] {
+  let i = 1;
+  while (i < r.len.length - 1 && r.len[i] < d) i++;
+  const [x0, y0] = r.pts[i - 1], [x1, y1] = r.pts[i], seg = r.len[i] - r.len[i - 1] || 1, u = Math.max(0, Math.min(1, (d - r.len[i - 1]) / seg));
+  return [x0 + (x1 - x0) * u, y0 + (y1 - y0) * u, Math.atan2(y1 - y0, x1 - x0)];
+}
+
+/** A polyline shifted sideways by d (left of travel), for a railway beside a road. */
+function offsetLine(p: [number, number][], d: number): [number, number][] {
+  return p.map(([x, y], i) => {
+    const [ax, ay] = p[Math.max(0, i - 1)], [bx, by] = p[Math.min(p.length - 1, i + 1)];
+    const l = Math.hypot(bx - ax, by - ay) || 1;
+    return [x - ((by - ay) / l) * d, y + ((bx - ax) / l) * d] as [number, number];
+  });
+}
+
 export class Actors {
   group = new THREE.Group();
   private hf: HeightField; private terrain: Terrain; private low: boolean;
@@ -132,7 +149,7 @@ export class Actors {
   private glows: THREE.Sprite[] = []; private glowTex = glowTexture("rgba(255,230,170,1)", "rgba(242,178,87,0.5)");
   private clouds: { s: THREE.Sprite; x: number; y: number; h: number; k: number }[] = [];
   private stormClouds: THREE.Sprite[] = []; private cloudTex = cloudTexture();
-  private smoke: { s: THREE.Sprite; t0: number; ash: boolean }[] = [];
+  private smoke: { s: THREE.Sprite; t0: number; ash: boolean; dark?: boolean }[] = [];
   private smokeTex = glowTexture("rgba(80,70,66,0.9)", "rgba(60,52,50,0.45)");
   private hearthSmokeTex = glowTexture("rgba(205,205,212,0.75)", "rgba(170,170,180,0.3)");
   private lavaTex = glowTexture("rgba(255,170,90,1)", "rgba(224,90,50,0.6)");
@@ -142,7 +159,11 @@ export class Actors {
   private flashLight = new THREE.PointLight(0xdfe9ff, 0, 6, 1.5);
   private crowdCache = new Map<string, Figure[]>();
   private villageKey = "";
-  private chimneys: { x: number; y: number; h: number }[] = [];
+  private chimneys: { x: number; y: number; h: number; dark?: boolean }[] = [];
+  /** Railway lines (polylines on the ground) and the trains running on them. */
+  private rails: { pts: [number, number][]; len: number[]; total: number; color: string }[] = [];
+  private train: THREE.InstancedMesh; private steamHull: THREE.InstancedMesh; private steamTop: THREE.InstancedMesh;
+  private smogPool: THREE.Sprite[] = []; private smogTex = glowTexture("rgba(70,64,58,0.75)", "rgba(80,74,66,0.3)");
   private K: Record<Prim, THREE.InstancedMesh> = {} as Record<Prim, THREE.InstancedMesh>;
   private kn: Record<string, number> = {};
   private roads: THREE.Mesh; private roadKey = "";
@@ -239,6 +260,11 @@ export class Actors {
     ])!;
     this.shipHull = inst(hullG, 300, lambert()); this.shipRig = inst(rigG, 300, lambert()); this.shipSail = inst(sailG, 300, lambert());
     G.add(this.shipHull, this.shipRig, this.shipSail);
+    // the Industrial age: steamships (hull, white deckhouse, funnel) and trains (engine and wagons)
+    this.steamHull = inst(mergeGeometries([new THREE.BoxGeometry(1, 0.14, 0.24).translate(0, 0.07, 0), new THREE.ConeGeometry(0.12, 0.3, 4).rotateZ(-Math.PI / 2).rotateX(Math.PI / 4).scale(1, 0.6, 1).translate(0.64, 0.07, 0)])!, 300, lambert());
+    this.steamTop = inst(mergeGeometries([new THREE.BoxGeometry(0.42, 0.12, 0.18).translate(-0.08, 0.2, 0), new THREE.CylinderGeometry(0.045, 0.05, 0.22, 8).translate(0.02, 0.36, 0), new THREE.BoxGeometry(0.02, 0.3, 0.02).translate(0.3, 0.3, 0)])!, 300, lambert());
+    this.train = inst(new THREE.BoxGeometry(1, 0.8, 0.6).translate(0, 0.4, 0), 600, lambert());
+    G.add(this.steamHull, this.steamTop, this.train);
     // routes and known-world rings, drawn on the sea
     this.routes = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineDashedMaterial({ vertexColors: true, dashSize: 0.06, gapSize: 0.06, transparent: true, opacity: 0.7, depthWrite: false }));
     this.known = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.75, depthWrite: false }));
@@ -304,7 +330,7 @@ export class Actors {
 
   /** Roads between villages and streets inside planned towns, draped on the ground. */
   private buildRoads(w: Snap, live: Village[]) {
-    const key = live.filter((v) => v.stage !== "band").map((v) => `${v.id}${v.stage[0]}${roadTier(w.tribes[v.tribe])}${isPlanned(v, w.tribes[v.tribe]) ? "p" : ""}${v.jobs.quarrier > 0.01 ? "q" : ""}${v.jobs.miner > 0.01 ? "m" : ""}`).join(",");
+    const key = live.filter((v) => v.stage !== "band").map((v) => `${v.id}${v.stage[0]}${roadTier(w.tribes[v.tribe])}${w.tribes[v.tribe]?.techs.includes("railway") ? "r" : ""}${isPlanned(v, w.tribes[v.tribe]) ? "p" : ""}${v.jobs.quarrier > 0.01 ? "q" : ""}${v.jobs.miner > 0.01 ? "m" : ""}`).join(",");
     if (key === this.roadKey) return;
     this.roadKey = key;
     const P: number[] = [], C: number[] = [];
@@ -330,7 +356,19 @@ export class Actors {
         prev = cur;
       }
     };
-    for (const r of roadNetwork(this.terrain, live, w.tribes as Tribe[])) ribbon(r.pts, WID[r.tier], COL[r.tier]);
+    this.rails = [];
+    const RAIL = new THREE.Color("#3a3634");
+    for (const r of roadNetwork(this.terrain, live, w.tribes as Tribe[])) {
+      ribbon(r.pts, WID[r.tier], COL[r.tier]);
+      // a railway alongside the road once both towns' tribes have railways
+      const A = live.find((v) => v.id === r.a), Bv = live.find((v) => v.id === r.b);
+      if (A && Bv && w.tribes[A.tribe]?.techs.includes("railway") && w.tribes[Bv.tribe]?.techs.includes("railway")) {
+        const off = offsetLine(r.pts, 0.009);
+        ribbon(off, 0.0024, RAIL);
+        const len = [0]; for (let i = 1; i < off.length; i++) len.push(len[i - 1] + Math.hypot(off[i][0] - off[i - 1][0], off[i][1] - off[i - 1][1]));
+        this.rails.push({ pts: off, len, total: len[len.length - 1], color: w.tribes[A.tribe].line });
+      }
+    }
     for (const v of live) {
       if (v.stage === "band") continue;
       const t = w.tribes[v.tribe], tier = roadTier(t), L = layoutFor(this.terrain, v);
@@ -429,6 +467,29 @@ export class Actors {
           this.kit(CIVIC.arch, x, y, this.hf.groundY(x, y), rot, 0.014, pal, accent);
         }
       }
+      // the Industrial age: mills on the inland edge of town, a pit head over the coal, a gasworks
+      if (t && t.age >= 5 && v.stage !== "band") {
+        const away = v.coastal ? Math.atan2(v.y - v.py, v.x - v.px) : hash3(v.id, 2, 9) * 6.283;
+        const spot = (dist: number, turn: number): [number, number] | null => {
+          const a = away + turn, x = v.x + Math.cos(a) * dist, y = v.y + Math.sin(a) * dist * 0.85;
+          return this.hf.elevAt(x, y) > 0.004 ? [x, y] : null;
+        };
+        if (t.techs.includes("factory") && v.jobs.worker > 0.01) {
+          const nF = v.stage === "city" ? 3 : 1;
+          for (let k = 0; k < nF; k++) {
+            const p = spot(L.R * 1.14, (k - (nF - 1) / 2) * 0.45); if (!p) continue;
+            const gy = this.hf.groundY(p[0], p[1]), rot = -away + Math.PI / 2, c = Math.cos(rot), sn = Math.sin(rot), s = 0.02;
+            this.kit(CIVIC.factory, p[0], p[1], gy, rot, s, pal, accent);
+            for (const [lx, lz, hh] of [[-0.9, -0.9, 2.4], [0.5, -0.9, 2.0]]) this.chimneys.push({ x: p[0] + (lx * c + lz * sn) * s, y: p[1] + (-lx * sn + lz * c) * s, h: gy + hh * s, dark: true });
+          }
+          if (v.stage === "city") { const p = spot(L.R * 0.98, 1.3); if (p) this.kit(CIVIC.gasholder, p[0], p[1], this.hf.groundY(p[0], p[1]), 0, 0.016, pal, accent); }
+        }
+        if (t.techs.includes("steam") && v.jobs.miner > 0.01 && this.hf.elevAt(L.mine.x, L.mine.y) > 0) {
+          const mx = L.mine.x + 0.016, my = L.mine.y, gy = this.hf.groundY(mx, my);
+          this.kit(CIVIC.headframe, mx, my, gy, 0.3, 0.018, pal, accent);
+          this.chimneys.push({ x: mx + 0.018, y: my - 0.006, h: gy + 0.026, dark: true });
+        }
+      }
       // windmills among the fields in the Age of Sail
       if ((t?.age ?? 0) >= 4 && fieldCount(v, L) > 3) for (const i of [2, 7]) {
         const f = L.fields[i]; if (!f || i >= fieldCount(v, L)) continue;
@@ -517,6 +578,14 @@ export class Actors {
       }
     }
     for (const k of Object.keys(this.B)) finish(this.B[k], n[k]);
+    // a station where each railway line leaves a town
+    const stPal = PALETTE.hearth[6];
+    for (const r of this.rails) for (const end of [0, 1]) {
+      const d = end === 0 ? Math.min(0.12, r.total * 0.3) : Math.max(r.total - 0.12, r.total * 0.7);
+      const [x, y, head] = railAt(r, d);
+      if (this.hf.elevAt(x, y) < 0.003) continue;
+      this.kit(CIVIC.station, x, y, this.hf.groundY(x, y), -head, 0.012, stPal, r.color);
+    }
     for (const k of Object.keys(this.K) as Prim[]) finish(this.K[k], this.kn[k] ?? 0);
     finish(this.fields, ifl); finish(this.posts, ip);
     this.crowdCache.clear();
@@ -606,12 +675,26 @@ export class Actors {
     }
 
     // boats: voyages (with crews), route traffic, fishing boats; moving boats leave a wake
-    let nh = 0, nf = 0, ns = 0, no = 0, nw = 0, nsh = 0;
+    let nh = 0, nf = 0, ns = 0, no = 0, nw = 0, nsh = 0, nst = 0;
+    const puff = (x: number, y: number, h: number, dark: boolean) => {
+      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: dark ? this.smokeTex : this.hearthSmokeTex, transparent: true, depthWrite: false, opacity: 0.5 }));
+      s.position.set(x, h, y); this.smoke.push({ s, t0: time, ash: false, dark }); this.group.add(s);
+    };
     const sailTint = new THREE.Color();
     const boat = (x: number, y: number, head: number, tier: number, size: number, moving: boolean, crew?: Tribe, crewN = 0) => {
       if (nh + nf > 590) return;
       const rock = Math.sin(time * 1.6 + x * 9) * 0.12, yy = Math.sin(time * 1.3 + x * 7 + y * 5) * 0.002;
       const yaw = -head;
+      if (tier >= 7) {
+        if (nst >= 300) return;
+        const s = size * 1.6;
+        put(this.steamHull, nst, x, yy, y, yaw, s, s, s, "#2b2e34", rock * 0.25, 0);
+        put(this.steamTop, nst, x, yy, y, yaw, s, s, s, "#ebe6dc", rock * 0.25, 0);
+        nst++;
+        if (moving) put(this.wakes, nw++, x, 0.004, y, yaw, s * 1.4, s, s);
+        if (z > 1.6 && Math.random() < (this.low ? 0.02 : 0.06)) puff(x + Math.cos(head) * s * 0.02, y + Math.sin(head) * s * 0.02, s * 0.4, true);
+        return;
+      }
       if (tier >= 6) {
         if (nsh >= 300) return;
         const s = size * 1.7, r = rock * 0.4;
@@ -655,10 +738,11 @@ export class Actors {
       }
       // ships at anchor in the harbours of the Age of Sail
       const T = w.tribes[v.tribe];
+      const harbourTier = T?.techs.includes("steamship") ? 7 : 6;
       if (T?.techs.includes("carrack") && (v.stage === "town" || v.stage === "city")) for (let k = 0; k < (v.stage === "city" ? 3 : 2); k++) {
         const a = Math.atan2(v.py - v.y, v.px - v.x) + (k - 1) * 0.5, d = 0.07 + k * 0.025;
         const x = v.px + Math.cos(a) * d, y = v.py + Math.sin(a) * d;
-        if (this.hf.elevAt(x, y) < -0.008) boat(x, y, a + Math.PI / 2 + Math.sin(time * 0.2 + k) * 0.1, 6, 0.036, false, T);
+        if (this.hf.elevAt(x, y) < -0.008) boat(x, y, a + Math.PI / 2 + Math.sin(time * 0.2 + k) * 0.1, k === 0 ? harbourTier : 6, 0.036, false, T);
       }
     }
     // crews: seated, rocking with the paddle stroke
@@ -669,7 +753,33 @@ export class Actors {
     finish(this.P.body, n); finish(this.rings, nr);
     (this.rings.material as THREE.MeshBasicMaterial).opacity = 0.6 + 0.3 * Math.sin(time * 3);
     finish(this.hull, nh); finish(this.raft, nf); finish(this.sail, ns); finish(this.outrig, no); finish(this.wakes, nw);
-    finish(this.shipHull, nsh); finish(this.shipRig, nsh); finish(this.shipSail, nsh);
+    finish(this.shipHull, nsh); finish(this.shipRig, nsh); finish(this.shipSail, nsh); finish(this.steamHull, nst); finish(this.steamTop, nst);
+    // trains: an engine and three wagons shuttling along each line
+    let ntr = 0;
+    if (z > 1.6) this.rails.forEach((r, i) => {
+      if (r.total < 0.05 || ntr > 590) return;
+      const cyc = (time * 0.035 / r.total + i * 0.37) % 2, u = cyc < 1 ? cyc : 2 - cyc, dir = cyc < 1 ? 1 : -1;
+      for (let k = 0; k < 4; k++) {
+        const d = Math.max(0, Math.min(r.total, u * r.total - dir * k * 0.0105));
+        const [x, y, head] = railAt(r, d);
+        if (!inView(x, y, 0.05)) continue;
+        put(this.train, ntr++, x, this.hf.groundY(x, y) + 0.0012, y, -head, 0.009, 0.0055, 0.0045, k === 0 ? "#22252a" : k === 1 ? "#5a3a2a" : r.color);
+        if (k === 0 && Math.random() < (this.low ? 0.03 : 0.08)) puff(x, y, this.hf.groundY(x, y) + 0.008, true);
+      }
+    });
+    finish(this.train, ntr);
+    // coal smog hanging over industrial towns
+    let nsm = 0;
+    if (z > 1.2) for (const v of w.villages) {
+      if (v.lost || (v.smog ?? 0) < 0.05 || !inView(v.x, v.y, 0.4)) continue;
+      let sp = this.smogPool[nsm];
+      if (!sp) { sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.smogTex, transparent: true, depthWrite: false })); sp.renderOrder = 4; this.smogPool.push(sp); this.group.add(sp); }
+      sp.visible = true; sp.position.set(v.x, this.hf.surfaceY(v.x, v.y) + 0.06, v.y);
+      sp.scale.set(0.45 + v.smog * 0.4, 0.18 + v.smog * 0.16, 1);
+      sp.material.opacity = Math.min(0.6, v.smog * 0.7);
+      nsm++;
+    }
+    for (let i = nsm; i < this.smogPool.length; i++) this.smogPool[i].visible = false;
 
     // village lights: bright from afar and at night
     let gi = 0;
@@ -751,12 +861,13 @@ export class Actors {
     });
     this.flashLight.intensity *= 0.85;
 
-    // hearth smoke from chimneys
-    if (z > 2.2 && this.chimneys.length && Math.random() < (this.low ? 0.15 : 0.5)) {
+    // hearth smoke from chimneys; factory stacks and pit engines belch coal smoke
+    if (z > 2.2 && this.chimneys.length) for (let k = 0; k < (this.low ? 1 : 3); k++) {
+      if (Math.random() > (this.low ? 0.25 : 0.6)) continue;
       const c = this.chimneys[Math.floor(Math.random() * this.chimneys.length)];
       if (inView(c.x, c.y, 0.1)) {
-        const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.hearthSmokeTex, transparent: true, depthWrite: false, opacity: 0.5 }));
-        s.position.set(c.x, c.h, c.y); this.smoke.push({ s, t0: time, ash: false }); this.group.add(s);
+        const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: c.dark ? this.smokeTex : this.hearthSmokeTex, transparent: true, depthWrite: false, opacity: 0.5 }));
+        s.position.set(c.x, c.h, c.y); this.smoke.push({ s, t0: time, ash: false, dark: c.dark }); this.group.add(s);
       }
     }
     // eruption: lava glow and an ash column drifting east
@@ -773,10 +884,10 @@ export class Actors {
     }
     for (let i = young.length; i < this.lava.length; i++) this.lava[i].visible = false;
     this.smoke = this.smoke.filter((p) => {
-      const age = time - p.t0, life = p.ash ? 6 : 3.5;
+      const age = time - p.t0, life = p.ash ? 6 : p.dark ? 5 : 3.5;
       if (age > life) { this.group.remove(p.s); p.s.material.dispose(); return false; }
-      p.s.position.y += p.ash ? 0.004 : 0.0006; p.s.position.x += p.ash ? 0.003 : 0.0004;
-      p.s.scale.setScalar(p.ash ? 0.12 + age * 0.12 : 0.006 + age * 0.006);
+      p.s.position.y += p.ash ? 0.004 : p.dark ? 0.0011 : 0.0006; p.s.position.x += p.ash ? 0.003 : p.dark ? 0.0008 : 0.0004;
+      p.s.scale.setScalar(p.ash ? 0.12 + age * 0.12 : p.dark ? 0.01 + age * 0.012 : 0.006 + age * 0.006);
       p.s.material.opacity = Math.max(0, (p.ash ? 0.8 : 0.45) - age / (life + 1));
       return true;
     });

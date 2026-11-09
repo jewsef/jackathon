@@ -48,6 +48,7 @@ function villageCard(w: Snap, v: Village, terrain: Terrain): string {
     <dt>People</dt><dd>${fmt(pop)} <span class="sub">(${v.men} men, ${v.women} women, ${kids(v)} children, ${v.elders} elders)</span></dd>
     <dt>Food stores</dt><dd>${fmt(v.food)}${bar(v.food / Math.max(1, pop * 1.5))}</dd>
     <dt>Morale</dt><dd>${pct(v.morale)}${bar(v.morale, "var(--ember)")}</dd>
+    ${(v.smog ?? 0) > 0.02 ? `<dt>Smog</dt><dd>${v.smog > 0.55 ? "choking" : v.smog > 0.25 ? "thick" : "light"}${bar(v.smog, "#6a645c")}<span class="sub">Rain and wind clear it.</span></dd>` : ""}
     <dt>Kinship</dt><dd>${v.kin > 0.35 ? "everyone is cousins; must marry out" : v.kin > 0.2 ? "closely related" : "varied families"}${bar(v.kin, "#c98fd0")}</dd>
     <dt>Bloodlines</dt><dd><div class="blood">${blood.map(([k, x]) => `<i title="${esc(w.tribes[+k]?.name ?? "")}" style="width:${x * 100}%;background:${w.tribes[+k]?.tail ?? "#888"}"></i>`).join("")}</div></dd>
     <dt>Layout</dt><dd>${isPlanned(v, t) ? "planned streets, a market and a palace quarter" : v.stage === "band" ? "a camp of shelters" : "grown house by house"} · ${["footpaths", "cart tracks", "paved roads"][roadTier(t)]}</dd>
@@ -140,6 +141,7 @@ export function overviewCard(w: Snap): string {
     const wars = w.relations.filter((r) => r.war && (r.a === t.id || r.b === t.id)).length;
     return `<button type="button" class="trow${dead ? " dead" : ""}" data-sel="tribe:${t.id}"><span class="dot" style="background:${t.tail}"></span><span>${esc(t.name)}${wars ? ' <span class="chip war">war</span>' : ""}</span><span class="r">${dead ? "gone" : fmt(pop)}</span></button>`;
   }).join("")}</div>
+  ${w.co2 > 285 ? `<dl><dt>Air</dt><dd>${Math.round(w.co2)} ppm CO₂ <span class="sub">(280 before industry)</span></dd><dt>Warming</dt><dd>+${w.warming.toFixed(1)} °C${bar(w.warming / 4, "#c85a3a")}<span class="sub">More storms and droughts, thinner harvests, retreating snow.</span></dd></dl>` : ""}
   <p class="why">${alive.length} tribes. Click one for its beliefs, inventions and relations, or click the map.</p>`;
 }
 

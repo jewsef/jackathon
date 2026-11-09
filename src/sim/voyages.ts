@@ -6,8 +6,8 @@ import { freeSite, newVillage, newAgent } from "./world";
 import { effectAt } from "./climate";
 import { seaDesire } from "./society";
 
-const BOAT = ["log", "raft", "dugout canoe", "outrigger", "sail-canoe", "star-guided sail-canoe", "ocean ship"];
-const SPEED = [0.45, 0.6, 0.85, 1.1, 1.5, 1.8, 2.6];
+const BOAT = ["log", "raft", "dugout canoe", "outrigger", "sail-canoe", "star-guided sail-canoe", "ocean ship", "steamship"];
+const SPEED = [0.45, 0.6, 0.85, 1.1, 1.5, 1.8, 2.6, 3.6];
 
 export function addRoute(w: World, a: number, b: number, kind: "trade" | "marriage" | "kin", tier: number) {
   const r = w.routes.find((x) => (x.a === a && x.b === b) || (x.a === b && x.b === a));
@@ -184,7 +184,8 @@ export function voyages(w: World, rng: Rng): World {
     const [x, y] = voyagePos(voy);
     const heading = voy.leg === "out" ? voy.tx - voy.fx : voy.fx - voy.tx;
     const wind = effectAt(w, "wind", x, y), storm = effectAt(w, "storm", x, y) > 0.2 || (voy as any).doomed;
-    const speed = SPEED[voy.tier] * (has(t, "compass") ? 1.1 : 1) * (heading > 0 ? 1 + wind * 0.6 : 1 - wind * 0.3) * (storm ? 0.6 : 1);
+    const steam = voy.tier >= 7;
+    const speed = SPEED[voy.tier] * (has(t, "compass") ? 1.1 : 1) * (steam ? 1 : heading > 0 ? 1 + wind * 0.6 : 1 - wind * 0.3) * (storm ? (steam ? 0.85 : 0.6) : 1);
     voy.progress += speed / voy.dist;
     const from = villageById(w, voy.from);
     const req = from ? crossTier(w, from.isle, voy.target) : 2;
@@ -196,6 +197,7 @@ export function voyages(w: World, rng: Rng): World {
     if (voy.target === "far" && has(t, "navigation")) risk *= 0.6;
     if (has(t, "lighthouse")) risk *= 0.75;
     if (has(t, "compass")) risk *= 0.8;
+    if (voy.tier >= 7) risk *= 0.5;
     if (voy.purpose === "drift") risk *= 0.5;
     if (rng.chance(risk) || voy.crew <= 0) {
       if (voy.tier <= 1) t.drivers.raftLoss++; else t.drivers.capsize++;

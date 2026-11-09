@@ -16,7 +16,7 @@ export function newVillage(w: World, tribe: Tribe, site: Site, name: string): Vi
     food: 0, jobs: blankJobs(), stage: "band", kin: 0, blood: { [tribe.id]: 1 },
     houses: 1, granary: 0, defense: 0, morale: 0.7, hungry: 0, threat: 0,
     sick: null, immune: 0, mods: { farm: 1, fish: 1, gather: 1 }, lost: false, peak: 0,
-    stock: blankStock(), monument: 0
+    stock: blankStock(), monument: 0, smog: 0
   };
   v.jobs.gatherer = 1;
   w.villages.push(v);
@@ -52,7 +52,7 @@ export function createWorld(seed: number): World {
     seed, tick: 0, rngState: 0, nextId: 1,
     tribes: [], villages: [], relations: [], routes: [], voyages: [], agents: [], effects: [],
     climate: Object.fromEntries(ISLE_IDS.map((i) => [i, { base: 1, rain: 1, storm: false, calm: false, wind: 0 }])) as World["climate"],
-    energy: 12, faith: 0, chronicle: [], events: [], fx: [], contacts: [], endings: [], horizon: false,
+    energy: 12, faith: 0, chronicle: [], events: [], fx: [], contacts: [], endings: [], horizon: false, co2: 280, warming: 0,
     deposits: {} as World["deposits"], depositBase: {} as World["depositBase"]
   };
   // each island's natural resources, varied a little by seed
@@ -60,7 +60,7 @@ export function createWorld(seed: number): World {
     const base = (depositsData as Record<string, Record<string, number>>)[id];
     const d = {} as Record<Res, number>;
     for (const [r, v] of Object.entries(base)) d[r as Res] = v > 0 ? +(v * rng.range(0.8, 1.2)).toFixed(3) : 0;
-    d.brick = 0; d.bronze = 0; d.iron = d.iron ?? 0; d.spice = d.spice ?? 0;
+    d.brick = 0; d.bronze = 0; d.iron = d.iron ?? 0; d.spice = d.spice ?? 0; d.coal = d.coal ?? 0; d.steel = 0;
     w.depositBase[id] = d; w.deposits[id] = { ...d };
   }
   (tribesData as TribeData[]).forEach((d, i) => {

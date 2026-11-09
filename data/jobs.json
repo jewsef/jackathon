@@ -89,5 +89,12 @@
   "stage": 2,
   "makes": "Bronze",
   "why": "Turns copper and tin into bronze tools and blades."
+ },
+ {
+  "id": "worker",
+  "name": "Factory hand",
+  "stage": 3,
+  "makes": "Goods",
+  "why": "Tends the engines and looms. Factories multiply what a town can make, and burn coal doing it."
  }
 ]

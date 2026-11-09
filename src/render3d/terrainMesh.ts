@@ -20,7 +20,9 @@ export function makeSharedUniforms() {
     effectCount: { value: 0 },
     lights: { value: Array.from({ length: MAX_LIGHTS }, () => new THREE.Vector4()) },
     lightCount: { value: 0 },
-    horizon: { value: 0 }
+    horizon: { value: 0 },
+    /** Degrees of global warming: the snow line climbs. */
+    warming: { value: 0 }
   };
 }
 export type SharedUniforms = ReturnType<typeof makeSharedUniforms>;
@@ -39,7 +41,7 @@ const vert = /* glsl */ `
 const frag = /* glsl */ `
   uniform sampler2D map; uniform sampler2D detailMap; uniform vec4 detailRect; uniform float detailOn;
   uniform vec3 sunDir; uniform vec3 sunColor; uniform vec3 skyColor; uniform float dayLight; uniform float season;
-  uniform vec3 fogColor; uniform float fogNear; uniform float fogFar; uniform float horizon;
+  uniform vec3 fogColor; uniform float fogNear; uniform float fogFar; uniform float horizon; uniform float warming;
   uniform vec4 effects[${MAX_EFFECTS}]; uniform int effectCount;
   uniform vec4 lights[${MAX_LIGHTS}]; uniform int lightCount;
   varying vec2 vUv; varying vec3 vNormal; varying vec3 vWorld; varying float vEl;
@@ -53,6 +55,9 @@ const frag = /* glsl */ `
       }
     }
     float land = step(0.0, vEl);
+    // a warming world: the permanent snow melts back to bare rock, from the bottom up
+    float melt = land * step(0.75, dot(col, vec3(0.333))) * (1.0 - smoothstep(0.36 + warming * 0.025, 0.38 + warming * 0.025, vEl));
+    col = mix(col, vec3(0.52, 0.49, 0.46), melt * smoothstep(0.0, 0.3, warming));
     // seasons: golden autumn lowlands, snow creeping down in winter
     if (season > 1.5 && season < 2.5) col = mix(col, col * vec3(1.18, 1.0, 0.72), 0.35 * land * (1.0 - smoothstep(0.12, 0.2, vEl)));
     if (season > 2.5) {

@@ -56,6 +56,9 @@ export function economy(w: World, rng: Rng): World {
       dep.flint = Math.max(base.flint * 0.3, dep.flint - mi * 0.0002);
       // iron ore: dug out once the Bronze Age smiths know what it is, smelted once they know iron
       const ironK = has(t, "iron") ? 1 : has(t, "bronze") ? 0.3 : 0;
+      // coal: dug for the iron furnaces, then by the ton once there are steam pumps
+      const coalK = has(t, "steam") ? 1.2 : has(t, "iron") ? 0.3 : 0;
+      v.stock.coal += mi * 0.6 * dep.coal * coalK; dep.coal = Math.max(base.coal * 0.3, dep.coal - mi * 0.6 * dep.coal * coalK * 0.00025);
       v.stock.iron += mi * 0.45 * dep.iron * ironK; dep.iron = Math.max(base.iron * 0.25, dep.iron - mi * 0.45 * dep.iron * ironK * 0.0003);
     }
     // crafting
@@ -67,8 +70,25 @@ export function economy(w: World, rng: Rng): World {
       const b = Math.min(v.stock.copper / 3, v.stock.tin, 0.5 * n("smith") + 0.1);
       v.stock.copper -= b * 3; v.stock.tin -= b; v.stock.bronze += b * 2;
     }
+    // the Industrial age: steel from iron and coal; factories multiply output and burn coal
+    let burn = 0;
+    if (has(t, "steel") && v.stock.iron > 2 && v.stock.coal > 2) {
+      const b = Math.min(v.stock.iron / 2, v.stock.coal / 2, 0.4 * n("smith") + 0.6 * n("worker") + 0.1);
+      v.stock.iron -= b * 2; v.stock.coal -= b; v.stock.steel += b * 1.5; burn += b;
+    }
+    if (has(t, "factory") && n("worker") > 0) {
+      const fuel = Math.min(v.stock.coal, n("worker") * 0.22);
+      v.stock.coal -= fuel; burn += fuel;
+      const power = Math.min(1, fuel / Math.max(0.1, n("worker") * 0.22));
+      // powered mills spin fibre, fire bricks and forge iron faster
+      v.stock.fiber += n("worker") * 0.08 * power; v.stock.brick += has(t, "brickmaking") ? n("worker") * 0.06 * power : 0;
+      v.stock.iron += n("worker") * 0.03 * power * dep.iron;
+    }
+    if (has(t, "steam")) { const pump = Math.min(v.stock.coal, n("miner") * 0.04); v.stock.coal -= pump; burn += pump; }
+    v.smog = Math.min(1, v.smog + burn * 0.012);
+    w.co2 += burn * 0.0035;
     // tools and weapons wear out
-    v.stock.flint *= 0.99; v.stock.bronze *= 0.995; v.stock.iron *= 0.997; v.stock.spice *= 0.99;
+    v.stock.flint *= 0.99; v.stock.bronze *= 0.995; v.stock.iron *= 0.997; v.stock.spice *= 0.99; v.stock.steel *= 0.998;
     // spice is a luxury: it lifts spirits wherever it reaches
     if (v.stock.spice > 3) v.morale = Math.min(1, v.morale + 0.004);
     const c = cap(v);
@@ -76,7 +96,7 @@ export function economy(w: World, rng: Rng): World {
 
     // construction: houses, granaries, defences and monuments all cost materials
     const pop = popOf(v);
-    const builders = (v.jobs.builder * work + (v.stage === "band" ? 0.4 : 0)) * (1 + (tools - 1) * 0.8) * (has(t, "wheel") ? 1.15 : 1) * (has(t, "roads") ? 1.1 : 1);
+    const builders = (v.jobs.builder * work + (v.stage === "band" ? 0.4 : 0)) * (1 + (tools - 1) * 0.8) * (has(t, "wheel") ? 1.15 : 1) * (has(t, "roads") ? 1.1 : 1) * (has(t, "railway") ? 1.15 : 1) * (has(t, "factory") ? 1.2 : 1);
     const mat = houseMaterial(t, v.isle);
     if (v.houses < Math.ceil(pop / 5) + 1) {
       const want = builders * 0.2;
@@ -124,7 +144,8 @@ export function economy(w: World, rng: Rng): World {
     if (vs.length < 2) continue;
     for (const r of RES) {
       const mean = vs.reduce((s, v) => s + v.stock[r], 0) / vs.length;
-      const rate = has(w.tribes[vs[0].tribe], "roads") ? 0.22 : has(w.tribes[vs[0].tribe], "wheel") ? 0.13 : 0.08;
+      const T = w.tribes[vs[0].tribe];
+      const rate = has(T, "railway") ? 0.35 : has(T, "roads") ? 0.22 : has(T, "wheel") ? 0.13 : 0.08;
       for (const v of vs) v.stock[r] += (mean - v.stock[r]) * rate;
     }
   }

@@ -8,6 +8,7 @@ const GROUPS: Record<string, ChronKind[]> = {
   plague: ["plague"],
   tech: ["tech", "age"],
   politics: ["politics"],
+  climate: ["climate"],
   power: ["power", "omen"]
 };
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));

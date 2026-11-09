@@ -49,6 +49,15 @@ function drive(w: World, t: Tribe, id: string, sh: Record<Job, number>, pop: num
     case "gunpowder": return 0.0008 + (war ? 0.004 : 0) + sh.smith * 0.02;
     case "carrack": return coastal ? 0.0006 + sh.boatwright * 0.012 + Math.min(0.003, d.farReturn * 0.001) + Math.max(0, kin - 0.2) * 0.005 : 0;
     case "cartography": return 0.0015 + Math.min(0.006, t.known.length * 0.001);
+    case "steam": return 0.00035 + sh.miner * 0.01 + sh.smith * 0.01 + Math.min(0.0012, tribeStock(w, t.id, "coal") * 0.00002);
+    case "steel": return 0.001 + sh.smith * 0.03 + sh.worker * 0.02;
+    case "factory": return 0.001 + sh.smith * 0.02 + (pop > 1500 ? 0.002 : 0);
+    case "railway": return 0.0008 + sh.builder * 0.02 + sh.worker * 0.02 + Math.min(0.003, living(w).filter((v) => v.tribe === t.id).length * 0.0003);
+    case "steamship": return coastal ? 0.0008 + sh.boatwright * 0.02 + sh.worker * 0.01 : 0;
+    case "vaccines": return 0.0008 + sh.doctor * 0.03 + d.plagueSurvived * 0.01;
+    case "rifles": return war ? 0.006 : threat * 0.003 + 0.0004;
+    case "telegraph": return 0.001 + sh.worker * 0.01 + Math.min(0.004, t.known.length * 0.0005);
+    case "fertilizer": return 0.001 + sh.farmer * 0.004 + (d.hunger > 0.5 ? 0.004 : 0);
     case "writing": return 0.001 + sh.priest * 0.03 + Math.min(0.006, d.raids * 0.0005 + t.known.length * 0.0008);
     case "granary": return 0.004 + sh.builder * 0.05 + (d.hunger > 0.5 ? 0.005 : 0);
     case "raft": return coastal && pop >= 8 ? 0.004 + sh.fisher * 0.02 + Math.min(1, d.hunger) * 0.003 + kin * 0.01 : 0;
@@ -68,7 +77,7 @@ function drive(w: World, t: Tribe, id: string, sh: Record<Job, number>, pop: num
   return 0;
 }
 
-const INVENTOR: Record<string, string> = { raft: "Boatwright", canoe: "Boatwright", outrigger: "Boatwright", sail: "Boatwright", herbs: "Doctor", stonetools: "Toolmaker", bronze: "Smith", copperworking: "Smith", masonry: "Master builder", brickmaking: "Master builder", wheel: "Cartwright", roads: "Master builder", planning: "Surveyor", iron: "Smith", law: "Lawgiver", philosophy: "Philosopher", aqueduct: "Engineer", compass: "Navigator", carrack: "Shipwright", printing: "Printer", gunpowder: "Alchemist", cartography: "Mapmaker", lighthouse: "Engineer", writing: "Scribe" };
+const INVENTOR: Record<string, string> = { raft: "Boatwright", canoe: "Boatwright", outrigger: "Boatwright", sail: "Boatwright", herbs: "Doctor", stonetools: "Toolmaker", bronze: "Smith", copperworking: "Smith", masonry: "Master builder", brickmaking: "Master builder", wheel: "Cartwright", roads: "Master builder", planning: "Surveyor", iron: "Smith", law: "Lawgiver", philosophy: "Philosopher", aqueduct: "Engineer", compass: "Navigator", carrack: "Shipwright", printing: "Printer", gunpowder: "Alchemist", cartography: "Mapmaker", lighthouse: "Engineer", steam: "Engineer", steel: "Ironmaster", factory: "Mill owner", railway: "Engineer", steamship: "Shipwright", vaccines: "Doctor", telegraph: "Inventor", writing: "Scribe" };
 
 /**
  * Inventions need the right materials in the tribe's stores. Missing materials slow research;
@@ -86,8 +95,9 @@ export function resourceFactor(w: World, t: Tribe, tech: { needs?: Record<string
 
 /** The highest age whose required inventions the tribe has. */
 export function ageOf(t: Tribe): number {
+  // ages come in order: a tribe that learns steam without ocean ships is still in the Classical age
   let a = 0;
-  for (const age of AGES) if (age.requires.every((r) => has(t, r))) a = Math.max(a, age.id);
+  for (const age of AGES) { if (age.id === 0) continue; if (age.requires.every((r) => has(t, r))) a = age.id; else break; }
   return a;
 }
 
@@ -179,7 +189,7 @@ export function culture(w: World, rng: Rng): World {
     r.strength += rel && (rel.war || rel.attitude < -0.2) ? -0.08 : 0.004;
     r.strength = Math.min(1, r.strength - 0.006);
     if (r.strength <= 0.02) continue;
-    if (A.id !== B.id && rng.chance(0.03 * r.strength)) {
+    if (A.id !== B.id && rng.chance(0.03 * r.strength * (has(A, "telegraph") || has(B, "telegraph") ? 2 : 1))) {
       const [src, dst] = rng.chance(0.5) ? [A, B] : [B, A];
       const cand = src.techs.filter((x) => !has(dst, x) && TECH[x].prereq.every((p) => has(dst, p)));
       if (cand.length) {

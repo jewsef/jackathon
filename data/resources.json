@@ -11,5 +11,7 @@
   {"id": "tin", "name": "Tin", "color": "#b8bcc2", "desc": "Mixed with copper it makes bronze."},
   {"id": "bronze", "name": "Bronze", "color": "#d4a24a", "desc": "Tools, blades and status. The mark of the Bronze Age."},
   {"id": "iron", "name": "Iron", "color": "#7a4a3a", "desc": "Ore smelted into iron: cheap, hard tools and weapons. The Classical age runs on it."},
-  {"id": "spice", "name": "Spice", "color": "#d9792c", "desc": "Pepper, cloves and cinnamon from the Spice Isles. Worth a voyage across the world."}
+  {"id": "spice", "name": "Spice", "color": "#d9792c", "desc": "Pepper, cloves and cinnamon from the Spice Isles. Worth a voyage across the world."},
+  {"id": "coal", "name": "Coal", "color": "#2b2826", "desc": "Black rock that burns hot. Fuel for engines, furnaces and factories, and for the smoke."},
+  {"id": "steel", "name": "Steel", "color": "#8a96a3", "desc": "Iron refined with coal. Rails, ships, bridges and guns."}
 ]

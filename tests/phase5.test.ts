@@ -52,6 +52,7 @@ describe("phase 5: the world beyond the horizon", () => {
     t.techs.push("iron"); expect(weaponTier(t)).toBe(base + 1);
     t.techs.push("gunpowder"); expect(weaponTier(t)).toBe(base + 2.5);
     t.techs.push("carrack"); expect(boatTier(t)).toBe(6);
+    t.techs.push("stonetools", "bronze"); // ages come in order
     expect(ageOf(t)).toBe(4);
   });
 

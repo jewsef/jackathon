@@ -28,6 +28,8 @@ export class SkySystem {
     scene.add(this.sun, this.sun.target, this.hemi);
   }
   /** Advance the clock and update every light and shader that depends on the sun. */
+  /** Coal haze in the air, 0..1: it browns the fog and thickens the sky. */
+  haze = 0;
   update(dt: number, shared: SharedUniforms, scene: THREE.Scene) {
     if (!this.locked) this.phase = (this.phase + dt / this.period) % 1;
     const p = this.locked ? 0.12 : this.phase;
@@ -49,7 +51,9 @@ export class SkySystem {
     shared.dayLight.value = day;
     const sky = new THREE.Color(0.55, 0.66, 0.8).lerp(new THREE.Color(0.08, 0.11, 0.2), 1 - day);
     shared.skyColor.value.copy(sky);
-    const fog = new THREE.Color(0.66, 0.75, 0.84).lerp(new THREE.Color(0.05, 0.08, 0.14), 1 - day).lerp(new THREE.Color(0.95, 0.7, 0.5), warm * day * 0.35);
+    const fog = new THREE.Color(0.66, 0.75, 0.84).lerp(new THREE.Color(0.05, 0.08, 0.14), 1 - day).lerp(new THREE.Color(0.95, 0.7, 0.5), warm * day * 0.35)
+      .lerp(new THREE.Color(0.5, 0.46, 0.4).multiplyScalar(0.2 + 0.8 * day), this.haze);
+    this.sky.material.uniforms.turbidity.value = 4 + this.haze * 14;
     shared.fogColor.value.copy(fog);
     if (scene.fog) (scene.fog as THREE.Fog).color.copy(fog);
     this.sky.visible = day > 0.02;

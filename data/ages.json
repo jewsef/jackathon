@@ -4,5 +4,6 @@
   {"id": 2, "name": "Bronze Age", "requires": ["bronze"], "desc": "Copper and tin become bronze. Rulers, walls, temples and writing."},
   {"id": 3, "name": "Classical age", "requires": ["iron"], "desc": "Iron, coins, written law and philosophy. Cities with temples, theatres and aqueducts."},
   {"id": 4, "name": "Age of Sail", "requires": ["carrack"], "desc": "Ocean ships, compasses and cannon. The edge of the map is only the beginning."},
-  {"id": 5, "name": "Industrial", "requires": ["__locked"], "desc": "Coming in a later phase."}
+  {"id": 5, "name": "Industrial age", "requires": ["steam"], "desc": "Coal, steam, factories and railways. The towns grow huge, the air turns grey, and the climate starts to change."},
+  {"id": 6, "name": "Electric age", "requires": ["__locked"], "desc": "Coming in a later phase."}
 ]
