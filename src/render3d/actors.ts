@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { World, Village, Voyage, Agent, Tribe, Fx } from "../sim/types";
 import type { Terrain } from "../sim/terrain";
-import { WX, WY } from "../sim/terrain";
+import { WX, WY, inHome } from "../sim/terrain";
 import { hash3 } from "../sim/rng";
 import { popOf } from "../sim/util";
 import { voyagePos } from "../sim/voyages";
@@ -10,7 +10,7 @@ import { layoutFor, sampleCrowd, figureState, houseCount, fieldCount, type Figur
 import type { Selection } from "../render/common";
 import type { HeightField } from "./heightfield";
 import { planFor, isPlanned, roadNetwork, villageTracks, roadTier, type TownPlan } from "../render/plan";
-import { houseKit, CIVIC, PALETTE, colorOf, eraOf, type Part, type Prim, type Style, type Palette } from "./kits";
+import { houseKit, CIVIC, PALETTE, STYLE_OF, colorOf, eraOf, type Part, type Prim, type Style, type Palette } from "./kits";
 
 type Snap = Omit<World, "chronicle">;
 const tmpQ = new THREE.Quaternion(), tmpS = new THREE.Vector3(), tmpP = new THREE.Vector3(), tmpE = new THREE.Euler(), tmpC = new THREE.Color();
@@ -127,6 +127,7 @@ export class Actors {
   private P: Record<string, THREE.InstancedMesh> = {};
   private rings: THREE.InstancedMesh;
   private hull: THREE.InstancedMesh; private raft: THREE.InstancedMesh; private sail: THREE.InstancedMesh; private outrig: THREE.InstancedMesh; private wakes: THREE.InstancedMesh;
+  private shipHull: THREE.InstancedMesh; private shipRig: THREE.InstancedMesh; private shipSail: THREE.InstancedMesh;
   private routes: THREE.LineSegments; private known: THREE.LineSegments;
   private glows: THREE.Sprite[] = []; private glowTex = glowTexture("rgba(255,230,170,1)", "rgba(242,178,87,0.5)");
   private clouds: { s: THREE.Sprite; x: number; y: number; h: number; k: number }[] = [];
@@ -145,13 +146,14 @@ export class Actors {
   private K: Record<Prim, THREE.InstancedMesh> = {} as Record<Prim, THREE.InstancedMesh>;
   private kn: Record<string, number> = {};
   private roads: THREE.Mesh; private roadKey = "";
+  private horizon = false; private lastLive: Village[] = []; private lastForest: Record<string, number> = {};
   named: NamedSpot[] = [];
 
   constructor(hf: HeightField, terrain: Terrain, low = false) {
     this.hf = hf; this.terrain = terrain; this.low = low;
     const G = this.group;
-    this.pines = inst(new THREE.ConeGeometry(0.42, 1.1, 6).translate(0, 0.62, 0), 60000, lambert());
-    this.broad = inst(new THREE.SphereGeometry(0.5, 7, 5).translate(0, 0.7, 0), 60000, lambert());
+    this.pines = inst(new THREE.ConeGeometry(0.42, 1.1, 6).translate(0, 0.62, 0), 160000, lambert());
+    this.broad = inst(new THREE.SphereGeometry(0.5, 7, 5).translate(0, 0.7, 0), 160000, lambert());
     // building kits: one set of shapes per island style
     const prism = new THREE.CylinderGeometry(0.72, 0.72, 1.08, 3).rotateZ(Math.PI / 2).rotateX(-Math.PI / 2).scale(1, 0.62, 1).translate(0, 0.9, 0);
     const kit: Record<string, THREE.BufferGeometry> = {
@@ -220,6 +222,23 @@ export class Actors {
     wake.setAttribute("color", new THREE.BufferAttribute(new Float32Array([0.9, 0.95, 1, 0, 0, 0, 0, 0, 0, 0.9, 0.95, 1, 0, 0, 0, 0, 0, 0]), 3));
     this.wakes = inst(wake, 600, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
     G.add(this.hull, this.raft, this.sail, this.outrig, this.wakes);
+    // ocean ships (Age of Sail): a deep hull with castles fore and aft, three masts, square sails
+    const hullG = mergeGeometries([
+      new THREE.CylinderGeometry(0.17, 0.1, 1, 8).rotateZ(Math.PI / 2).scale(1, 0.75, 1).translate(0, 0.06, 0),
+      new THREE.BoxGeometry(0.26, 0.14, 0.28).translate(-0.36, 0.18, 0), new THREE.BoxGeometry(0.16, 0.1, 0.2).translate(0.38, 0.16, 0),
+      new THREE.BoxGeometry(0.3, 0.025, 0.025).translate(0.62, 0.14, 0)
+    ])!;
+    const rigG = mergeGeometries([
+      new THREE.CylinderGeometry(0.012, 0.016, 0.95, 5).translate(0.08, 0.55, 0), new THREE.CylinderGeometry(0.01, 0.014, 0.75, 5).translate(0.34, 0.45, 0),
+      new THREE.CylinderGeometry(0.01, 0.014, 0.62, 5).translate(-0.28, 0.5, 0),
+      new THREE.BoxGeometry(0.02, 0.02, 0.5).translate(0.08, 0.62, 0), new THREE.BoxGeometry(0.02, 0.02, 0.42).translate(0.08, 0.92, 0), new THREE.BoxGeometry(0.02, 0.02, 0.38).translate(0.34, 0.68, 0)
+    ])!;
+    const sailG = mergeGeometries([
+      new THREE.BoxGeometry(0.02, 0.26, 0.46).translate(0.09, 0.48, 0), new THREE.BoxGeometry(0.02, 0.2, 0.38).translate(0.09, 0.8, 0),
+      new THREE.BoxGeometry(0.02, 0.22, 0.34).translate(0.35, 0.56, 0), new THREE.BoxGeometry(0.22, 0.2, 0.012).translate(-0.28, 0.5, 0)
+    ])!;
+    this.shipHull = inst(hullG, 300, lambert()); this.shipRig = inst(rigG, 300, lambert()); this.shipSail = inst(sailG, 300, lambert());
+    G.add(this.shipHull, this.shipRig, this.shipSail);
     // routes and known-world rings, drawn on the sea
     this.routes = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineDashedMaterial({ vertexColors: true, dashSize: 0.06, gapSize: 0.06, transparent: true, opacity: 0.7, depthWrite: false }));
     this.known = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.75, depthWrite: false }));
@@ -258,8 +277,11 @@ export class Actors {
   /** Clear trees where villages stand; a village's land is cleared for fields. */
   private layoutTrees(villages: Village[], forest: Record<string, number>) {
     let ip = 0, ib = 0;
+    this.lastLive = villages; this.lastForest = forest;
     for (const tr of this.trees) {
       if (tr.h > (forest[tr.isle] ?? 1)) continue;
+      if (!this.horizon && !inHome(tr.x, tr.y)) continue;
+      if (ip >= 160000 || ib >= 160000) break;
       if (villages.some((v) => Math.abs(v.x - tr.x) < 0.42 && Math.abs(v.y - tr.y) < 0.42 && Math.hypot(v.x - tr.x, v.y - tr.y) < 0.21 + Math.min(0.2, Math.sqrt(popOf(v)) / 120))) continue;
       const y = this.hf.groundY(tr.x, tr.y), k = 0.013 * tr.s;
       const shade = 0.75 + hash3(Math.round(tr.x * 100), Math.round(tr.y * 100), 9) * 0.35;
@@ -339,11 +361,11 @@ export class Actors {
     this.buildRoads(w, live);
     for (const v of live) {
       const L = layoutFor(this.terrain, v), t = w.tribes[v.tribe];
-      const st = STYLE[t?.home ?? "hearth"] ?? STYLE.hearth;
+      const style: Style = STYLE_OF[t?.home ?? "hearth"] ?? "hearth";
+      const st = STYLE[style] ?? STYLE.hearth;
       const roofTint = t?.top ?? st.roof;
       const band = v.stage === "band" || (t?.age ?? 0) === 0;
       const planned = isPlanned(v, t), era = eraOf(v.stage, t?.age ?? 0, planned);
-      const style = ((t?.home ?? "hearth") in PALETTE ? t!.home : "hearth") as Style;
       const pal = PALETTE[style][era], accent = t?.line ?? "#f2b257";
       const plan: TownPlan | null = planned ? planFor(this.terrain, v, L) : null;
       const capital = !!t && w.agents.find((a) => a.id === t.gov?.ruler)?.village === v.id;
@@ -367,7 +389,7 @@ export class Actors {
         const sq = (pt: { x: number; y: number }) => [pt.x, pt.y, this.hf.groundY(pt.x, pt.y)] as const;
         { const [x, y, gy] = sq(plan.plaza); this.kit(CIVIC.plaza, x, y, gy, -plan.angle, 0.018, pal, accent); }
         { const [x, y, gy] = sq(plan.market); this.kit(CIVIC.market, x, y, gy, -plan.angle, 0.018, pal, accent); }
-        { const [x, y, gy] = sq(plan.palace); if (capital) this.kit(CIVIC.palace, x, y, gy, -plan.angle, 0.017, { ...pal, roof: roofTint }, accent); else this.kit(CIVIC.granary2, x, y, gy, -plan.angle, 0.02, pal, accent); }
+        { const [x, y, gy] = sq(plan.palace); if (capital) this.kit(CIVIC.palace, x, y, gy, -plan.angle, 0.017, { ...pal, roof: roofTint }, accent); else if (era >= 4 && v.stage === "city") this.kit(CIVIC.theatre, x, y, gy, -plan.angle, 0.02, pal, accent); else this.kit(CIVIC.granary2, x, y, gy, -plan.angle, 0.02, pal, accent); }
         if (v.monument <= 0.02) { const [x, y, gy] = sq(plan.temple); this.kit(CIVIC.workshop, x - 0.008, y, gy, -plan.angle, 0.016, pal, accent); this.kit(CIVIC.workshop, x + 0.012, y + 0.01, gy, -plan.angle + Math.PI / 2, 0.014, pal, accent); }
       } else if (!band) {
         const lx = v.x - 0.02, ly = v.y + 0.025, gy = this.hf.groundY(lx, ly), s = 0.02;
@@ -384,13 +406,36 @@ export class Actors {
         const dx = v.px - v.x, dy = v.py - v.y, dl = Math.hypot(dx, dy) || 1, rot = Math.atan2(dx, dy);
         const px = v.px - dx / dl * 0.01, py = v.py - dy / dl * 0.01;
         this.kit(CIVIC.pier, px, py, Math.max(0.002, this.hf.groundY(px, py)) + 0.001, rot, era >= 2 ? 0.02 : 0.014, pal, accent);
-        if (v.jobs.boatwright > 0.01) {
-          const bx = v.x + dx * 0.86 - dy / dl * 0.03, by = v.y + dy * 0.86 + dx / dl * 0.03;
-          if (this.hf.elevAt(bx, by) > 0.002) this.kit(CIVIC.boatshed, bx, by, this.hf.groundY(bx, by), rot, 0.014, pal, accent);
+        const has = (x: string) => !!t?.techs.includes(x), big = v.stage === "town" || v.stage === "city";
+        const side = (along: number, off: number): [number, number] | null => {
+          const x = v.x + dx * along - dy / dl * off, y = v.y + dy * along + dx / dl * off;
+          return this.hf.elevAt(x, y) > 0.002 ? [x, y] : null;
+        };
+        if (v.jobs.boatwright > 0.01 || has("carrack")) {
+          const p = side(0.86, 0.03);
+          if (p) this.kit(has("carrack") ? CIVIC.shipyard : CIVIC.boatshed, p[0], p[1], this.hf.groundY(p[0], p[1]), rot, has("carrack") ? 0.018 : 0.014, pal, accent);
+        }
+        // a lighthouse at the pier head, warehouses on the quay, a star fort guarding the harbour
+        if (has("lighthouse") && big) { const lx = v.px + dx / dl * 0.035, ly = v.py + dy / dl * 0.035; this.kit(CIVIC.lighthouse, lx, ly, Math.max(0, this.hf.groundY(lx, ly)), 0, 0.016, pal, accent); }
+        if (has("coinage") && big) { const p = side(0.82, -0.035); if (p) this.kit(CIVIC.warehouse, p[0], p[1], this.hf.groundY(p[0], p[1]), rot + Math.PI / 2, 0.016, pal, accent); }
+        if (has("gunpowder") && big) { const p = side(0.9, -0.09) ?? side(0.8, 0.1); if (p) this.kit(CIVIC.starfort, p[0], p[1], this.hf.groundY(p[0], p[1]), rot, 0.02, pal, accent); }
+      }
+      // Classical waterworks: an aqueduct striding in from the hills
+      if (t?.techs.includes("aqueduct") && (v.stage === "town" || v.stage === "city")) {
+        const ax = L.quarry.x - v.x, ay = L.quarry.y - v.y, al = Math.hypot(ax, ay) || 1, rot = -Math.atan2(ay, ax);
+        for (let k = 0; k < 16; k++) {
+          const d = L.R * 0.95 + k * 0.014, x = v.x + ax / al * d, y = v.y + ay / al * d;
+          if (this.hf.elevAt(x, y) < 0.004 || d > al) break;
+          this.kit(CIVIC.arch, x, y, this.hf.groundY(x, y), rot, 0.014, pal, accent);
         }
       }
+      // windmills among the fields in the Age of Sail
+      if ((t?.age ?? 0) >= 4 && fieldCount(v, L) > 3) for (const i of [2, 7]) {
+        const f = L.fields[i]; if (!f || i >= fieldCount(v, L)) continue;
+        this.kit(CIVIC.windmill, f.x + f.w * 0.5, f.y, this.hf.groundY(f.x + f.w * 0.5, f.y), 0.6, 0.014, pal, accent);
+      }
       // stockpiles: what the village has in store, at a glance
-      const piles: [keyof Village["stock"], string, string][] = [["wood", "logs", "#8a6440"], ["stone", "heap", "#a9a59e"], ["brick", "crate", "#c35a3e"], ["clay", "heap", "#b5714a"], ["salt", "heap", "#eef2f4"], ["fiber", "crate", "#c9b77a"], ["flint", "heap", "#3b3540"], ["copper", "heap", "#c87533"], ["tin", "heap", "#b8bcc2"], ["bronze", "crate", "#e2b04f"]];
+      const piles: [keyof Village["stock"], string, string][] = [["wood", "logs", "#8a6440"], ["stone", "heap", "#a9a59e"], ["brick", "crate", "#c35a3e"], ["clay", "heap", "#b5714a"], ["salt", "heap", "#eef2f4"], ["fiber", "crate", "#c9b77a"], ["flint", "heap", "#3b3540"], ["copper", "heap", "#c87533"], ["tin", "heap", "#b8bcc2"], ["bronze", "crate", "#e2b04f"], ["iron", "heap", "#5a4038"], ["spice", "crate", "#d9792c"]];
       let pk = 0;
       for (const [r, kitName, col] of piles) {
         const amt = v.stock[r];
@@ -431,8 +476,9 @@ export class Actors {
       if (v.monument > 0.02) {
         const mx = plan ? plan.temple.x : v.x + 0.03, my = plan ? plan.temple.y : v.y - 0.065, gy = this.hf.groundY(mx, my), steps = Math.ceil(v.monument * 3);
         const mcol = v.isle === "hearth" ? "#b8705a" : v.isle === "gull" ? "#b4b0aa" : "#9c8b70";
-        for (let k = 0; k < steps; k++) b("step", mx, gy + k * 0.012, my, 0, 0.05 - k * 0.012, 0.04, 0.05 - k * 0.012, mcol);
-        if (v.monument >= 1) { b("gableBody", mx, gy + 0.036, my, 0, 0.012, 0.012, 0.012, mcol); b("gableRoof", mx, gy + 0.036, my, 0, 0.012, 0.012, 0.012, roofTint); }
+        if ((t?.age ?? 0) >= 3) this.kit(CIVIC.temple, mx, my, gy, plan ? -plan.angle : 0.2, 0.016 * (0.7 + 0.3 * Math.min(1, v.monument)), pal, accent);
+        else for (let k = 0; k < steps; k++) b("step", mx, gy + k * 0.012, my, 0, 0.05 - k * 0.012, 0.04, 0.05 - k * 0.012, mcol);
+        if (v.monument >= 1 && (t?.age ?? 0) < 3) { b("gableBody", mx, gy + 0.036, my, 0, 0.012, 0.012, 0.012, mcol); b("gableRoof", mx, gy + 0.036, my, 0, 0.012, 0.012, 0.012, roofTint); }
       }
       for (let i = 0; i < fieldCount(v, L); i++) {
         const f = L.fields[i];
@@ -560,11 +606,22 @@ export class Actors {
     }
 
     // boats: voyages (with crews), route traffic, fishing boats; moving boats leave a wake
-    let nh = 0, nf = 0, ns = 0, no = 0, nw = 0;
+    let nh = 0, nf = 0, ns = 0, no = 0, nw = 0, nsh = 0;
+    const sailTint = new THREE.Color();
     const boat = (x: number, y: number, head: number, tier: number, size: number, moving: boolean, crew?: Tribe, crewN = 0) => {
       if (nh + nf > 590) return;
       const rock = Math.sin(time * 1.6 + x * 9) * 0.12, yy = Math.sin(time * 1.3 + x * 7 + y * 5) * 0.002;
       const yaw = -head;
+      if (tier >= 6) {
+        if (nsh >= 300) return;
+        const s = size * 1.7, r = rock * 0.4;
+        put(this.shipHull, nsh, x, yy, y, yaw, s, s, s, "#5e4026", r, 0);
+        put(this.shipRig, nsh, x, yy, y, yaw, s, s, s, "#3a2a1c", r, 0);
+        put(this.shipSail, nsh, x, yy, y, yaw, s, s, s, sailTint.set("#f4ecd8").lerp(tmpC.set(crew?.line ?? "#f4ecd8"), 0.22), r, 0);
+        nsh++;
+        if (moving) put(this.wakes, nw++, x, 0.004, y, yaw, s * 1.2, s, s * (0.8 + 0.2 * Math.sin(time * 3 + x)));
+        return;
+      }
       if (tier <= 1) put(this.raft, nf++, x, yy, y, yaw, size, size, size, "#a8865a", 0, rock);
       else {
         put(this.hull, nh++, x, yy, y, yaw, size, size, size, "#8a6440", rock, 0);
@@ -596,6 +653,13 @@ export class Actors {
         if (this.hf.elevAt(x, y) > -0.006) continue;
         boat(x, y, a + Math.sin(time * 0.5 + k) * 0.4, tier, 0.026, false, w.tribes[v.tribe], 1);
       }
+      // ships at anchor in the harbours of the Age of Sail
+      const T = w.tribes[v.tribe];
+      if (T?.techs.includes("carrack") && (v.stage === "town" || v.stage === "city")) for (let k = 0; k < (v.stage === "city" ? 3 : 2); k++) {
+        const a = Math.atan2(v.py - v.y, v.px - v.x) + (k - 1) * 0.5, d = 0.07 + k * 0.025;
+        const x = v.px + Math.cos(a) * d, y = v.py + Math.sin(a) * d;
+        if (this.hf.elevAt(x, y) < -0.008) boat(x, y, a + Math.PI / 2 + Math.sin(time * 0.2 + k) * 0.1, 6, 0.036, false, T);
+      }
     }
     // crews: seated, rocking with the paddle stroke
     for (const c of crewSpots) {
@@ -605,6 +669,7 @@ export class Actors {
     finish(this.P.body, n); finish(this.rings, nr);
     (this.rings.material as THREE.MeshBasicMaterial).opacity = 0.6 + 0.3 * Math.sin(time * 3);
     finish(this.hull, nh); finish(this.raft, nf); finish(this.sail, ns); finish(this.outrig, no); finish(this.wakes, nw);
+    finish(this.shipHull, nsh); finish(this.shipRig, nsh); finish(this.shipSail, nsh);
 
     // village lights: bright from afar and at night
     let gi = 0;
@@ -736,4 +801,6 @@ export class Actors {
   setPeopleVisible(on: boolean) { for (const k of Object.keys(this.P)) this.P[k].visible = on; this.rings.visible = on; }
   setVillagesVisible(on: boolean) { for (const m of [...Object.values(this.B), ...Object.values(this.K), this.fields, this.posts, this.roads]) m.visible = on; }
   setRoutesVisible(on: boolean) { this.routes.visible = on; }
+  /** Show or hide what lies beyond the horizon. */
+  setHorizon(open: boolean) { if (open !== this.horizon) { this.horizon = open; this.layoutTrees(this.lastLive, this.lastForest); } }
 }

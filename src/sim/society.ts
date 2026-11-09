@@ -16,7 +16,7 @@ export function workforce(v: Village) {
 }
 /** Productivity from tools and age: stone tools, then bronze. */
 export function toolFactor(w: World, t: Tribe, v?: Village) {
-  return 1 + (has(t, "stonetools") ? 0.18 : 0) + (has(t, "bronze") && (!v || v.stock.bronze > 1) ? 0.15 : 0);
+  return 1 + (has(t, "stonetools") ? 0.18 : 0) + (has(t, "bronze") && (!v || v.stock.bronze > 1) ? 0.15 : 0) + (has(t, "iron") && (!v || v.stock.iron > 1) ? 0.15 : 0);
 }
 
 export function stageOf(pop: number, planned = false): Stage {

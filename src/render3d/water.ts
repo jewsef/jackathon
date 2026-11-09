@@ -42,7 +42,7 @@ const vert = /* glsl */ `
 const frag = /* glsl */ `
   uniform sampler2D depthMap; uniform float time;
   uniform vec3 sunDir; uniform vec3 sunColor; uniform vec3 skyColor; uniform float dayLight;
-  uniform vec3 fogColor; uniform float fogNear; uniform float fogFar;
+  uniform vec3 fogColor; uniform float fogNear; uniform float fogFar; uniform float horizon;
   varying vec3 vWorld; varying float vRough;
   float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
   float vnoise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
@@ -70,7 +70,9 @@ const frag = /* glsl */ `
     float alpha = inside ? clamp(0.3 + depth * 4.5, 0.3, 1.0) : 1.0;
     alpha = max(alpha, foam * 0.85);
     float fog = smoothstep(fogNear, fogFar, length(vWorld - cameraPosition));
-    gl_FragColor = vec4(mix(col, fogColor, fog), mix(alpha, 1.0, fog));
+    float beyond = (1.0 - horizon) * smoothstep(-0.6, 1.4, max(vWorld.x - 16.8, vWorld.z - 9.8));
+    vec3 mist = vec3(0.6, 0.66, 0.73) * (0.35 + 0.65 * dayLight);
+    gl_FragColor = vec4(mix(mix(col, fogColor, fog), mist, beyond * 0.96), max(mix(alpha, 1.0, fog), beyond));
   }`;
 
 export function buildWater(hf: HeightField, shared: SharedUniforms) {

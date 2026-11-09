@@ -10,17 +10,20 @@ export type Prim = "box" | "cyl" | "cone" | "prism" | "hip" | "dome";
 export type Role = "wall" | "roof" | "trim" | "door" | "accent" | "stone" | "wood" | "glow" | "awning" | "pave";
 export interface Part { g: Prim; x: number; y: number; z: number; sx: number; sy: number; sz: number; r?: number; c: Role | string; }
 export type Style = "hearth" | "kelp" | "thorn" | "gull" | "far";
-/** 0 shelter (early humans), 1 hut (Stone Age), 2 house (Bronze Age), 3 town house (planned city). */
-export type Era = 0 | 1 | 2 | 3;
+/** 0 shelter (early humans), 1 hut (Stone Age), 2 house (Bronze Age), 3 town house (planned city), 4 Classical, 5 Age of Sail. */
+export type Era = 0 | 1 | 2 | 3 | 4 | 5;
+/** Peoples beyond the horizon build in the manner closest to their land. */
+export const STYLE_OF: Record<string, Style> = { hearth: "hearth", kelp: "kelp", thorn: "thorn", gull: "gull", far: "far", great: "far", spice: "kelp", iron: "gull" };
 
 export interface Palette { wall: string; roof: string; trim: string; door: string; stone: string; wood: string; }
 export const PALETTE: Record<Style, Palette[]> = {
   //        Early humans                                   Stone Age                                        Bronze Age                                          City
-  hearth: [p("#9c8462", "#6e5a40"), p("#b98a62", "#c9a860"), p("#b5634a", "#8c5a44", "#e2c9a0"), p("#c87a5a", "#7d4a38", "#efdcb8")],
-  kelp: [p("#a89878", "#7e7050"), p("#cbb98a", "#9f8a52"), p("#d8c79a", "#7a6a40", "#5fa8a0"), p("#e2d4ac", "#5f6f4a", "#4fa3a0")],
-  thorn: [p("#8a6a4a", "#5a4632"), p("#7a5a3a", "#4a3a2a"), p("#6a4a2e", "#3f3226", "#d8c8a8"), p("#e8dcc4", "#3a2c22", "#4a3424")],
-  gull: [p("#9a9488", "#6a6458"), p("#a8a29a", "#7a7468"), p("#b4b0aa", "#4e5662", "#8c8680"), p("#c2beb6", "#3e4652", "#8c8680")],
-  far: [p("#8a6a50", "#3a2c24"), p("#7a6248", "#5a6a3a"), p("#e6dcc8", "#5a3a2a", "#6a4a32"), p("#efe6d4", "#4a2e22", "#6a4a32")]
+  //        ... Classical (whitewash and terracotta)               Age of Sail (tall town houses)
+  hearth: [p("#9c8462", "#6e5a40"), p("#b98a62", "#c9a860"), p("#b5634a", "#8c5a44", "#e2c9a0"), p("#c87a5a", "#7d4a38", "#efdcb8"), p("#efe4cc", "#b4583a", "#c8b48e"), p("#9c4a36", "#4a3a36", "#e8dcc4")],
+  kelp: [p("#a89878", "#7e7050"), p("#cbb98a", "#9f8a52"), p("#d8c79a", "#7a6a40", "#5fa8a0"), p("#e2d4ac", "#5f6f4a", "#4fa3a0"), p("#f2ecdc", "#b4583a", "#4fa3a0"), p("#8fc0c8", "#3e4a52", "#f2ecdc")],
+  thorn: [p("#8a6a4a", "#5a4632"), p("#7a5a3a", "#4a3a2a"), p("#6a4a2e", "#3f3226", "#d8c8a8"), p("#e8dcc4", "#3a2c22", "#4a3424"), p("#e8dcc4", "#9a4a32", "#4a3424"), p("#efe6d4", "#2e2a2c", "#3a2a20")],
+  gull: [p("#9a9488", "#6a6458"), p("#a8a29a", "#7a7468"), p("#b4b0aa", "#4e5662", "#8c8680"), p("#c2beb6", "#3e4652", "#8c8680"), p("#e4e0d8", "#a8563a", "#cfc9be"), p("#9a958c", "#3a4250", "#d8d2c6")],
+  far: [p("#8a6a50", "#3a2c24"), p("#7a6248", "#5a6a3a"), p("#e6dcc8", "#5a3a2a", "#6a4a32"), p("#efe6d4", "#4a2e22", "#6a4a32"), p("#e8d4b4", "#b0603c", "#6a4a32"), p("#d8b88a", "#5a2e22", "#f2ecdc")]
 };
 function p(wall: string, roof: string, trim = "#5a4430"): Palette { return { wall, roof, trim, door: "#2e241c", stone: "#a9a59e", wood: "#6a4a30" }; }
 
@@ -36,6 +39,8 @@ function storeys(n: number, w: number, h: number, d: number, c: Part["c"], jetty
 
 /** A house for this island and era. `n` is the number of storeys (towns grow upward when crowded). */
 export function houseKit(style: Style, era: Era, n = 1): Part[] {
+  if (era === 4) return classicalHouse(style, n);
+  if (era === 5) return sailHouse(style, n);
   if (era === 0) return style === "kelp" || style === "hearth"
     ? [P("prism", 0, 0, 0, 0.9, 0.6, 0.8, "wall"), B(0, 0, 0.42, 0.9, 0.04, 0.04, "trim")] // a lean-to of poles and thatch
     : [P("cone", 0, 0, 0, 1, 1.0, 1, "wall"), P("cyl", 0, 0.95, 0, 0.08, 0.3, 0.08, "roof")]; // a hide tent
@@ -65,7 +70,41 @@ export function houseKit(style: Style, era: Era, n = 1): Part[] {
   }
 }
 
-export type Civic = "palace" | "market" | "smithy" | "boatshed" | "pier" | "gatehouse" | "tower" | "well" | "workshop" | "granary2" | "plaza";
+/** Classical: whitewashed walls, terracotta hip roofs, a columned porch; Kelp-style peoples build round tholoi. */
+function classicalHouse(style: Style, n: number): Part[] {
+  const H = 0.6, top = H * n;
+  if (style === "kelp") return [P("cyl", 0, 0, 0, 1, top, 1, "wall"), ...[0, 1, 2, 3, 4, 5, 6, 7].map((k) => P("cyl", Math.cos(k * 0.785) * 0.58, 0, Math.sin(k * 0.785) * 0.58, 0.07, top, 0.07, "trim")),
+    P("cyl", 0, top, 0, 1.3, 0.05, 1.3, "trim"), P("cone", 0, top + 0.05, 0, 1.3, 0.42, 1.3, "roof"), B(0, 0, 0.5, 0.2, 0.4, 0.04, "door")];
+  const w = style === "thorn" ? 1.3 : 1.1;
+  return [B(0, 0, 0, w + 0.1, 0.06, 1.05, "trim"), ...storeys(n, w, H, 0.9, "wall"), P("hip", 0, top, -0.02, w + 0.18, 0.38, 1.08, "roof"),
+    B(-0.35, 0, 0.5, 0.07, H, 0.07, "trim"), B(0.35, 0, 0.5, 0.07, H, 0.07, "trim"), B(0, H, 0.5, w * 0.8, 0.06, 0.12, "trim"), B(0, 0, 0.46, 0.22, 0.4, 0.03, "door"),
+    ...(n > 1 ? [B(-0.3, H * 1.4, 0.46, 0.14, 0.16, 0.02, "door"), B(0.3, H * 1.4, 0.46, 0.14, 0.16, 0.02, "door")] : [])];
+}
+/** Age of Sail: tall narrow town houses, steep roofs, chimneys and rows of windows. */
+function sailHouse(style: Style, n: number): Part[] {
+  const H = 0.55, k = n + 1, top = H * k, w = 0.82;
+  const windows: Part[] = [];
+  for (let f = 0; f < k; f++) for (const x of f === 0 ? [0.24] : [-0.22, 0.22]) windows.push(B(x, f * H + 0.2, 0.46, 0.15, 0.2, 0.02, "door"));
+  const roof: Part[] = style === "hearth"
+    ? [B(0, top, 0, w, 0.18, 0.9, "wall"), B(0, top + 0.18, 0, w * 0.66, 0.16, 0.9, "wall"), B(0, top + 0.34, 0, w * 0.33, 0.14, 0.9, "wall"), P("prism", 0, top, 0, w * 0.98, 0.5, 0.86, "roof", Math.PI / 2)] // stepped gable
+    : style === "gull" ? [P("hip", 0, top, 0, w + 0.08, 0.55, 0.98, "roof"), B(0, top + 0.12, 0.38, 0.22, 0.2, 0.12, "wall")] // slate with a dormer
+    : [P("prism", 0, top, 0, w + 0.08, 0.6, 0.98, "roof", Math.PI / 2)];
+  const frame: Part[] = style === "thorn" ? [B(0, H, 0.46, w + 0.01, 0.05, 0.02, "trim"), B(0, H * 2, 0.46, w + 0.01, 0.05, 0.02, "trim"), B(-0.4, 0, 0.46, 0.05, top, 0.02, "trim"), B(0.4, 0, 0.46, 0.05, top, 0.02, "trim")] : [];
+  return [...storeys(k, w, H, 0.9, "wall"), ...frame, ...roof, B(-0.25, top - 0.05, -0.2, 0.12, 0.6, 0.12, "trim"), B(-0.2, 0, 0.46, 0.18, 0.34, 0.03, "door"), ...windows];
+}
+
+/** A ring of stepped seats: the theatre of a Classical city. */
+function amphitheatre(): Part[] {
+  const out: Part[] = [B(0, 0, 0, 1.1, 0.02, 0.7, "pave")];
+  for (let row = 0; row < 3; row++) for (let k = 0; k < 14; k++) {
+    const a = Math.PI * 0.05 + (k / 13) * Math.PI * 0.9, r = 0.7 + row * 0.22;
+    out.push({ g: "box", x: Math.cos(a) * r, y: 0, z: -Math.sin(a) * r * 0.9, sx: 0.32, sy: 0.08 + row * 0.08, sz: 0.2, r: -a + Math.PI / 2, c: "stone" });
+  }
+  return out;
+}
+
+export type Civic = "palace" | "market" | "smithy" | "boatshed" | "pier" | "gatehouse" | "tower" | "well" | "workshop" | "granary2" | "plaza"
+  | "temple" | "theatre" | "lighthouse" | "shipyard" | "starfort" | "windmill" | "warehouse" | "arch";
 /** Civic and work buildings. Unit = one house width. */
 export const CIVIC: Record<Civic, Part[]> = {
   // a walled court with a great hall at the back and banners at the gate
@@ -86,7 +125,24 @@ export const CIVIC: Record<Civic, Part[]> = {
   tower: [P("cyl", 0, 0, 0, 0.6, 1.5, 0.6, "stone"), P("cyl", 0, 1.5, 0, 0.75, 0.15, 0.75, "stone"), P("cone", 0, 1.65, 0, 0.8, 0.5, 0.8, "roof")],
   well: [P("cyl", 0, 0, 0, 0.4, 0.18, 0.4, "stone"), B(-0.2, 0, 0, 0.04, 0.45, 0.04, "wood"), B(0.2, 0, 0, 0.04, 0.45, 0.04, "wood"), P("prism", 0, 0.45, 0, 0.5, 0.15, 0.3, "roof")],
   granary2: [B(0, 0, 0, 1.6, 0.8, 1, "wall"), P("prism", 0, 0.8, 0, 1.7, 0.4, 1.1, "roof"), B(0, 0, 0.51, 0.3, 0.5, 0.02, "door")],
-  plaza: [B(0, 0, 0, 2.3, 0.025, 2.3, "pave")]
+  plaza: [B(0, 0, 0, 2.3, 0.025, 2.3, "pave")],
+  // a Classical temple: a stepped base, a peristyle of columns, a pediment
+  temple: [B(0, 0, 0, 2.2, 0.12, 1.5, "#d8d2c4"), B(0, 0.12, 0, 2.0, 0.1, 1.3, "#d8d2c4"),
+    ...[-0.85, -0.51, -0.17, 0.17, 0.51, 0.85].flatMap((x) => [P("cyl", x, 0.22, 0.55, 0.12, 0.9, 0.12, "#eeeae0"), P("cyl", x, 0.22, -0.55, 0.12, 0.9, 0.12, "#eeeae0")]),
+    B(0, 0.22, 0, 1.4, 0.8, 0.8, "#e2dccc"), B(0, 1.12, 0, 2.0, 0.14, 1.3, "#eeeae0"), P("prism", 0, 1.26, 0, 2.05, 0.32, 1.35, "#b4583a")],
+  theatre: amphitheatre(),
+  lighthouse: [B(0, 0, 0, 0.7, 0.3, 0.7, "stone"), P("cyl", 0, 0.3, 0, 0.5, 1.6, 0.5, "#e8e2d6"), P("cyl", 0, 1.9, 0, 0.62, 0.08, 0.62, "stone"), P("cyl", 0, 1.98, 0, 0.36, 0.3, 0.36, "glow"), P("cone", 0, 2.28, 0, 0.5, 0.35, 0.5, "roof")],
+  // a slipway with a ship's ribs on it
+  shipyard: [B(0, 0, 0, 0.9, 0.04, 2.6, "wood"), B(0, 0.04, 0, 0.5, 0.36, 1.9, "#7a5432"),
+    ...[-0.8, -0.3, 0.2, 0.7].map((z) => B(0, 0.04, z, 0.62, 0.5, 0.04, "#5a3e28")), B(-0.6, 0, 0.9, 0.04, 1.2, 0.04, "wood"), B(-0.6, 1.2, 0.5, 0.04, 0.04, 0.9, "wood")],
+  // a star fort for the age of cannon
+  starfort: [B(0, 0, 0, 2, 0.35, 2, "stone"), B(0, 0.35, 0, 1.7, 0.06, 1.7, "#7a8a5a"),
+    ...[[1, 1], [-1, 1], [1, -1], [-1, -1]].map(([x, z]) => P("hip", x, 0, z, 0.9, 0.4, 0.9, "stone", Math.PI / 4)), P("cyl", 0, 0.41, 0, 0.04, 0.6, 0.04, "wood"), B(0.14, 0.86, 0, 0.26, 0.16, 0.01, "accent")],
+  windmill: [P("cyl", 0, 0, 0, 0.55, 1.1, 0.55, "wall"), P("cone", 0, 1.1, 0, 0.66, 0.4, 0.66, "roof"),
+    B(0, 1.05, 0.34, 0.08, 1.6, 0.03, "wood", 0.78), B(0, 1.05, 0.34, 0.08, 1.6, 0.03, "wood", -0.78)],
+  warehouse: [B(0, 0, 0, 1.8, 0.7, 0.9, "wall"), P("prism", 0, 0.7, 0, 1.85, 0.4, 0.95, "roof"), B(-0.4, 0, 0.46, 0.3, 0.45, 0.02, "door"), B(0.4, 0, 0.46, 0.3, 0.45, 0.02, "door")],
+  // one span of an aqueduct: two piers and the water channel
+  arch: [B(-0.42, 0, 0, 0.16, 1, 0.24, "#cfc6b4"), B(0.42, 0, 0, 0.16, 1, 0.24, "#cfc6b4"), B(0, 0.86, 0, 1.0, 0.16, 0.26, "#cfc6b4")]
 };
 
 /** Resolve a part's colour from its role. */
@@ -103,5 +159,7 @@ export function colorOf(c: Part["c"], pal: Palette, accent: string): string {
 export function eraOf(stage: string, age: number, planned: boolean): Era {
   if (stage === "band" || age <= 0) return 0;
   if (age === 1) return 1;
+  if (age >= 4) return 5;
+  if (age === 3) return 4;
   return planned ? 3 : 2;
 }

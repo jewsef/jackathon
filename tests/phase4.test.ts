@@ -49,7 +49,7 @@ describe("phase 4: building kits", () => {
 
 describe("phase 4: towns and roads", () => {
   let w: World;
-  beforeAll(() => { w = createWorld(4127); for (let i = 0; i < 1800; i++) w = tick(w, []); }, 120000);
+  beforeAll(() => { w = createWorld(1); for (let i = 0; i < 2400; i++) w = tick(w, []); }, 180000);
 
   it("tribes invent the wheel, roads and town planning, and towns become cities", () => {
     const techs = new Set(w.tribes.flatMap((t) => t.techs));

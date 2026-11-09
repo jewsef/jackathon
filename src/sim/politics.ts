@@ -286,9 +286,9 @@ export function politics(w: World, rng: Rng): World {
     const vassal = w.relations.some((r) => r.overlord !== null && r.overlord !== t.id && (r.a === t.id || r.b === t.id));
     const rf = faction(t, t.gov.rulerFaction), ruler = rulerOf(w, t);
     const legitTarget = 0.58 + 0.35 * (rf ? rf.support : 0.3) + 0.15 * t.belief.love + 0.1 * Math.max(0, ...vs.map((v) => v.monument)) - 0.3 * hungry
-      - (t.gov.type === "warlord" ? 0.1 : 0) - (ruler ? ruler.ambition * 0.08 : 0) - (vassal ? 0.08 : 0);
+      - (t.gov.type === "warlord" ? 0.1 : 0) - (ruler ? ruler.ambition * 0.08 : 0) - (vassal ? 0.08 : 0) + (has(t, "law") ? 0.08 : 0);
     t.gov.legitimacy += (Math.max(0.05, Math.min(1, legitTarget)) - t.gov.legitimacy) * 0.04;
-    const unrestTarget = hungry * 0.45 + (sick ? 0.15 : 0) + (atWar ? 0.08 : 0) + t.belief.fear * 0.15 + (1 - t.gov.legitimacy) * 0.35 + (t.age >= 2 ? 0.06 : 0) + (vassal ? 0.08 : 0);
+    const unrestTarget = hungry * 0.45 + (sick ? 0.15 : 0) + (atWar ? 0.08 : 0) + t.belief.fear * 0.15 + (1 - t.gov.legitimacy) * 0.35 + (t.age >= 2 ? 0.06 : 0) + (vassal ? 0.08 : 0) - (has(t, "law") ? 0.06 : 0) - Math.min(0.08, vs.reduce((m, v) => m + v.stock.spice, 0) * 0.002);
     t.gov.unrest += (Math.max(0, Math.min(1, unrestTarget)) - t.gov.unrest) * 0.08;
 
     if (season === 0) chooseObjective(w, t);

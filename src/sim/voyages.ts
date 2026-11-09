@@ -1,13 +1,13 @@
 import type { World, Voyage, Village, Tribe } from "./types";
 import type { Rng } from "./rng";
-import { getTerrain, ISLE_IDS, type IsleId } from "./terrain";
+import { getTerrain, ISLE_IDS, isOuter, type IsleId } from "./terrain";
 import { living, popOf, chron, relation, boatTier, has, agentsOf, makeName, remember, villageById, kill, takeAdults, addPeople } from "./util";
 import { freeSite, newVillage, newAgent } from "./world";
 import { effectAt } from "./climate";
 import { seaDesire } from "./society";
 
-const BOAT = ["log", "raft", "dugout canoe", "outrigger", "sail-canoe", "star-guided sail-canoe"];
-const SPEED = [0.45, 0.6, 0.85, 1.1, 1.5, 1.8];
+const BOAT = ["log", "raft", "dugout canoe", "outrigger", "sail-canoe", "star-guided sail-canoe", "ocean ship"];
+const SPEED = [0.45, 0.6, 0.85, 1.1, 1.5, 1.8, 2.6];
 
 export function addRoute(w: World, a: number, b: number, kind: "trade" | "marriage" | "kin", tier: number) {
   const r = w.routes.find((x) => (x.a === a && x.b === b) || (x.a === b && x.b === a));
@@ -140,7 +140,7 @@ export function voyages(w: World, rng: Rng): World {
     for (const v of living(w).filter((x) => x.tribe === t.id && x.coastal && x.men >= 5 && x.stage !== "band" && x.jobs.fisher > 0.1)) {
       const push = effectAt(w, "wind", v.x, v.y) * 0.035 + effectAt(w, "storm", v.x, v.y) * 0.05;
       if (push > 0 && rng.chance(push)) {
-        const east = ISLE_IDS.filter((i) => i !== v.isle && terrain.byId[i].cx > v.x).sort((a, b) => Math.abs(terrain.byId[a].cy - v.y) - Math.abs(terrain.byId[b].cy - v.y) + (terrain.byId[a].cx - terrain.byId[b].cx) * 0.3)[0];
+        const east = ISLE_IDS.filter((i) => i !== v.isle && isOuter(i) === isOuter(v.isle) && terrain.byId[i].cx > v.x).sort((a, b) => Math.abs(terrain.byId[a].cy - v.y) - Math.abs(terrain.byId[b].cy - v.y) + (terrain.byId[a].cx - terrain.byId[b].cx) * 0.3)[0];
         if (east) launch(w, t, v, east, "drift", rng);
         break;
       }
@@ -158,7 +158,7 @@ export function voyages(w: World, rng: Rng): World {
       if (isles.has(i) && i === v.isle) continue;
       const known = t.known.includes(i);
       const people = living(w).filter((x) => x.isle === i && x.tribe !== t.id);
-      if (!known && reach(i, 1)) options.push({ p: "explore", i, d: curious + crowd * 0.5 + kinP * 0.4 });
+      if (!known && reach(i, isOuter(i) !== isOuter(v.isle) ? 0 : 1)) options.push({ p: "explore", i, d: curious + crowd * 0.5 + kinP * 0.4 });
       if (known && reach(i)) {
         if (people.length) {
           const r = relation(w, t.id, people[0].tribe);
@@ -184,7 +184,7 @@ export function voyages(w: World, rng: Rng): World {
     const [x, y] = voyagePos(voy);
     const heading = voy.leg === "out" ? voy.tx - voy.fx : voy.fx - voy.tx;
     const wind = effectAt(w, "wind", x, y), storm = effectAt(w, "storm", x, y) > 0.2 || (voy as any).doomed;
-    const speed = SPEED[voy.tier] * (heading > 0 ? 1 + wind * 0.6 : 1 - wind * 0.3) * (storm ? 0.6 : 1);
+    const speed = SPEED[voy.tier] * (has(t, "compass") ? 1.1 : 1) * (heading > 0 ? 1 + wind * 0.6 : 1 - wind * 0.3) * (storm ? 0.6 : 1);
     voy.progress += speed / voy.dist;
     const from = villageById(w, voy.from);
     const req = from ? crossTier(w, from.isle, voy.target) : 2;
@@ -194,6 +194,8 @@ export function voyages(w: World, rng: Rng): World {
     if (effectAt(w, "calm", x, y) > 0.3) risk *= 0.4;
     if (voy.captain) risk *= 0.8;
     if (voy.target === "far" && has(t, "navigation")) risk *= 0.6;
+    if (has(t, "lighthouse")) risk *= 0.75;
+    if (has(t, "compass")) risk *= 0.8;
     if (voy.purpose === "drift") risk *= 0.5;
     if (rng.chance(risk) || voy.crew <= 0) {
       if (voy.tier <= 1) t.drivers.raftLoss++; else t.drivers.capsize++;

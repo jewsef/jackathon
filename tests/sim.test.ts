@@ -34,12 +34,12 @@ describe("milestone 0: the empty clock", () => {
 });
 
 describe("milestone 3: founding pairs and the hybrid civilization", () => {
-  it("every island starts with exactly one man and one woman", () => {
+  it("every inhabited island starts with exactly one man and one woman", () => {
     const w = createWorld(7);
-    expect(w.villages).toHaveLength(5);
+    expect(w.villages).toHaveLength(7); // five home islands and two peoples beyond the horizon
     for (const v of w.villages) { expect(v.men).toBe(1); expect(v.women).toBe(1); expect(popOf(v)).toBe(2); }
-    expect(new Set(w.villages.map((v) => v.isle)).size).toBe(5);
-    expect(w.agents.filter((a) => a.founder)).toHaveLength(10);
+    expect(new Set(w.villages.map((v) => v.isle)).size).toBe(7);
+    expect(w.agents.filter((a) => a.founder)).toHaveLength(14);
   });
   it("tribes grow from their founders", () => {
     const w = run(4127, 600);

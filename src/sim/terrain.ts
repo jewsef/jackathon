@@ -1,8 +1,11 @@
 import { Rng } from "./rng";
 import { fbm, clamp, sstep } from "./noise";
 
-export type IsleId = "hearth" | "kelp" | "thorn" | "gull" | "far";
-export const ISLE_IDS: IsleId[] = ["hearth", "kelp", "thorn", "gull", "far"];
+export type IsleId = "hearth" | "kelp" | "thorn" | "gull" | "far" | "iron" | "spice" | "great";
+export const ISLE_IDS: IsleId[] = ["hearth", "kelp", "thorn", "gull", "far", "iron", "spice", "great"];
+/** The lands beyond the horizon: only ocean-going ships can reach them. */
+export const OUTER: IsleId[] = ["iron", "spice", "great"];
+export const isOuter = (i: IsleId) => i === "iron" || i === "spice" || i === "great";
 
 export interface IsleDef {
   id: IsleId; name: string; cx: number; cy: number; rx: number; ry: number; amp: number; sh: number;
@@ -11,29 +14,38 @@ export interface IsleDef {
 export interface Site { x: number; y: number; px: number; py: number; coastal: boolean; fert: number; isle: IsleId; }
 export interface Crossing { a: IsleId; b: IsleId; dist: number; maxDepth: number; tier: number; ax: number; ay: number; bx: number; by: number; }
 
-/** World is 16 x 9 units. One unit is about 8 km. */
-export const WX = 16, WY = 9, SEA = 0.5, KM_PER_UNIT = 8;
+/** The whole world is 28 x 15.75 units. One unit is about 8 km. The home archipelago fills the first 16 x 9. */
+export const WX = 28, WY = 15.75, SEA = 0.5, KM_PER_UNIT = 8;
+export const HOME = { x0: 0, y0: 0, w: 16, h: 9 };
+/** Is a point in the home waters (as opposed to the lands beyond the horizon)? */
+export const inHome = (x: number, y: number) => x < HOME.w + 0.8 && y < HOME.h + 0.8;
 
 const BASE: Omit<IsleDef, "cx" | "cy" | "rx" | "ry">[] = [
   { id: "hearth", name: "Hearth", amp: 0.62, sh: 1.8, resource: "grain" },
   { id: "kelp", name: "Kelp Isle", amp: 0.5, sh: 2.0, resource: "fish" },
   { id: "thorn", name: "Thornholm", amp: 0.56, sh: 2.0, resource: "hardwood" },
   { id: "gull", name: "Gull Rock", amp: 0.62, sh: 2.0, resource: "feathers" },
-  { id: "far", name: "The Far Shore", amp: 0.66, sh: 1.35, resource: "obsidian" }
+  { id: "far", name: "The Far Shore", amp: 0.66, sh: 1.35, resource: "obsidian" },
+  { id: "iron", name: "The Iron Coast", amp: 0.72, sh: 1.5, resource: "iron" },
+  { id: "spice", name: "The Spice Isles", amp: 0.55, sh: 1.8, resource: "spice" },
+  { id: "great", name: "The Great Land", amp: 0.64, sh: 1.25, resource: "furs and timber" }
 ];
 const LAYOUT: Record<IsleId, [number, number, number, number]> = {
   hearth: [4.8, 4.7, 2.9, 2.2],
   kelp: [7.55, 3.0, 1.05, 0.85],
   thorn: [8.2, 7.1, 1.2, 0.95],
   gull: [2.25, 1.6, 0.85, 0.72],
-  far: [13.9, 4.4, 1.95, 3.1]
+  far: [13.9, 4.4, 1.95, 3.1],
+  iron: [22.6, 3.4, 2.4, 1.9],
+  spice: [23.8, 11.8, 1.5, 1.2],
+  great: [10.5, 13.75, 5.2, 1.65]
 };
 
 export function makeIsles(seed: number): IsleDef[] {
   const r = new Rng(seed ^ 0x51ed27);
   return BASE.map((b) => {
     const [cx, cy, rx, ry] = LAYOUT[b.id];
-    const j = b.id === "far" ? 0.3 : b.id === "hearth" ? 0.2 : b.id === "kelp" ? 0.1 : 0.16;
+    const j = b.id === "far" ? 0.3 : b.id === "hearth" ? 0.2 : b.id === "kelp" ? 0.1 : b.id === "great" ? 0.12 : 0.16;
     return { ...b, cx: cx + r.range(-j, j), cy: cy + r.range(-j, j), rx: rx * r.range(0.93, 1.07), ry: ry * r.range(0.93, 1.07) };
   });
 }
@@ -148,7 +160,8 @@ export class Terrain {
       maxDepth = Math.max(maxDepth, -this.elev(x, y, 5));
     }
     const len = Math.hypot(B.cx - A.cx, B.cy - A.cy), dist = (entryT - exitT) * len;
-    const tier = dist <= 1.45 ? 1 : dist <= 2.6 ? 2 : dist <= 3.4 ? 3 : 5;
+    // the wide ocean between the home waters and the lands beyond needs ocean-going ships
+    const tier = isOuter(a) || isOuter(b) ? 6 : dist <= 1.45 ? 1 : dist <= 2.6 ? 2 : dist <= 3.4 ? 3 : 5;
     const c: Crossing = {
       a, b, dist, maxDepth, tier,
       ax: A.cx + (B.cx - A.cx) * exitT, ay: A.cy + (B.cy - A.cy) * exitT,

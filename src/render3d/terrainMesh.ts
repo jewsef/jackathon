@@ -19,7 +19,8 @@ export function makeSharedUniforms() {
     effects: { value: Array.from({ length: MAX_EFFECTS }, () => new THREE.Vector4()) },
     effectCount: { value: 0 },
     lights: { value: Array.from({ length: MAX_LIGHTS }, () => new THREE.Vector4()) },
-    lightCount: { value: 0 }
+    lightCount: { value: 0 },
+    horizon: { value: 0 }
   };
 }
 export type SharedUniforms = ReturnType<typeof makeSharedUniforms>;
@@ -38,7 +39,7 @@ const vert = /* glsl */ `
 const frag = /* glsl */ `
   uniform sampler2D map; uniform sampler2D detailMap; uniform vec4 detailRect; uniform float detailOn;
   uniform vec3 sunDir; uniform vec3 sunColor; uniform vec3 skyColor; uniform float dayLight; uniform float season;
-  uniform vec3 fogColor; uniform float fogNear; uniform float fogFar;
+  uniform vec3 fogColor; uniform float fogNear; uniform float fogFar; uniform float horizon;
   uniform vec4 effects[${MAX_EFFECTS}]; uniform int effectCount;
   uniform vec4 lights[${MAX_LIGHTS}]; uniform int lightCount;
   varying vec2 vUv; varying vec3 vNormal; varying vec3 vWorld; varying float vEl;
@@ -83,7 +84,10 @@ const frag = /* glsl */ `
     }
     lit += glow * (1.0 - dayLight) * 0.9 * land + glow * 0.08;
     float fog = smoothstep(fogNear, fogFar, length(vWorld - cameraPosition));
-    gl_FragColor = vec4(mix(lit, fogColor, fog), 1.0);
+    // beyond the horizon: the unknown lies in mist until the first ocean ships
+    float beyond = (1.0 - horizon) * smoothstep(-0.6, 1.4, max(vWorld.x - 16.8, vWorld.z - 9.8));
+    vec3 mist = vec3(0.6, 0.66, 0.73) * (0.35 + 0.65 * dayLight);
+    gl_FragColor = vec4(mix(mix(lit, fogColor, fog), mist, beyond * 0.96), 1.0);
   }`;
 
 /** The island mesh: one grid over the whole map, displaced by the height field. */

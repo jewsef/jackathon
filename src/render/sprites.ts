@@ -7,7 +7,9 @@ export const GLYPH: Record<string, string> = {
   kelp: "M-5.5 -0.5 Q-3 -4 -0.5 -0.5 T4.5 -0.5 M-5 3 Q-2.5 0 0 3 T5 3",
   thorn: "M0 -5 L4 2 L-4 2 Z M0 2 L0 5",
   gull: "M-5.5 -0.5 Q-3 -3.5 0 0.5 Q3 -3.5 5.5 -0.5",
-  far: "M-2 0 A2 2 0 1 0 2 0 A2 2 0 1 0 -2 0 M0 -5 L0 -3.5 M0 3.5 L0 5 M-5 0 L-3.5 0 M3.5 0 L5 0"
+  far: "M-2 0 A2 2 0 1 0 2 0 A2 2 0 1 0 -2 0 M0 -5 L0 -3.5 M0 3.5 L0 5 M-5 0 L-3.5 0 M3.5 0 L5 0",
+  great: "M-5.5 2.5 L-2 -2 L0 0.5 L2.5 -3 L5.5 2.5 Z M-4 4.5 L4 4.5",
+  spice: "M0 -5 L1.5 -1.5 L5 0 L1.5 1.5 L0 5 L-1.5 1.5 L-5 0 L-1.5 -1.5 Z"
 };
 
 export interface Look {

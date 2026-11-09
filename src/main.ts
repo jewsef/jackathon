@@ -8,7 +8,8 @@ import type { FromWorker, ToWorker } from "./sim/worker";
 import { MapView } from "./render/map";
 import { MapView3D } from "./render3d/view";
 import { JOB_COLOR, RULER_COLOR, HEAD_COLOR } from "./render3d/actors";
-import { LEVELS, type Selection, type MapLike } from "./render/common";
+import { LEVELS, visibleWorld, hiddenNames, type Selection, type MapLike } from "./render/common";
+import { inHome } from "./sim/terrain";
 import { portraitURL } from "./render/sprites";
 import { PowersBar } from "./ui/powers";
 import { Chronicle } from "./ui/chronicle";
@@ -107,10 +108,15 @@ async function start(seed: number, fromSave: boolean) {
     const m = e.data;
     if (m.type === "snap") {
       world = m.world;
+      const hide = hiddenNames(world);
+      chron.hidden = hide;
       if (m.reset && m.chronicle) { chron.reset(m.chronicle); endingsSeen = world.endings.length; }
       else chron.add(m.entries);
-      map.setWorld(world, m.fx);
-      hud(); react(m.fx, m.entries);
+      chron.setHidden(hide);
+      const seen = (x?: number, y?: number) => world!.horizon || x === undefined || y === undefined || inHome(x, y);
+      const fx = m.fx.filter((f) => seen(f.x, f.y));
+      map.setWorld(visibleWorld(world), fx);
+      hud(); react(fx, m.entries.filter((e) => seen(e.x, e.y) && !hide.some((n) => e.text.includes(n))));
       if (!cardHold && performance.now() - lastCard > 400) { lastCard = performance.now(); renderCard($("card"), world, sel, terrain); }
       if (world.endings.length > endingsSeen) {
         const end = world.endings[world.endings.length - 1]; endingsSeen = world.endings.length;

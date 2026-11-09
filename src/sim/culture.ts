@@ -36,6 +36,19 @@ function drive(w: World, t: Tribe, id: string, sh: Record<Job, number>, pop: num
     case "wheel": return 0.001 + sh.quarrier * 0.01 + sh.builder * 0.015 + sh.farmer * 0.003;
     case "roads": return 0.001 + sh.builder * 0.02 + Math.min(0.004, living(w).filter((v) => v.tribe === t.id).length * 0.0006);
     case "planning": return 0.001 + sh.builder * 0.02 + sh.leader * 0.04 + (pop > 600 ? 0.004 : 0);
+    case "iron": return 0.0007 + sh.miner * 0.015 + sh.smith * 0.025 + (war ? 0.001 : 0);
+    case "coinage": return 0.001 + Math.min(0.006, w.relations.filter((r) => (r.a === t.id || r.b === t.id) && r.trades > 0).reduce((s2, r) => s2 + r.trades, 0) * 0.0004) + sh.smith * 0.01;
+    case "law": return 0.001 + sh.leader * 0.04 + sh.priest * 0.01 + (t.gov.unrest > 0.4 ? 0.003 : 0) + (pop > 800 ? 0.002 : 0);
+    case "aqueduct": return 0.001 + sh.builder * 0.03 + (living(w).some((v) => v.tribe === t.id && v.sick) ? 0.003 : 0);
+    case "philosophy": return 0.0008 + sh.priest * 0.02 + sh.leader * 0.02 + Math.min(0.004, t.known.length * 0.0005);
+    case "siegecraft": return war ? 0.006 + sh.warrior * 0.02 : threat * 0.003;
+    case "lighthouse": return coastal ? 0.001 + d.capsize * 0.004 + sh.boatwright * 0.02 : 0;
+    case "galley": return coastal ? 0.0006 + sh.boatwright * 0.012 + (war ? 0.003 : 0) : 0;
+    case "compass": return 0.0006 + d.calmSeasons * 0.0005 + sh.boatwright * 0.006 + nav * 0.002;
+    case "printing": return 0.001 + sh.priest * 0.015 + (pop > 1000 ? 0.002 : 0);
+    case "gunpowder": return 0.0008 + (war ? 0.004 : 0) + sh.smith * 0.02;
+    case "carrack": return coastal ? 0.0006 + sh.boatwright * 0.012 + Math.min(0.003, d.farReturn * 0.001) + Math.max(0, kin - 0.2) * 0.005 : 0;
+    case "cartography": return 0.0015 + Math.min(0.006, t.known.length * 0.001);
     case "writing": return 0.001 + sh.priest * 0.03 + Math.min(0.006, d.raids * 0.0005 + t.known.length * 0.0008);
     case "granary": return 0.004 + sh.builder * 0.05 + (d.hunger > 0.5 ? 0.005 : 0);
     case "raft": return coastal && pop >= 8 ? 0.004 + sh.fisher * 0.02 + Math.min(1, d.hunger) * 0.003 + kin * 0.01 : 0;
@@ -55,7 +68,7 @@ function drive(w: World, t: Tribe, id: string, sh: Record<Job, number>, pop: num
   return 0;
 }
 
-const INVENTOR: Record<string, string> = { raft: "Boatwright", canoe: "Boatwright", outrigger: "Boatwright", sail: "Boatwright", herbs: "Doctor", stonetools: "Toolmaker", bronze: "Smith", copperworking: "Smith", masonry: "Master builder", brickmaking: "Master builder", wheel: "Cartwright", roads: "Master builder", planning: "Surveyor", writing: "Scribe" };
+const INVENTOR: Record<string, string> = { raft: "Boatwright", canoe: "Boatwright", outrigger: "Boatwright", sail: "Boatwright", herbs: "Doctor", stonetools: "Toolmaker", bronze: "Smith", copperworking: "Smith", masonry: "Master builder", brickmaking: "Master builder", wheel: "Cartwright", roads: "Master builder", planning: "Surveyor", iron: "Smith", law: "Lawgiver", philosophy: "Philosopher", aqueduct: "Engineer", compass: "Navigator", carrack: "Shipwright", printing: "Printer", gunpowder: "Alchemist", cartography: "Mapmaker", lighthouse: "Engineer", writing: "Scribe" };
 
 /**
  * Inventions need the right materials in the tribe's stores. Missing materials slow research;
@@ -76,6 +89,14 @@ export function ageOf(t: Tribe): number {
   let a = 0;
   for (const age of AGES) if (age.requires.every((r) => has(t, r))) a = Math.max(a, age.id);
   return a;
+}
+
+/** The first ocean ships: the edge of the map stops being the edge of the world. */
+export function openHorizon(w: World, t: Tribe, v?: { x: number; y: number }) {
+  if (w.horizon) return;
+  w.horizon = true;
+  chron(w, "age", `The world grows. The ${t.name} launch ships that can cross the open ocean, and the old maps end where the new ones begin. Somewhere beyond the horizon lie lands no one here has seen.`, v?.x, v?.y);
+  if (v) w.fx.push({ kind: "age", x: v.x, y: v.y, tick: w.tick });
 }
 
 function checkEndings(w: World) {
@@ -108,10 +129,12 @@ export function culture(w: World, rng: Rng): World {
       continue;
     }
     const sh = shares(w, t);
+    // schools and printed books speed every kind of research
+    const learning = (has(t, "philosophy") ? 1.2 : 1) * (has(t, "printing") ? 1.2 : 1);
     for (const tech of TECHS) {
       if (has(t, tech.id) || !tech.prereq.every((p) => has(t, p))) continue;
       const trait = tech.group === "sea" ? 0.7 + t.traits.curious * 0.3 + t.traits.bold * 0.3 : tech.group === "war" ? 0.7 + t.traits.wary * 0.3 + t.traits.bold * 0.3 : 0.8 + t.traits.patient * 0.4;
-      t.progress[tech.id] = (t.progress[tech.id] ?? 0) + drive(w, t, tech.id, sh, pop) * trait * resourceFactor(w, t, tech);
+      t.progress[tech.id] = (t.progress[tech.id] ?? 0) + drive(w, t, tech.id, sh, pop) * trait * learning * resourceFactor(w, t, tech);
       if (t.progress[tech.id] >= 1) {
         t.techs.push(tech.id);
         const v = living(w).filter((x) => x.tribe === t.id).sort((a, b) => popOf(b) - popOf(a))[0];
@@ -123,8 +146,15 @@ export function culture(w: World, rng: Rng): World {
           who = `${a.name} of ${v.name}`;
         }
         chron(w, "tech", `${who} ${role ? "invents" : "learn"}: ${tech.name}. ${tech.desc}`, v?.x, v?.y);
+        if (tech.id === "carrack") openHorizon(w, t, v);
         remember(t, `Y${yearOf(w.tick)}: learned ${tech.name.toLowerCase()}`);
       }
+    }
+    // charts: a tribe with cartography learns every coast its friends know
+    if (has(t, "cartography") && w.tick % 4 === 0) for (const o of w.tribes) {
+      if (o.id === t.id || !o.alive) continue;
+      const r = relation(w, t.id, o.id);
+      if (r.met && !r.war && r.attitude > 0) for (const k of o.known) if (!t.known.includes(k)) t.known.push(k);
     }
     const newAge = ageOf(t);
     if (newAge > t.age) {

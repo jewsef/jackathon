@@ -280,5 +280,171 @@
    "brick": 10
   },
   "desc": "Streets laid out in a grid, with a market square, a palace and a harbour. Cities become possible."
+ },
+ {
+  "id": "iron",
+  "name": "Iron",
+  "group": "craft",
+  "age": 3,
+  "prereq": [
+   "bronze"
+  ],
+  "needs": {
+   "iron": 8
+  },
+  "strict": true,
+  "desc": "Ore smelted in hot furnaces. Cheap, hard tools and blades for everyone. The Classical age begins."
+ },
+ {
+  "id": "coinage",
+  "name": "Coinage",
+  "group": "knowledge",
+  "prereq": [
+   "bronze",
+   "writing"
+  ],
+  "needs": {
+   "copper": 10
+  },
+  "desc": "Stamped metal. Trade flows faster and tribute is easier to count."
+ },
+ {
+  "id": "law",
+  "name": "Written law",
+  "group": "knowledge",
+  "prereq": [
+   "writing"
+  ],
+  "desc": "Laws cut in stone. Rulers seem fairer and the people grumble less."
+ },
+ {
+  "id": "aqueduct",
+  "name": "Aqueducts",
+  "group": "craft",
+  "prereq": [
+   "roads",
+   "planning"
+  ],
+  "needs": {
+   "stone": 40
+  },
+  "desc": "Clean water carried on arches into the cities. Fewer die of sickness."
+ },
+ {
+  "id": "philosophy",
+  "name": "Philosophy",
+  "group": "knowledge",
+  "prereq": [
+   "writing",
+   "law"
+  ],
+  "desc": "Schools where people argue about everything. New ideas come faster."
+ },
+ {
+  "id": "siegecraft",
+  "name": "Siegecraft",
+  "group": "war",
+  "prereq": [
+   "iron",
+   "wheel"
+  ],
+  "needs": {
+   "wood": 30,
+   "iron": 5
+  },
+  "desc": "Rams and catapults. Walls protect less against an army that has them."
+ },
+ {
+  "id": "lighthouse",
+  "name": "Lighthouses",
+  "group": "sea",
+  "prereq": [
+   "masonry",
+   "navigation"
+  ],
+  "needs": {
+   "stone": 25
+  },
+  "desc": "Fires on stone towers guide ships home. Fewer are lost."
+ },
+ {
+  "id": "galley",
+  "name": "War galleys",
+  "group": "war",
+  "prereq": [
+   "sail",
+   "iron"
+  ],
+  "needs": {
+   "wood": 40,
+   "iron": 5
+  },
+  "desc": "Oared warships with rams. Raids across the sea hit harder."
+ },
+ {
+  "id": "compass",
+  "name": "The compass",
+  "group": "sea",
+  "prereq": [
+   "navigation",
+   "iron"
+  ],
+  "needs": {
+   "iron": 4
+  },
+  "desc": "A needle that always points north, even under cloud."
+ },
+ {
+  "id": "printing",
+  "name": "Printing",
+  "group": "knowledge",
+  "prereq": [
+   "philosophy",
+   "coinage"
+  ],
+  "needs": {
+   "fiber": 20
+  },
+  "desc": "Books by the hundred. Knowledge spreads to everyone who can read."
+ },
+ {
+  "id": "gunpowder",
+  "name": "Gunpowder",
+  "group": "war",
+  "prereq": [
+   "iron",
+   "philosophy"
+  ],
+  "needs": {
+   "salt": 10,
+   "herbs": 10
+  },
+  "desc": "Saltpetre, charcoal and sulphur. Cannon on walls and ships."
+ },
+ {
+  "id": "carrack",
+  "name": "Ocean ships",
+  "group": "sea",
+  "age": 4,
+  "prereq": [
+   "compass",
+   "galley"
+  ],
+  "needs": {
+   "wood": 60,
+   "fiber": 25,
+   "iron": 10
+  },
+  "desc": "Deep-hulled ships with square sails that can cross the open ocean. The Age of Sail begins, and the world grows."
+ },
+ {
+  "id": "cartography",
+  "name": "Cartography",
+  "group": "knowledge",
+  "prereq": [
+   "compass",
+   "printing"
+  ],
+  "desc": "Printed charts. A tribe learns every coast its friends have seen."
  }
 ]

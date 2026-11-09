@@ -2,8 +2,8 @@ import type { IsleId } from "./terrain";
 
 export type Job = "gatherer" | "farmer" | "fisher" | "builder" | "leader" | "doctor" | "priest" | "warrior" | "boatwright" | "woodcutter" | "quarrier" | "miner" | "smith";
 export const JOBS: Job[] = ["gatherer", "farmer", "fisher", "builder", "leader", "doctor", "priest", "warrior", "boatwright", "woodcutter", "quarrier", "miner", "smith"];
-export type Res = "wood" | "stone" | "clay" | "brick" | "fiber" | "salt" | "herbs" | "flint" | "copper" | "tin" | "bronze";
-export const RES: Res[] = ["wood", "stone", "clay", "brick", "fiber", "salt", "herbs", "flint", "copper", "tin", "bronze"];
+export type Res = "wood" | "stone" | "clay" | "brick" | "fiber" | "salt" | "herbs" | "flint" | "copper" | "tin" | "bronze" | "iron" | "spice";
+export const RES: Res[] = ["wood", "stone", "clay", "brick", "fiber", "salt", "herbs", "flint", "copper", "tin", "bronze", "iron", "spice"];
 export type RegimeType = "elders" | "chief" | "council" | "priestking" | "warlord";
 export type FactionId = "farmers" | "seafarers" | "warriors" | "priests" | "crafters";
 export const FACTIONS: FactionId[] = ["farmers", "seafarers", "warriors", "priests", "crafters"];
@@ -86,6 +86,7 @@ export interface World {
   voyages: Voyage[]; agents: Agent[]; effects: Effect[];
   climate: Record<IsleId, { base: number; rain: number; storm: boolean; calm: boolean; wind: number }>;
   energy: number; faith: number;
+  horizon: boolean;
   deposits: Record<IsleId, Record<Res, number>>; depositBase: Record<IsleId, Record<Res, number>>;
   chronicle: ChronEntry[]; events: ChronEntry[]; fx: Fx[];
   contacts: { a: number; b: number; via: string }[];

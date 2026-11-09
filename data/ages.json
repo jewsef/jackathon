@@ -1,8 +1,8 @@
 [
-  { "id": 0, "name": "Early humans", "requires": [], "desc": "Fire, foraging and stories. Bands live in tents and lean-tos." },
-  { "id": 1, "name": "Stone Age", "requires": ["stonetools"], "desc": "Knapped flint and ground stone. Huts, farms and the first boats." },
-  { "id": 2, "name": "Bronze Age", "requires": ["bronze"], "desc": "Copper and tin become bronze. Rulers, walls, temples and writing." },
-  { "id": 3, "name": "Iron & Classical", "requires": ["__locked"], "desc": "Coming in a later phase." },
-  { "id": 4, "name": "Age of Sail", "requires": ["__locked"], "desc": "Coming in a later phase." },
-  { "id": 5, "name": "Industrial", "requires": ["__locked"], "desc": "Coming in a later phase." }
+  {"id": 0, "name": "Early humans", "requires": [], "desc": "Fire, foraging and stories. Bands live in tents and lean-tos."},
+  {"id": 1, "name": "Stone Age", "requires": ["stonetools"], "desc": "Knapped flint and ground stone. Huts, farms and the first boats."},
+  {"id": 2, "name": "Bronze Age", "requires": ["bronze"], "desc": "Copper and tin become bronze. Rulers, walls, temples and writing."},
+  {"id": 3, "name": "Classical age", "requires": ["iron"], "desc": "Iron, coins, written law and philosophy. Cities with temples, theatres and aqueducts."},
+  {"id": 4, "name": "Age of Sail", "requires": ["carrack"], "desc": "Ocean ships, compasses and cannon. The edge of the map is only the beginning."},
+  {"id": 5, "name": "Industrial", "requires": ["__locked"], "desc": "Coming in a later phase."}
 ]

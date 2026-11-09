@@ -37,6 +37,7 @@ export function economy(w: World, rng: Rng): World {
     v.stock.herbs += sat(g, 30) * 0.08 * dep.herbs;
     v.stock.flint += sat(g, 30) * 0.05 * dep.flint;
     if (v.coastal) v.stock.salt += sat(n("fisher"), 30) * 0.08 * dep.salt;
+    v.stock.spice += sat(g + n("farmer") * 0.5, 30) * 0.06 * dep.spice;
     // dedicated extraction
     const wc = sat(n("woodcutter"), 40) * 1.6 * dep.wood * tools * winter;
     v.stock.wood += wc;
@@ -53,6 +54,9 @@ export function economy(w: World, rng: Rng): World {
       v.stock.copper += mi * 0.5 * dep.copper * metal; dep.copper = Math.max(base.copper * 0.2, dep.copper - mi * 0.5 * dep.copper * metal * 0.0004);
       v.stock.tin += mi * 0.4 * dep.tin * metal; dep.tin = Math.max(base.tin * 0.2, dep.tin - mi * 0.4 * dep.tin * metal * 0.0004);
       dep.flint = Math.max(base.flint * 0.3, dep.flint - mi * 0.0002);
+      // iron ore: dug out once the Bronze Age smiths know what it is, smelted once they know iron
+      const ironK = has(t, "iron") ? 1 : has(t, "bronze") ? 0.3 : 0;
+      v.stock.iron += mi * 0.45 * dep.iron * ironK; dep.iron = Math.max(base.iron * 0.25, dep.iron - mi * 0.45 * dep.iron * ironK * 0.0003);
     }
     // crafting
     if (has(t, "brickmaking") && v.stock.clay > 2 && v.stock.wood > 2) {
@@ -64,7 +68,9 @@ export function economy(w: World, rng: Rng): World {
       v.stock.copper -= b * 3; v.stock.tin -= b; v.stock.bronze += b * 2;
     }
     // tools and weapons wear out
-    v.stock.flint *= 0.99; v.stock.bronze *= 0.995;
+    v.stock.flint *= 0.99; v.stock.bronze *= 0.995; v.stock.iron *= 0.997; v.stock.spice *= 0.99;
+    // spice is a luxury: it lifts spirits wherever it reaches
+    if (v.stock.spice > 3) v.morale = Math.min(1, v.morale + 0.004);
     const c = cap(v);
     for (const r of RES) v.stock[r] = Math.max(0, Math.min(c, v.stock[r]));
 
@@ -133,7 +139,8 @@ export function economy(w: World, rng: Rng): World {
     for (const res of RES) {
       const [hi, lo] = a.stock[res] > b.stock[res] ? [a, b] : [b, a];
       if (hi.stock[res] < 12 || lo.stock[res] > hi.stock[res] * 0.5) continue;
-      const amt = Math.min(4, (hi.stock[res] - lo.stock[res]) * 0.15) * r.strength;
+      const coin = has(w.tribes[a.tribe], "coinage") || has(w.tribes[b.tribe], "coinage") ? 1.5 : 1;
+      const amt = Math.min(4 * coin, (hi.stock[res] - lo.stock[res]) * 0.15 * coin) * r.strength;
       hi.stock[res] -= amt; lo.stock[res] += amt; moved += amt;
     }
     if (rel && moved > 2) { rel.trades++; rel.attitude = Math.min(1, rel.attitude + 0.002); }
@@ -144,7 +151,7 @@ export function economy(w: World, rng: Rng): World {
     const lordCap = living(w).filter((v) => v.tribe === rel.overlord).sort((x, y) => popOf(y) - popOf(x))[0];
     if (!lordCap) continue;
     for (const v of living(w)) if (v.tribe === vassal) for (const res of RES) {
-      const amt = v.stock[res] * 0.04;
+      const amt = v.stock[res] * (has(w.tribes[rel.overlord], "coinage") ? 0.05 : 0.04);
       v.stock[res] -= amt; lordCap.stock[res] += amt;
     }
   }

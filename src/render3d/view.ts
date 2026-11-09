@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import type { World, Fx, PowerId } from "../sim/types";
-import { WX, WY, KM_PER_UNIT, type Terrain } from "../sim/terrain";
+import { WX, WY, KM_PER_UNIT, HOME, isOuter, type Terrain } from "../sim/terrain";
 import { hash3 } from "../sim/rng";
 import { renderRegion } from "../render/terrainTex";
 import { LEVELS, type MapLike, type Selection } from "../render/common";
@@ -21,7 +21,7 @@ const MOVE_KEYS = new Set(["w", "a", "s", "d", "arrowup", "arrowdown", "arrowlef
  * Camera state stays in the same shape as the 2D view: a ground target (x, y) and a zoom z.
  */
 export class MapView3D implements MapLike {
-  cam = { x: WX / 2, y: WY / 2, z: 1 };
+  cam = { x: HOME.w / 2, y: HOME.h / 2, z: 1 };
   yaw = 0; tilt = 0;
   armed: { power: PowerId; radius: number } | null = null;
   selection: Selection = null;
@@ -55,6 +55,10 @@ export class MapView3D implements MapLike {
   private pickables: { x: number; y: number; r: number; sel: Selection }[] = [];
   private drops: { x: number; y: number; l: number; s: number }[] = [];
   private staticDirty = true;
+  /** 0 = only the home waters are known; 1 = the whole world. Eases open when the first ocean ships sail. */
+  private horizonK = 0; private miniOpen = false; private horizonT = 0;
+  private extW() { return HOME.w + (WX - HOME.w) * this.horizonK; }
+  private extH() { return HOME.h + (WY - HOME.h) * this.horizonK; }
 
   readonly low: boolean;
   constructor(el: HTMLElement, terrain: Terrain, quality: "high" | "low" = "high") { this.el = el; this.terrain = terrain; this.low = quality === "low"; }
@@ -73,8 +77,8 @@ export class MapView3D implements MapLike {
     this.scene.fog = new THREE.Fog(0xa0b4c8, 10, 60);
 
     await new Promise((r) => setTimeout(r, 0));
-    this.hf = this.low ? HeightField.build(this.terrain, 401, 226) : HeightField.build(this.terrain);
-    const base = this.low ? renderRegion(this.terrain, 0, 0, WX, WY, 1024, 576, false) : renderRegion(this.terrain, 0, 0, WX, WY, 2048, 1152, false);
+    this.hf = this.low ? HeightField.build(this.terrain, 701, 395) : HeightField.build(this.terrain, 1601, 901);
+    const base = this.low ? renderRegion(this.terrain, 0, 0, WX, WY, 1536, 864, false) : renderRegion(this.terrain, 0, 0, WX, WY, 3072, 1728, false);
     const tex = new THREE.CanvasTexture(base.canvas);
     tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8; tex.flipY = false;
     const terr = buildTerrainMesh(this.hf, tex, this.shared);
@@ -110,7 +114,7 @@ export class MapView3D implements MapLike {
   }
 
   // ---------- camera ----------
-  private dist() { return D0 / this.cam.z; }
+  private dist() { return (D0 * this.extW() / HOME.w) / this.cam.z; }
   private pitch() { const k = clamp(Math.log(this.cam.z) / Math.log(14), 0, 1); return clamp((62 - 30 * k + this.tilt) * Math.PI / 180, 0.12, 1.45); }
   private placeCamera() {
     const d = this.dist(), p = this.pitch();
@@ -121,7 +125,7 @@ export class MapView3D implements MapLike {
     this.camera.lookAt(this.cam.x + sx, ty, this.cam.y + sy);
     this.camera.updateMatrixWorld();
   }
-  private clampCam() { this.cam.z = clamp(this.cam.z, 1, 60); this.cam.x = clamp(this.cam.x, -0.5, WX + 0.5); this.cam.y = clamp(this.cam.y, -0.5, WY + 0.5); }
+  private clampCam() { this.cam.z = clamp(this.cam.z, 1, 60); this.cam.x = clamp(this.cam.x, -0.5, this.extW() + 0.5); this.cam.y = clamp(this.cam.y, -0.5, this.extH() + 0.5); }
   private moved() { this.lastMove = performance.now(); this.onCamera(); }
   flyTo(x: number, y: number, z: number) { this.fly = { x0: this.cam.x, y0: this.cam.y, z0: this.cam.z, x1: x, y1: y, z1: clamp(z, 1, 60), t: 0 }; }
   zoomBy(f: number, px?: number, py?: number) {
@@ -297,16 +301,23 @@ export class MapView3D implements MapLike {
     this.el.append(wrap, this.compass);
     const go = (e: PointerEvent) => {
       const r = this.mini.getBoundingClientRect();
-      const x = ((e.clientX - r.left) / r.width) * (WX + 2) - 1, y = ((e.clientY - r.top) / r.height) * (WY + 1.125) - 0.5625;
+      const [mw, mh] = this.miniExt();
+      const x = ((e.clientX - r.left) / r.width) * (mw + 2) - 1, y = ((e.clientY - r.top) / r.height) * (mh + 1.125) - 0.5625;
       this.fly = null; this.stopFollow(); this.cam.x = x; this.cam.y = y; this.clampCam(); this.moved();
     };
     this.mini.addEventListener("pointerdown", (e) => { try { this.mini.setPointerCapture(e.pointerId); } catch { /* ignore */ } go(e); });
     this.mini.addEventListener("pointermove", (e) => { if (e.buttons) go(e); });
-    this.miniBase = renderRegion(this.terrain, -1, -0.5625, WX + 2, WY + 1.125, 216, 122, false).canvas;
+    this.buildMiniBase();
+  }
+  private miniExt(): [number, number] { return this.miniOpen ? [WX, WY] : [HOME.w, HOME.h]; }
+  private buildMiniBase() {
+    const [mw, mh] = this.miniExt();
+    this.miniBase = renderRegion(this.terrain, -1, -0.5625, mw + 2, mh + 1.125, 216, 122, false).canvas;
   }
   private drawMinimap() {
     const g = this.mini.getContext("2d")!, W = this.mini.width, H = this.mini.height;
-    const mx = (x: number) => ((x + 1) / (WX + 2)) * W, my = (y: number) => ((y + 0.5625) / (WY + 1.125)) * H;
+    const [mw, mh] = this.miniExt();
+    const mx = (x: number) => ((x + 1) / (mw + 2)) * W, my = (y: number) => ((y + 0.5625) / (mh + 1.125)) * H;
     g.imageSmoothingEnabled = true;
     g.drawImage(this.miniBase, 0, 0, W, H);
     if (this.world) for (const v of this.world.villages) {
@@ -332,7 +343,8 @@ export class MapView3D implements MapLike {
     const g = this.groundAt(px, py);
     if (this.armed) { if (g) this.onCast(g[0], g[1]); return; }
     for (const p of this.pickables) if (Math.hypot(p.x - px, p.y - py) <= p.r) { this.selection = p.sel; this.onSelect(p.sel); return; }
-    const isle = g ? this.terrain.isleAt(g[0], g[1]) : null;
+    let isle = g ? this.terrain.isleAt(g[0], g[1]) : null;
+    if (isle && isOuter(isle) && this.horizonK < 0.5) isle = null;
     const sel: Selection = g && isle && this.hf.elevAt(g[0], g[1]) > 0 ? { kind: "isle", id: isle } : null;
     this.selection = sel; this.onSelect(sel);
   }
@@ -403,6 +415,17 @@ export class MapView3D implements MapLike {
       if (!p) this.stopFollow();
       else { const k = Math.min(1, dt * 4); this.cam.x += (p[0] - this.cam.x) * k; this.cam.y += (p[1] - this.cam.y) * k; this.moved(); }
     }
+    const hz = this.world?.horizon ? 1 : 0;
+    if (Math.abs(hz - this.horizonK) > 0.001) {
+      const before = this.horizonK;
+      const now = performance.now(), real = Math.min(0.5, (now - (this.horizonT || now)) / 1000); this.horizonT = now;
+      this.horizonK = hz > this.horizonK ? Math.min(1, this.horizonK + Math.max(dt, real) * 0.35) : 0;
+      if (this.cam.z < 1.5 && !this.followFn && !this.fly) { this.cam.x = HOME.w / 2 + (WX - HOME.w) / 2 * this.horizonK; this.cam.y = HOME.h / 2 + (WY - HOME.h) / 2 * this.horizonK; }
+      if (before < 0.5 && this.horizonK >= 0.5 || before >= 0.5 && this.horizonK < 0.5) { this.actors.setHorizon(this.horizonK >= 0.5); this.staticDirty = true; }
+      this.clampCam(); this.onCamera();
+    }
+    this.shared.horizon.value = this.horizonK;
+    if ((this.horizonK >= 0.5) !== this.miniOpen) { this.miniOpen = this.horizonK >= 0.5; this.buildMiniBase(); }
     this.placeCamera();
     this.shared.time.value = this.t;
     this.day = this.skySys.update(dt, this.shared, this.scene);
@@ -444,10 +467,11 @@ export class MapView3D implements MapLike {
     };
     const z = this.cam.z;
     if (z < 3.4) for (const I of this.terrain.isles) {
+      if (isOuter(I.id) && this.horizonK < 0.5) continue;
       const h = Math.max(0.05, this.hf.groundY(I.cx, I.cy)) + 0.25;
       if (!this.visible3(I.cx, I.cy, h)) continue;
       const [x, y] = this.toScreen(I.cx, I.cy, h);
-      label(I.name, x, y, I.id === "hearth" || I.id === "far" ? "isle big" : "isle");
+      label(I.name, x, y, I.id === "hearth" || I.id === "far" || I.id === "great" ? "isle big" : "isle");
     }
     if (w) {
       for (const v of w.villages) {

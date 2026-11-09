@@ -1,7 +1,7 @@
 import type { World, Tribe, Village } from "./types";
 import type { Rng } from "./rng";
 import { getTerrain } from "./terrain";
-import { living, popOf, kill, chron, relation, workers, weaponTier, boatTier, agentsOf, makeName, remember } from "./util";
+import { living, popOf, kill, chron, relation, workers, weaponTier, boatTier, agentsOf, makeName, remember, has } from "./util";
 import { newAgent } from "./world";
 
 /** Pairs of villages (attacker, defender) that can reach each other by land or by boat. */
@@ -20,8 +20,10 @@ function battle(w: World, att: Tribe, def: Tribe, rng: Rng) {
   pairs.sort((p, q) => (p[0].isle === p[1].isle ? 0 : 1) - (q[0].isle === q[1].isle ? 0 : 1) || popOf(q[0]) - popOf(p[0]));
   const [ov, tv] = pairs[rng.int(Math.min(2, pairs.length))];
   const r = relation(w, att.id, def.id);
-  const aStr = (workers(ov, "warrior") + ov.men * 0.15) * (1 + 0.35 * weaponTier(att)) + 0.5;
-  const dStr = (workers(tv, "warrior") + tv.men * 0.3) * (1 + 0.35 * weaponTier(def)) * (1 + 0.35 * Math.floor(tv.defense)) + 0.5;
+  const fleet = ov.isle !== tv.isle && has(att, "galley") ? 1.25 : 1;
+  const aStr = (workers(ov, "warrior") + ov.men * 0.15) * (1 + 0.35 * weaponTier(att)) * fleet + 0.5;
+  const walls = 0.35 * Math.floor(tv.defense) * (has(att, "siegecraft") ? 0.5 : 1);
+  const dStr = (workers(tv, "warrior") + tv.men * 0.3) * (1 + 0.35 * weaponTier(def)) * (1 + walls) + 0.5;
   const ratio = aStr / dStr;
   const aLoss = kill(ov, rng.binom(Math.round(aStr), Math.min(0.4, Math.max(0.02, 0.12 / ratio))), rng, "men");
   const dLoss = kill(tv, rng.binom(Math.round(dStr), Math.min(0.4, Math.max(0.02, 0.12 * ratio))), rng, "men");

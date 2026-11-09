@@ -1,7 +1,10 @@
 {
-  "hearth": { "wood": 0.6, "stone": 0.35, "clay": 1.3, "fiber": 0.6, "salt": 0.15, "herbs": 0.3, "flint": 0.2, "copper": 0.0, "tin": 0.0 },
-  "kelp":   { "wood": 0.25, "stone": 0.2, "clay": 0.15, "fiber": 1.2, "salt": 1.4, "herbs": 0.2, "flint": 0.15, "copper": 0.0, "tin": 0.0 },
-  "thorn":  { "wood": 1.5, "stone": 0.5, "clay": 0.2, "fiber": 0.5, "salt": 0.1, "herbs": 0.4, "flint": 0.2, "copper": 0.0, "tin": 0.9 },
-  "gull":   { "wood": 0.2, "stone": 1.5, "clay": 0.1, "fiber": 0.2, "salt": 0.4, "herbs": 1.3, "flint": 0.45, "copper": 0.35, "tin": 0.0 },
-  "far":    { "wood": 1.0, "stone": 0.8, "clay": 0.3, "fiber": 0.4, "salt": 0.2, "herbs": 0.5, "flint": 1.4, "copper": 1.2, "tin": 0.0 }
+  "hearth": {"wood": 0.6, "stone": 0.35, "clay": 1.3, "fiber": 0.6, "salt": 0.15, "herbs": 0.3, "flint": 0.2, "copper": 0.0, "tin": 0.0, "iron": 0.0, "spice": 0.0},
+  "kelp": {"wood": 0.25, "stone": 0.2, "clay": 0.15, "fiber": 1.2, "salt": 1.4, "herbs": 0.2, "flint": 0.15, "copper": 0.0, "tin": 0.0, "iron": 0.0, "spice": 0.0},
+  "thorn": {"wood": 1.5, "stone": 0.5, "clay": 0.2, "fiber": 0.5, "salt": 0.1, "herbs": 0.4, "flint": 0.2, "copper": 0.0, "tin": 0.9, "iron": 0.15, "spice": 0.0},
+  "gull": {"wood": 0.2, "stone": 1.5, "clay": 0.1, "fiber": 0.2, "salt": 0.4, "herbs": 1.3, "flint": 0.45, "copper": 0.35, "tin": 0.0, "iron": 0.0, "spice": 0.0},
+  "far": {"wood": 1.0, "stone": 0.8, "clay": 0.3, "fiber": 0.4, "salt": 0.2, "herbs": 0.5, "flint": 1.4, "copper": 1.2, "tin": 0.0, "iron": 0.35, "spice": 0.0},
+  "iron": {"wood": 0.9, "stone": 1.1, "clay": 0.4, "fiber": 0.3, "salt": 0.3, "herbs": 0.3, "flint": 0.6, "copper": 0.5, "tin": 0.6, "iron": 1.6, "spice": 0.0},
+  "spice": {"wood": 0.7, "stone": 0.3, "clay": 0.4, "fiber": 0.9, "salt": 0.8, "herbs": 1.2, "flint": 0.2, "copper": 0.0, "tin": 0.3, "iron": 0.0, "spice": 1.5},
+  "great": {"wood": 1.3, "stone": 0.9, "clay": 0.7, "fiber": 0.8, "salt": 0.3, "herbs": 0.7, "flint": 0.7, "copper": 0.7, "tin": 0.4, "iron": 0.5, "spice": 0.0}
 }

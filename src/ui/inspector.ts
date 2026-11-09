@@ -12,6 +12,7 @@ import agesData from "../../data/ages.json";
 import { REGIMES, FACTION_INFO } from "../sim/politics";
 import { RES } from "../sim/types";
 import { isPlanned, roadTier } from "../render/plan";
+import { tribeHidden } from "../render/common";
 import { JOB_COLOR, RULER_COLOR, HEAD_COLOR } from "../render3d/actors";
 
 type Snap = Omit<World, "chronicle">;
@@ -23,7 +24,7 @@ function stockList(stock: Record<string, number>, scale: number) {
   if (!rows.length) return '<span class="sub">nothing stored</span>';
   return `<div class="jobs">${rows.map((r) => `<div class="jobrow"><span><i class="swatch" style="background:${RESINFO[r].color}"></i>${RESINFO[r].name}</span>${bar(stock[r] / scale, RESINFO[r].color)}<span>${fmt(stock[r])}</span></div>`).join("")}</div>`;
 }
-const BOAT = ["no boats", "log rafts", "dugout canoes", "outriggers", "sail-canoes", "sail and star navigation"];
+const BOAT = ["no boats", "log rafts", "dugout canoes", "outriggers", "sail-canoes", "sail and star navigation", "ocean-going ships"];
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
 const pct = (x: number) => Math.round(x * 100) + "%";
 const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
@@ -115,7 +116,7 @@ function isleCard(w: Snap, id: string, terrain: Terrain): string {
   const dep = w.deposits?.[I.id], base = w.depositBase?.[I.id];
   return `<span class="kind">Island</span><h3>${I.name}</h3>
   <dl><dt>Resource</dt><dd>${I.resource}</dd><dt>Living here</dt><dd>${people.map(tribeLink).join(", ") || "no one"}</dd>
-  ${fromHearth ? `<dt>From Hearth</dt><dd>about ${Math.round(fromHearth.dist * 8)} km of sea; needs ${BOAT[Math.min(5, fromHearth.tier)]}</dd>` : ""}
+  ${fromHearth ? `<dt>From Hearth</dt><dd>about ${Math.round(fromHearth.dist * 8)} km of sea; needs ${BOAT[Math.min(6, fromHearth.tier)]}</dd>` : ""}
   <dt>Known to</dt><dd>${w.tribes.filter((t) => t.alive && t.known.includes(I.id)).map((t) => esc(t.name)).join(", ")}</dd></dl>
   ${dep ? `<div><div class="eyebrow" style="margin-bottom:6px">Deposits <span class="sub">(what is left)</span></div><div class="jobs">${RES.filter((r) => (base?.[r as keyof typeof base] ?? 0) > 0.05).map((r) => `<div class="jobrow"><span><i class="swatch" style="background:${RESINFO[r].color}"></i>${RESINFO[r].name}</span>${bar((dep[r as keyof typeof dep] ?? 0) / 1.6, RESINFO[r].color)}<span>${(dep[r as keyof typeof dep] ?? 0).toFixed(1)}</span></div>`).join("")}</div></div>` : ""}`;
 }
@@ -132,9 +133,9 @@ function voyageCard(w: Snap, id: number, terrain: Terrain): string {
 }
 
 export function overviewCard(w: Snap): string {
-  const alive = w.tribes.filter((t) => t.alive || tribePop(w as World, t.id) > 0);
-  return `<span class="kind">The archipelago · Year ${yearOf(w.tick)}</span>
-  <div class="tribes">${w.tribes.map((t) => {
+  const alive = w.tribes.filter((t) => (t.alive || tribePop(w as World, t.id) > 0) && !tribeHidden(w, t.home));
+  return `<span class="kind">${w.horizon ? "The wide world" : "The archipelago"} · Year ${yearOf(w.tick)}</span>
+  <div class="tribes">${w.tribes.filter((t) => !tribeHidden(w, t.home)).map((t) => {
     const pop = tribePop(w as World, t.id), dead = !t.alive && pop === 0;
     const wars = w.relations.filter((r) => r.war && (r.a === t.id || r.b === t.id)).length;
     return `<button type="button" class="trow${dead ? " dead" : ""}" data-sel="tribe:${t.id}"><span class="dot" style="background:${t.tail}"></span><span>${esc(t.name)}${wars ? ' <span class="chip war">war</span>' : ""}</span><span class="r">${dead ? "gone" : fmt(pop)}</span></button>`;

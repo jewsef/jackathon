@@ -1,13 +1,15 @@
 [
-  { "id": "wood", "name": "Wood", "color": "#8a6440", "desc": "Timber for houses, palisades and boats." },
-  { "id": "stone", "name": "Stone", "color": "#a9a59e", "desc": "Walls, towers and stone houses." },
-  { "id": "clay", "name": "Clay", "color": "#b5714a", "desc": "Pots, and bricks once they learn to fire them." },
-  { "id": "brick", "name": "Brick", "color": "#c35a3e", "desc": "Fired clay. Strong houses and granaries." },
-  { "id": "fiber", "name": "Fibre", "color": "#c9b77a", "desc": "Flax and kelp for rope, cloth and sails." },
-  { "id": "salt", "name": "Salt", "color": "#eef2f4", "desc": "Keeps food through winter and on long voyages." },
-  { "id": "herbs", "name": "Herbs", "color": "#6fae5c", "desc": "Healing leaves for doctors." },
-  { "id": "flint", "name": "Flint", "color": "#3b3540", "desc": "Sharp tools and weapons." },
-  { "id": "copper", "name": "Copper", "color": "#c87533", "desc": "The first metal." },
-  { "id": "tin", "name": "Tin", "color": "#b8bcc2", "desc": "Mixed with copper it makes bronze." },
-  { "id": "bronze", "name": "Bronze", "color": "#d4a24a", "desc": "Tools, blades and status. The mark of the Bronze Age." }
+  {"id": "wood", "name": "Wood", "color": "#8a6440", "desc": "Timber for houses, palisades and boats."},
+  {"id": "stone", "name": "Stone", "color": "#a9a59e", "desc": "Walls, towers and stone houses."},
+  {"id": "clay", "name": "Clay", "color": "#b5714a", "desc": "Pots, and bricks once they learn to fire them."},
+  {"id": "brick", "name": "Brick", "color": "#c35a3e", "desc": "Fired clay. Strong houses and granaries."},
+  {"id": "fiber", "name": "Fibre", "color": "#c9b77a", "desc": "Flax and kelp for rope, cloth and sails."},
+  {"id": "salt", "name": "Salt", "color": "#eef2f4", "desc": "Keeps food through winter and on long voyages."},
+  {"id": "herbs", "name": "Herbs", "color": "#6fae5c", "desc": "Healing leaves for doctors."},
+  {"id": "flint", "name": "Flint", "color": "#3b3540", "desc": "Sharp tools and weapons."},
+  {"id": "copper", "name": "Copper", "color": "#c87533", "desc": "The first metal."},
+  {"id": "tin", "name": "Tin", "color": "#b8bcc2", "desc": "Mixed with copper it makes bronze."},
+  {"id": "bronze", "name": "Bronze", "color": "#d4a24a", "desc": "Tools, blades and status. The mark of the Bronze Age."},
+  {"id": "iron", "name": "Iron", "color": "#7a4a3a", "desc": "Ore smelted into iron: cheap, hard tools and weapons. The Classical age runs on it."},
+  {"id": "spice", "name": "Spice", "color": "#d9792c", "desc": "Pepper, cloves and cinnamon from the Spice Isles. Worth a voyage across the world."}
 ]
