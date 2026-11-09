@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import type { World, Fx, PowerId } from "../sim/types";
 import { WX, WY, KM_PER_UNIT, HOME, isOuter, type Terrain } from "../sim/terrain";
+import type { Shot } from "../render/cinema";
 import { hash3 } from "../sim/rng";
 import { renderRegion } from "../render/terrainTex";
 import { LEVELS, type MapLike, type Selection } from "../render/common";
@@ -57,6 +58,27 @@ export class MapView3D implements MapLike {
   private staticDirty = true;
   /** 0 = only the home waters are known; 1 = the whole world. Eases open when the first ocean ships sail. */
   private horizonK = 0; private miniOpen = false; private horizonT = 0;
+  /** A cinematic camera shot in progress; any input from the player ends it. */
+  private shot: { fn: Shot; t: number; dur: number; done: () => void } | null = null;
+  /** Slow drift around the view, for time-lapses. */
+  autoOrbit = false;
+  playShot(fn: Shot, seconds: number, done: () => void = () => {}) { this.stopShot(); this.fly = null; this.stopFollow(); this.shot = { fn, t: 0, dur: seconds, done }; }
+  stopShot() { const s = this.shot; this.shot = null; if (s) s.done(); }
+  playing() { return this.shot !== null; }
+  /** Hide the place names and rings, for photographs. */
+  setLabels(on: boolean) { this.labels.style.visibility = on ? "visible" : "hidden"; this.overlay.style.visibility = on ? "visible" : "hidden"; }
+  /** Fix the time of day (0..1), or null to let it run. */
+  setTimeOfDay(p: number | null) { this.skySys.fixed = p; }
+  /** Render this moment and return it as a PNG data URL, with a photo filter applied. */
+  capture(filter = "none"): string {
+    this.placeCamera();
+    this.renderer.render(this.scene, this.camera);
+    const src = this.renderer.domElement, c = document.createElement("canvas");
+    c.width = src.width; c.height = src.height;
+    const g = c.getContext("2d")!;
+    g.filter = filter; g.drawImage(src, 0, 0);
+    return c.toDataURL("image/png");
+  }
   private extW() { return HOME.w + (WX - HOME.w) * this.horizonK; }
   private extH() { return HOME.h + (WY - HOME.h) * this.horizonK; }
 
@@ -182,6 +204,9 @@ export class MapView3D implements MapLike {
   };
 
   private bindInput() {
+    // the player taking the controls ends any cinematic shot
+    for (const ev of ["pointerdown", "wheel"]) this.renderer.domElement.addEventListener(ev, () => this.stopShot(), { capture: true, passive: true });
+    window.addEventListener("keydown", (e) => { if (this.shot && !e.repeat) this.stopShot(); }, true);
     const cv = this.renderer.domElement;
     const ptrs = new Map<number, [number, number]>();
     let drag = 0, pinch = 0, orbit = false, panFrom: [number, number] | null = null;
@@ -408,6 +433,13 @@ export class MapView3D implements MapLike {
       this.moved();
       if (f.t >= 1) this.fly = null;
     }
+    if (this.shot) {
+      // timed by frames, not the wall clock: a slow machine plays the shot slowly instead of skipping it
+      this.shot.t += dt;
+      const u = this.shot.t / this.shot.dur, f = this.shot.fn(Math.min(1, u));
+      this.cam.x = f.x; this.cam.y = f.y; this.cam.z = f.z; this.yaw = f.yaw; this.tilt = f.tilt; this.onCamera();
+      if (u >= 1) this.stopShot();
+    } else if (this.autoOrbit) { this.yaw += dt * 0.06; }
     if (this.shake > 0) this.shake -= dt;
     this.motion(dt);
     if (this.followFn && !this.fly) {

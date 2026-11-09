@@ -131,6 +131,11 @@ New resources: **iron** (the Iron Coast, a little on the Far Shore, Thornholm an
 
 On the map: bungalows and brick apartment blocks, then glass towers and white houses, then terraced green towers and garden domes; coal and nuclear power stations, wind turbines, solar fields, radio masts, laboratories and greenhouses, airports with aircraft flying between them, cars on the roads and a launch pad with a rocket.
 
+### Cinematics
+- **Age-dawn flyovers**: when a people enters a new age (from the Bronze Age on), or the first ocean ships make the world grow, the game pauses, letterbox bars slide in with a title card, and the camera swoops down around their capital (or pulls back to show the whole world). Click or press any key to skip; **Cinematics: on/off** in the menu turns them off. Shots are timed by frames, so a slow machine plays them slowly instead of skipping them.
+- **Photo mode** (**Photo** or **P**): the interface disappears; toggle labels, choose a filter (golden, vivid, faded, noir), set the time of day, then **Take picture** to get a PNG to download or save.
+- **Time-lapse**: replays the whole history of the world from year 0, with your acts of the sky, in about 45 seconds, while the live world waits. Captions show new ages, first contacts, endings and climate events; the camera drifts slowly; **Stop** returns to the present. Because the simulation is deterministic, the replay ends on exactly the live world (tested).
+
 ### Towns, cities and roads
 Each island builds in its own way, and its buildings change with the tribe's age: Hearth goes from mud huts to flat-roofed brick houses, Kelp Isle from reed huts on stilts to tiered round houses, Thornholm from longhouses to jettied timber halls, Gull Rock from stone beehives to slate-roofed stone houses, and the Far Shore from hide tents and earth lodges to plastered timber. **The wheel** (cart tracks, faster building, stores move between villages), **paved roads** and **town planning** follow in the Bronze Age. A planned town of 350 people becomes a **city**, laid out on a grid aligned to its harbour. Roads join every village on an island along the easiest ground.
 
@@ -164,4 +169,4 @@ Boat ladder: log raft → dugout canoe → outrigger → woven sail → star nav
 | 5. Ages 4 to 5 | **done** | The Classical age and the Age of Sail: iron and spice, 13 new inventions and their effects, Classical and Age of Sail building kits and civic buildings, ocean ships. The world grows from 16 × 9 to 28 × 15.75 with three new lands and two native peoples, hidden in mist until the first ocean ships sail. |
 | 6. Industrial | **done** | Coal and steel; the steam engine, factories, railways, steamships, vaccines, rifles, the telegraph and fertilizer; factory hands; smog over towns and a warming world (CO₂, storms, droughts, harvests, snow line). Terraced houses, mills, pit heads, gasholders, stations, trains, steamships and haze on the map. |
 | 7. Ages 7 to 9 | **done** | Electric, Information and Biotech ages; oil and silicon; 15 inventions, scientists, aircraft; late-game powers (Spark of genius, Rising seas, Solar flare) and three new endings; modern and biotech buildings, power stations, turbines, solar fields, airports, planes, cars and a launch pad. |
-| 8. Cinematics | planned | Age-dawn flyovers, photo mode, time-lapse replay. |
+| 8. Cinematics | **done** | Age-dawn flyovers with letterboxed title cards, photo mode with filters and time of day, and a time-lapse replay of the whole history from the seed and action log. |

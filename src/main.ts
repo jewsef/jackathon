@@ -14,6 +14,7 @@ import { portraitURL } from "./render/sprites";
 import { PowersBar } from "./ui/powers";
 import { Chronicle } from "./ui/chronicle";
 import { renderCard, selectionPos } from "./ui/inspector";
+import { Cinema } from "./ui/cinema";
 import { Sound } from "./audio";
 import tribesData from "../data/tribes.json";
 
@@ -96,6 +97,7 @@ async function start(seed: number, fromSave: boolean) {
   const worker = new Worker(new URL("./sim/worker.ts", import.meta.url), { type: "module" });
   const send = (m: ToWorker) => worker.postMessage(m);
   let world: Snap | null = null, sel: Selection = null, lastCard = 0, endingsSeen = 0, speed = 1;
+  let cinema: Cinema | null = null;
   const chron = new Chronicle($("chron-list"), $("log-full"));
   let cardHold = false;
   $("card").addEventListener("pointerdown", () => { cardHold = true; });
@@ -106,6 +108,8 @@ async function start(seed: number, fromSave: boolean) {
   // ---- worker messages
   worker.onmessage = (e: MessageEvent<FromWorker>) => {
     const m = e.data;
+    if (m.type === "tl") { cinema?.onFrame(m.world, m.entries, m.fx, m.progress); $("date").textContent = `Year ${yearOf(m.world.tick)} · replay`; return; }
+    if (m.type === "tl-end") { cinema?.onEnd(); return; }
     if (m.type === "snap") {
       world = m.world;
       const hide = hiddenNames(world);
@@ -160,6 +164,7 @@ async function start(seed: number, fromSave: boolean) {
     if (entries.some((x) => x.kind === "tech")) sound.chime();
     const big = entries.find((x) => x.kind === "contact" && x.text.startsWith("First contact")) ?? entries.find((x) => x.kind === "voyage" && x.text.includes("there is land"));
     if (big) toast(big.text);
+    cinema?.onEntries(entries);
   }
 
   // ---- powers
@@ -170,7 +175,7 @@ async function start(seed: number, fromSave: boolean) {
     if (p) armedEl.textContent = `${POWER[p].name}: click the map${p === "plague" || p === "omen" ? " on a village" : ""}. Esc to cancel.`;
   };
   map.onCast = (x, y) => {
-    const p = powers.armed; if (!p || !world) return;
+    const p = powers.armed; if (!p || !world || cinema?.timelapse) return;
     if (world.energy < POWER[p].cost) { toast(`Not enough energy for ${POWER[p].name}. Faith refills it.`); return; }
     if ((p === "plague" || p === "omen") && !world.villages.some((v) => !v.lost && Math.hypot(v.x - x, v.y - y) < (p === "omen" ? 1.2 : 0.8))) { toast("Click closer to a village."); return; }
     send({ type: "act", action: { power: p, x, y, strain: p === "plague" ? powers.strain : undefined } });
@@ -238,6 +243,10 @@ async function start(seed: number, fromSave: boolean) {
   };
   document.querySelectorAll<HTMLElement>(".sp").forEach((b) => b.addEventListener("click", () => setSpeed(+b.dataset.speed!)));
 
+  // ---- cinematics: age-dawn flyovers, photo mode, time-lapse (3D view only)
+  cinema = map instanceof MapView3D ? new Cinema({ map, send, getSpeed: () => speed, setSpeed, store, toast, onLive: () => map.refresh() }) : null;
+  if (!cinema) for (const id of ["btn-timelapse", "btn-photo", "btn-cine"]) $(id).hidden = true;
+
   // ---- menu
   $("btn-save").addEventListener("click", () => send({ type: "save" }));
   $("btn-load").addEventListener("click", () => loadSaved());
@@ -274,7 +283,7 @@ async function start(seed: number, fromSave: boolean) {
   $("btn-help").addEventListener("click", () => { tipI = 0; showTip(); });
   if (store.get("bc.tips") !== "done" && !fromSave) showTip();
 
-  (window as any).__bc = { map, get world() { return world; }, send };
+  (window as any).__bc = { map, get world() { return world; }, send, get cinema() { return cinema; } };
   // keep the inspector following a moving selection
   setInterval(() => { if (world && sel && !cardHold) renderCard($("card"), world, sel, terrain); }, 1000);
 }

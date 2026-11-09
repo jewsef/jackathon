@@ -11,6 +11,8 @@ export class SkySystem {
   hemi = new THREE.HemisphereLight(0xbcd4ea, 0x3a4630, 0.9);
   period = 150;
   locked = false;
+  /** A fixed time of day (0..1 of the cycle) for photo mode, or null to follow the cycle. */
+  fixed: number | null = null;
   phase = 0.32;
   constructor(scene: THREE.Scene) {
     this.sky.scale.setScalar(400);
@@ -32,7 +34,7 @@ export class SkySystem {
   haze = 0;
   update(dt: number, shared: SharedUniforms, scene: THREE.Scene) {
     if (!this.locked) this.phase = (this.phase + dt / this.period) % 1;
-    const p = this.locked ? 0.12 : this.phase;
+    const p = this.fixed ?? (this.locked ? 0.12 : this.phase);
     const ang = p * Math.PI * 2;
     const elev = Math.sin(ang) * 1.15 - 0.1;
     const dir = new THREE.Vector3(Math.cos(ang) * 0.8, Math.max(-0.4, elev), 0.45).normalize();

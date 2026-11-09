@@ -54,6 +54,9 @@
         <button type="button" id="btn-share" class="ghost" title="Copy a link to this world's seed">Share seed</button>
         <button type="button" id="btn-view" class="ghost" title="Switch between the 3D view and the flat map">2D map</button>
         <button type="button" id="btn-day" class="ghost" title="Run the day and night cycle">Day/night: on</button>
+        <button type="button" id="btn-timelapse" class="ghost" title="Replay the whole history of this world, fast">Time-lapse</button>
+        <button type="button" id="btn-photo" class="ghost" title="Photo mode (P): hide the interface and take a picture">Photo</button>
+        <button type="button" id="btn-cine" class="ghost" aria-pressed="true" title="Fly over each people's capital when they enter a new age">Cinematics: on</button>
         <button type="button" id="btn-sound" class="ghost" aria-pressed="false" title="Sound">Sound off</button>
         <button type="button" id="btn-help" class="ghost" aria-label="How to play">?</button>
       </div>
@@ -120,6 +123,29 @@
           <button type="button" id="btn-continue" class="ghost" hidden>Continue saved world</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div id="cine" hidden aria-live="polite"><div class="lb top"></div><div class="lb bottom"><div class="cine-card"><span id="cine-sub"></span><h2 id="cine-title"></h2><span class="cine-hint">Click or press any key to skip</span></div></div></div>
+  <div id="tlbar" hidden role="status">
+    <span class="tl-label">Time-lapse</span><b id="tl-year">Year 0</b>
+    <div class="meter"><i id="tl-prog"></i></div>
+    <span id="tl-cap"></span>
+    <button type="button" id="btn-tlstop" class="ghost">Stop</button>
+  </div>
+  <div id="photobar" hidden role="toolbar" aria-label="Photo mode">
+    <span class="ph-title">Photo mode</span>
+    <label><input type="checkbox" id="ph-labels"> Labels</label>
+    <label>Filter <select id="ph-filter"><option value="none">None</option><option value="golden">Golden</option><option value="vivid">Vivid</option><option value="faded">Faded</option><option value="noir">Noir</option></select></label>
+    <label>Time of day <input type="range" id="ph-time" min="0" max="100" value="12"></label>
+    <button type="button" id="btn-snap" class="primary">Take picture</button>
+    <button type="button" id="btn-photoexit" class="ghost">Exit (Esc)</button>
+  </div>
+  <div id="photoprev" class="modal" role="dialog" aria-modal="true" aria-label="Your picture" hidden>
+    <div class="sheet photo-sheet">
+      <img id="photo-img" alt="Your picture of the world">
+      <p class="note">Right-click (or long-press) the picture to save it, or use Download.</p>
+      <div class="row"><a id="photo-dl" class="primary btnlink" download="beyond-civilization.png" href="#">Download</a><button type="button" id="btn-photoclose" class="ghost">Close</button></div>
     </div>
   </div>
 
