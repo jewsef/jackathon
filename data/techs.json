@@ -571,5 +571,205 @@
    "coal": 10
   },
   "desc": "Factory-made fertilizer. Harvests rise, and so do the towns."
+ },
+ {
+  "id": "electricity",
+  "name": "Electricity",
+  "group": "craft",
+  "age": 6,
+  "prereq": [
+   "steam",
+   "telegraph"
+  ],
+  "needs": {
+   "copper": 20,
+   "coal": 15
+  },
+  "strict": true,
+  "desc": "Dynamos and copper wire. Light at night, motors in every mill. The Electric age begins."
+ },
+ {
+  "id": "combustion",
+  "name": "The combustion engine",
+  "group": "craft",
+  "prereq": [
+   "steam",
+   "steel"
+  ],
+  "needs": {
+   "oil": 10
+  },
+  "strict": true,
+  "desc": "Oil burned inside the engine. Tractors, lorries and motor cars."
+ },
+ {
+  "id": "radio",
+  "name": "Radio",
+  "group": "knowledge",
+  "prereq": [
+   "electricity"
+  ],
+  "needs": {
+   "copper": 10
+  },
+  "desc": "Voices through the air. News, music and speeches reach every home."
+ },
+ {
+  "id": "flight",
+  "name": "Flight",
+  "group": "sea",
+  "prereq": [
+   "combustion",
+   "electricity"
+  ],
+  "needs": {
+   "oil": 20,
+   "steel": 10
+  },
+  "desc": "Aeroplanes. Any shore in the world is a day away."
+ },
+ {
+  "id": "antibiotics",
+  "name": "Antibiotics",
+  "group": "knowledge",
+  "prereq": [
+   "vaccines",
+   "electricity"
+  ],
+  "needs": {
+   "herbs": 20
+  },
+  "desc": "Mould that kills germs. Infections that killed for ten thousand years are cured in a week."
+ },
+ {
+  "id": "computers",
+  "name": "Computers",
+  "group": "knowledge",
+  "age": 7,
+  "prereq": [
+   "electricity",
+   "radio"
+  ],
+  "needs": {
+   "silicon": 15,
+   "copper": 10
+  },
+  "strict": true,
+  "desc": "Thinking machines on silicon chips. The Information age begins."
+ },
+ {
+  "id": "internet",
+  "name": "The internet",
+  "group": "knowledge",
+  "prereq": [
+   "computers"
+  ],
+  "needs": {
+   "silicon": 10
+  },
+  "desc": "Every computer linked to every other. Ideas cross the world instantly."
+ },
+ {
+  "id": "solar",
+  "name": "Solar and wind power",
+  "group": "craft",
+  "prereq": [
+   "computers"
+  ],
+  "needs": {
+   "silicon": 20,
+   "steel": 10
+  },
+  "desc": "Power from the sun and the wind. Mills and cities burn a fraction of the coal."
+ },
+ {
+  "id": "nuclear",
+  "name": "Nuclear power",
+  "group": "craft",
+  "prereq": [
+   "electricity",
+   "computers"
+  ],
+  "needs": {
+   "steel": 30
+  },
+  "desc": "Splitting the atom. Huge clean power, and a small risk of disaster."
+ },
+ {
+  "id": "missiles",
+  "name": "Missiles",
+  "group": "war",
+  "prereq": [
+   "flight",
+   "computers"
+  ],
+  "needs": {
+   "steel": 15,
+   "oil": 10
+  },
+  "desc": "Rockets that strike across the sea. Wars become far deadlier."
+ },
+ {
+  "id": "genetics",
+  "name": "Genetics",
+  "group": "knowledge",
+  "age": 8,
+  "prereq": [
+   "computers",
+   "antibiotics"
+  ],
+  "needs": {
+   "herbs": 30
+  },
+  "strict": true,
+  "desc": "Reading and rewriting the code of life. The Biotech age begins."
+ },
+ {
+  "id": "genecrops",
+  "name": "Engineered crops",
+  "group": "craft",
+  "prereq": [
+   "genetics"
+  ],
+  "desc": "Crops that shrug off drought and heat. Harvests rise even in a warming world."
+ },
+ {
+  "id": "enhancement",
+  "name": "Human enhancement",
+  "group": "knowledge",
+  "prereq": [
+   "genetics",
+   "internet"
+  ],
+  "desc": "Longer, healthier, sharper lives for those who choose it. Not everyone does, and not everyone can."
+ },
+ {
+  "id": "carboncapture",
+  "name": "Carbon capture",
+  "group": "craft",
+  "prereq": [
+   "genetics",
+   "solar"
+  ],
+  "needs": {
+   "steel": 20
+  },
+  "desc": "Engineered forests and machines that pull carbon back out of the air."
+ },
+ {
+  "id": "spaceflight",
+  "name": "Spaceflight",
+  "group": "sea",
+  "prereq": [
+   "missiles",
+   "computers",
+   "flight"
+  ],
+  "needs": {
+   "steel": 40,
+   "oil": 30,
+   "silicon": 20
+  },
+  "desc": "A rocket that leaves the sky behind. The people look down on the whole world for the first time."
  }
 ]

@@ -13,5 +13,7 @@
   {"id": "iron", "name": "Iron", "color": "#7a4a3a", "desc": "Ore smelted into iron: cheap, hard tools and weapons. The Classical age runs on it."},
   {"id": "spice", "name": "Spice", "color": "#d9792c", "desc": "Pepper, cloves and cinnamon from the Spice Isles. Worth a voyage across the world."},
   {"id": "coal", "name": "Coal", "color": "#2b2826", "desc": "Black rock that burns hot. Fuel for engines, furnaces and factories, and for the smoke."},
-  {"id": "steel", "name": "Steel", "color": "#8a96a3", "desc": "Iron refined with coal. Rails, ships, bridges and guns."}
+  {"id": "steel", "name": "Steel", "color": "#8a96a3", "desc": "Iron refined with coal. Rails, ships, bridges and guns."},
+  {"id": "oil", "name": "Oil", "color": "#1e1a24", "desc": "Rock oil pumped from deep under the Great Land and the Spice Isles. Engines, planes and plastics."},
+  {"id": "silicon", "name": "Silicon", "color": "#9fb4c8", "desc": "Pure sand, melted into crystal. Kelp Isle's beaches become the chips inside every computer."}
 ]

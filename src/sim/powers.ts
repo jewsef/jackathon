@@ -1,13 +1,18 @@
 import type { World, Action, PowerId, Village, BeliefKey } from "./types";
 import type { Rng } from "./rng";
 import { getTerrain } from "./terrain";
-import { living, popOf, kill, chron, tribeOf, agentsOf, relation, remember, rulerOf } from "./util";
+import { living, popOf, kill, chron, tribeOf, agentsOf, relation, remember, rulerOf, TECHS } from "./util";
 import { stirRevolt, FACTION_INFO } from "./politics";
 import powersData from "../../data/powers.json";
 import beliefs from "../../data/beliefs.json";
 import strains from "../../data/plague.json";
 
-export const POWERS = powersData as { id: PowerId; name: string; cost: number; radius: number; duration: number; kind: string; desc: string }[];
+export const POWERS = powersData as { id: PowerId; name: string; cost: number; radius: number; duration: number; kind: string; desc: string; minAge?: number }[];
+/** Late-game powers wake only once some people on earth have reached their age. */
+export function powerUnlocked(w: Pick<World, "tribes">, id: PowerId) {
+  const p = POWER[id];
+  return !p?.minAge || w.tribes.some((t) => t.alive && t.age >= p.minAge!);
+}
 export const POWER = Object.fromEntries(POWERS.map((p) => [p.id, p])) as Record<PowerId, (typeof POWERS)[number]>;
 export const STRAINS = strains as Record<string, { name: string; mort: number; spread: number; duration: number }>;
 
@@ -30,7 +35,7 @@ export function applyPowers(w: World, acts: Action[], rng: Rng): World {
   const terrain = getTerrain(w.seed);
   for (const a of acts) {
     const p = POWER[a.power];
-    if (!p || w.energy < p.cost) continue;
+    if (!p || w.energy < p.cost || !powerUnlocked(w, a.power)) continue;
     const affected = new Set<number>();
     switch (a.power) {
       case "calm": case "rain": case "wind": case "drought": {
@@ -112,6 +117,41 @@ export function applyPowers(w: World, acts: Action[], rng: Rng): World {
         }
         break;
       }
+      case "genius": {
+        const v = nearestVillage(w, a.x, a.y, 1.4);
+        if (!v) continue;
+        const t = tribeOf(w, v.tribe);
+        affected.add(v.tribe);
+        const cand = TECHS.filter((x) => !t.techs.includes(x.id) && x.prereq.every((q) => t.techs.includes(q))).sort((p1, p2) => (t.progress[p2.id] ?? 0) - (t.progress[p1.id] ?? 0))[0];
+        w.fx.push({ kind: "omen", x: v.x, y: v.y, tick: w.tick });
+        if (cand) { t.progress[cand.id] = (t.progress[cand.id] ?? 0) + 0.35; chron(w, "power", `A child of ${v.name} grows up seeing what no one else can. The ${t.name} are suddenly close to ${cand.name.toLowerCase()}.`, v.x, v.y); }
+        else chron(w, "power", `A brilliant mind is born in ${v.name}, but finds nothing left to invent yet.`, v.x, v.y);
+        break;
+      }
+      case "risingseas": {
+        let drowned = 0, towns = 0;
+        for (const v of within(w, a.x, a.y, p.radius)) {
+          if (!v.coastal) continue;
+          affected.add(v.tribe); towns++;
+          drowned += kill(v, rng.binom(popOf(v), 0.03), rng);
+          v.houses = Math.max(1, v.houses * 0.8); v.food *= 0.7; v.morale = Math.max(0, v.morale - 0.15);
+        }
+        w.fx.push({ kind: "quake", x: a.x, y: a.y, tick: w.tick });
+        chron(w, "climate", towns ? `The sea rises in a great surge. ${towns} harbour town${towns > 1 ? "s flood" : " floods"} and ${drowned} people drown.` : "The sea surges against empty shores.", a.x, a.y);
+        break;
+      }
+      case "solarflare": {
+        w.effects.push({ id: w.nextId++, power: "solarflare", x: a.x, y: a.y, r: p.radius, ticks: p.duration, age: 0 });
+        const hit = new Set<string>();
+        for (const v of within(w, a.x, a.y, p.radius)) {
+          const t = tribeOf(w, v.tribe);
+          affected.add(v.tribe);
+          if (t.age >= 6 && !hit.has(t.name)) { hit.add(t.name); t.gov.unrest = Math.min(1, t.gov.unrest + 0.15); }
+        }
+        w.fx.push({ kind: "omen", x: a.x, y: a.y, tick: w.tick });
+        chron(w, "power", hit.size ? `The sky burns green and red. Wires melt and the lights go out across the lands of the ${[...hit].join(" and the ")}.` : "Curtains of green fire dance across the sky. No one below has wires to burn.", a.x, a.y);
+        break;
+      }
       case "omen": {
         const v = nearestVillage(w, a.x, a.y, 1.2);
         if (!v) continue;
@@ -122,7 +162,7 @@ export function applyPowers(w: World, acts: Action[], rng: Rng): World {
       }
     }
     w.energy -= p.cost;
-    affected.forEach((tid) => shiftBelief(w, tid, a.power));
+    affected.forEach((tid) => shiftBelief(w, tid, a.power as keyof typeof beliefs));
   }
   return w;
 }

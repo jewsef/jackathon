@@ -145,7 +145,7 @@ async function start(seed: number, fromSave: boolean) {
     $("st-pop").textContent = living(world as World).reduce((s, v) => s + popOf(v), 0).toLocaleString("en-US");
     $("st-tribes").textContent = String(world.tribes.filter((t) => t.alive).length);
     $("st-villages").textContent = String(living(world as World).length);
-    powers.setEnergy(e);
+    powers.setEnergy(e, Math.max(0, ...world.tribes.filter((t) => t.alive).map((t) => t.age)));
     let rain = 0, storm = false;
     for (const ef of world.effects) { if (ef.power === "rain") rain = 1; if (ef.power === "storm") storm = true; }
     sound.weather(rain, storm, map.cam.z);
@@ -214,7 +214,7 @@ async function start(seed: number, fromSave: boolean) {
   const ladder = $("ladder");
   ladder.innerHTML = LEVELS.map((l, i) => `<button type="button" class="rung" data-i="${i}"><span class="dot"></span><span>${l.name}</span><span class="zz">${l.z}×</span></button>`).join("");
   ladder.addEventListener("click", (e) => { const b = (e.target as HTMLElement).closest(".rung") as HTMLElement | null; if (b) map.flyTo(map.cam.x, map.cam.y, LEVELS[+b.dataset.i!].z); });
-  const LEGEND = `<span class="legend">${[["farmer", "Farmer"], ["fisher", "Fisher"], ["gatherer", "Gatherer"], ["woodcutter", "Woodcutter"], ["quarrier", "Quarrier"], ["miner", "Miner"], ["smith", "Smith"], ["worker", "Factory hand"], ["builder", "Builder"], ["warrior", "Warrior"], ["priest", "Priest"], ["doctor", "Doctor"], ["boatwright", "Boatwright"], ["leader", "Leader"], ["child", "Child"]].map(([j, n]) => `<span><i class="swatch" style="background:${JOB_COLOR[j]}"></i>${n}</span>`).join("")}<span><i class="swatch" style="background:${RULER_COLOR}"></i>Ruler</span><span><i class="swatch" style="background:${HEAD_COLOR}"></i>Faction head</span></span>`;
+  const LEGEND = `<span class="legend">${[["farmer", "Farmer"], ["fisher", "Fisher"], ["gatherer", "Gatherer"], ["woodcutter", "Woodcutter"], ["quarrier", "Quarrier"], ["miner", "Miner"], ["smith", "Smith"], ["worker", "Factory hand"], ["scientist", "Scientist"], ["builder", "Builder"], ["warrior", "Warrior"], ["priest", "Priest"], ["doctor", "Doctor"], ["boatwright", "Boatwright"], ["leader", "Leader"], ["child", "Child"]].map(([j, n]) => `<span><i class="swatch" style="background:${JOB_COLOR[j]}"></i>${n}</span>`).join("")}<span><i class="swatch" style="background:${RULER_COLOR}"></i>Ruler</span><span><i class="swatch" style="background:${HEAD_COLOR}"></i>Faction head</span></span>`;
   const NOTES = [
     "<b>Each village is a light.</b> Brightness is population. Work the weather and watch voyages here.",
     "<b>Villages become roofs and fields.</b> Their number comes straight from each village's record.",

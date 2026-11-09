@@ -6,6 +6,7 @@ import type { Res } from "./types";
 import agesData from "../../data/ages.json";
 const AGES = agesData as { id: number; name: string; requires: string[]; desc: string }[];
 import { newAgent } from "./world";
+import { effectAt } from "./climate";
 
 function shares(w: World, t: Tribe): Record<Job, number> {
   const out = Object.fromEntries(JOBS.map((j) => [j, 0])) as Record<Job, number>;
@@ -58,6 +59,21 @@ function drive(w: World, t: Tribe, id: string, sh: Record<Job, number>, pop: num
     case "rifles": return war ? 0.006 : threat * 0.003 + 0.0004;
     case "telegraph": return 0.001 + sh.worker * 0.01 + Math.min(0.004, t.known.length * 0.0005);
     case "fertilizer": return 0.001 + sh.farmer * 0.004 + (d.hunger > 0.5 ? 0.004 : 0);
+    case "electricity": return 0.0005 + sh.worker * 0.008 + sh.smith * 0.006 + sh.scientist * 0.02;
+    case "combustion": return 0.0006 + sh.worker * 0.008 + sh.miner * 0.004;
+    case "radio": return 0.001 + sh.scientist * 0.03;
+    case "flight": return 0.0006 + sh.worker * 0.006 + sh.scientist * 0.02;
+    case "antibiotics": return 0.0008 + sh.doctor * 0.02 + sh.scientist * 0.01 + d.plagueSurvived * 0.005;
+    case "computers": return 0.0004 + sh.scientist * 0.03;
+    case "internet": return 0.0008 + sh.scientist * 0.03;
+    case "solar": return 0.0006 + sh.scientist * 0.02 + w.warming * 0.0015;
+    case "nuclear": return 0.0005 + sh.scientist * 0.02;
+    case "missiles": return war ? 0.004 : 0.0005;
+    case "genetics": return 0.0004 + sh.scientist * 0.025 + sh.doctor * 0.01;
+    case "genecrops": return 0.001 + Math.min(1, d.hunger) * 0.003 + w.warming * 0.001;
+    case "enhancement": return 0.0008 + sh.scientist * 0.02;
+    case "carboncapture": return 0.0006 + w.warming * 0.002;
+    case "spaceflight": return 0.0004 + sh.scientist * 0.015;
     case "writing": return 0.001 + sh.priest * 0.03 + Math.min(0.006, d.raids * 0.0005 + t.known.length * 0.0008);
     case "granary": return 0.004 + sh.builder * 0.05 + (d.hunger > 0.5 ? 0.005 : 0);
     case "raft": return coastal && pop >= 8 ? 0.004 + sh.fisher * 0.02 + Math.min(1, d.hunger) * 0.003 + kin * 0.01 : 0;
@@ -77,7 +93,7 @@ function drive(w: World, t: Tribe, id: string, sh: Record<Job, number>, pop: num
   return 0;
 }
 
-const INVENTOR: Record<string, string> = { raft: "Boatwright", canoe: "Boatwright", outrigger: "Boatwright", sail: "Boatwright", herbs: "Doctor", stonetools: "Toolmaker", bronze: "Smith", copperworking: "Smith", masonry: "Master builder", brickmaking: "Master builder", wheel: "Cartwright", roads: "Master builder", planning: "Surveyor", iron: "Smith", law: "Lawgiver", philosophy: "Philosopher", aqueduct: "Engineer", compass: "Navigator", carrack: "Shipwright", printing: "Printer", gunpowder: "Alchemist", cartography: "Mapmaker", lighthouse: "Engineer", steam: "Engineer", steel: "Ironmaster", factory: "Mill owner", railway: "Engineer", steamship: "Shipwright", vaccines: "Doctor", telegraph: "Inventor", writing: "Scribe" };
+const INVENTOR: Record<string, string> = { raft: "Boatwright", canoe: "Boatwright", outrigger: "Boatwright", sail: "Boatwright", herbs: "Doctor", stonetools: "Toolmaker", bronze: "Smith", copperworking: "Smith", masonry: "Master builder", brickmaking: "Master builder", wheel: "Cartwright", roads: "Master builder", planning: "Surveyor", iron: "Smith", law: "Lawgiver", philosophy: "Philosopher", aqueduct: "Engineer", compass: "Navigator", carrack: "Shipwright", printing: "Printer", gunpowder: "Alchemist", cartography: "Mapmaker", lighthouse: "Engineer", steam: "Engineer", steel: "Ironmaster", factory: "Mill owner", railway: "Engineer", steamship: "Shipwright", vaccines: "Doctor", telegraph: "Inventor", electricity: "Inventor", flight: "Aviator", computers: "Programmer", genetics: "Geneticist", spaceflight: "Astronaut", nuclear: "Physicist", antibiotics: "Doctor", writing: "Scribe" };
 
 /**
  * Inventions need the right materials in the tribe's stores. Missing materials slow research;
@@ -125,6 +141,10 @@ function checkEndings(w: World) {
     const ok = alive.every((a) => alive.every((b) => a === b || (() => { const r = relation(w, a.id, b.id); return r.met && (r.alliance || r.attitude > 0.5); })()));
     if (ok) add({ id: "unity", title: "One people", text: "Every living tribe is bound to every other by marriage and trust." });
   }
+  const astro = w.tribes.find((t) => t.alive && has(t, "spaceflight"));
+  if (!done("space") && astro) add({ id: "space", title: "Beyond the sky", text: `A rocket of the ${astro.name} climbs past the clouds, past the storms you sent, past you. For the first time your people look down on the whole world, small and blue, and see it as you always have.` });
+  if (!done("hothouse") && w.warming >= 4) add({ id: "hothouse", title: "The hothouse", text: "The world has warmed by four degrees. Harvests fail, storms never end, and the coasts drown. Your people made this sky themselves." });
+  if (!done("green") && w.co2Peak > 420 && w.co2 < 350) add({ id: "green", title: "A green world", text: "The air is clean again. The people who filled the sky with smoke have learned to take it back." });
   if (!done("longage") && yearOf(w.tick) >= 1000) add({ id: "longage", title: "The long age", text: "A thousand years have passed under your sky." });
 }
 
@@ -140,7 +160,9 @@ export function culture(w: World, rng: Rng): World {
     }
     const sh = shares(w, t);
     // schools and printed books speed every kind of research
-    const learning = (has(t, "philosophy") ? 1.2 : 1) * (has(t, "printing") ? 1.2 : 1);
+    const flare = living(w).some((v) => v.tribe === t.id && effectAt(w, "solarflare", v.x, v.y) > 0.3);
+    const learning = (has(t, "philosophy") ? 1.2 : 1) * (has(t, "printing") ? 1.2 : 1) * (has(t, "electricity") ? 1.1 : 1)
+      * (has(t, "computers") ? 1.25 : 1) * (has(t, "internet") ? 1.25 : 1) * (1 + sh.scientist * 4) * (flare ? 0.4 : 1);
     for (const tech of TECHS) {
       if (has(t, tech.id) || !tech.prereq.every((p) => has(t, p))) continue;
       const trait = tech.group === "sea" ? 0.7 + t.traits.curious * 0.3 + t.traits.bold * 0.3 : tech.group === "war" ? 0.7 + t.traits.wary * 0.3 + t.traits.bold * 0.3 : 0.8 + t.traits.patient * 0.4;
@@ -189,7 +211,8 @@ export function culture(w: World, rng: Rng): World {
     r.strength += rel && (rel.war || rel.attitude < -0.2) ? -0.08 : 0.004;
     r.strength = Math.min(1, r.strength - 0.006);
     if (r.strength <= 0.02) continue;
-    if (A.id !== B.id && rng.chance(0.03 * r.strength * (has(A, "telegraph") || has(B, "telegraph") ? 2 : 1))) {
+    const wire = (x: typeof A) => (has(x, "internet") ? 4 : has(x, "radio") ? 3 : has(x, "telegraph") ? 2 : 1);
+    if (A.id !== B.id && rng.chance(Math.min(0.5, 0.03 * r.strength * Math.max(wire(A), wire(B))))) {
       const [src, dst] = rng.chance(0.5) ? [A, B] : [B, A];
       const cand = src.techs.filter((x) => !has(dst, x) && TECH[x].prereq.every((p) => has(dst, p)));
       if (cand.length) {

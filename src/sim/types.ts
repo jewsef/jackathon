@@ -1,9 +1,9 @@
 import type { IsleId } from "./terrain";
 
-export type Job = "gatherer" | "farmer" | "fisher" | "builder" | "leader" | "doctor" | "priest" | "warrior" | "boatwright" | "woodcutter" | "quarrier" | "miner" | "smith" | "worker";
-export const JOBS: Job[] = ["gatherer", "farmer", "fisher", "builder", "leader", "doctor", "priest", "warrior", "boatwright", "woodcutter", "quarrier", "miner", "smith", "worker"];
-export type Res = "wood" | "stone" | "clay" | "brick" | "fiber" | "salt" | "herbs" | "flint" | "copper" | "tin" | "bronze" | "iron" | "spice" | "coal" | "steel";
-export const RES: Res[] = ["wood", "stone", "clay", "brick", "fiber", "salt", "herbs", "flint", "copper", "tin", "bronze", "iron", "spice", "coal", "steel"];
+export type Job = "gatherer" | "farmer" | "fisher" | "builder" | "leader" | "doctor" | "priest" | "warrior" | "boatwright" | "woodcutter" | "quarrier" | "miner" | "smith" | "worker" | "scientist";
+export const JOBS: Job[] = ["gatherer", "farmer", "fisher", "builder", "leader", "doctor", "priest", "warrior", "boatwright", "woodcutter", "quarrier", "miner", "smith", "worker", "scientist"];
+export type Res = "wood" | "stone" | "clay" | "brick" | "fiber" | "salt" | "herbs" | "flint" | "copper" | "tin" | "bronze" | "iron" | "spice" | "coal" | "steel" | "oil" | "silicon";
+export const RES: Res[] = ["wood", "stone", "clay", "brick", "fiber", "salt", "herbs", "flint", "copper", "tin", "bronze", "iron", "spice", "coal", "steel", "oil", "silicon"];
 export type RegimeType = "elders" | "chief" | "council" | "priestking" | "warlord";
 export type FactionId = "farmers" | "seafarers" | "warriors" | "priests" | "crafters";
 export const FACTIONS: FactionId[] = ["farmers", "seafarers", "warriors", "priests", "crafters"];
@@ -13,7 +13,7 @@ export interface Gov { type: RegimeType; ruler: number | null; rulerFaction: Fac
 export interface Objective { kind: "feed" | "defend" | "secure" | "unite" | "reach" | "grow" | "ally"; text: string; village: number | null; res?: Res; tribe?: number; }
 export type Stage = "band" | "camp" | "village" | "town" | "city";
 export const STAGES: Stage[] = ["band", "camp", "village", "town", "city"];
-export type PowerId = "calm" | "rain" | "wind" | "omen" | "bless" | "drought" | "revolt" | "storm" | "quake" | "plague" | "eruption";
+export type PowerId = "calm" | "rain" | "wind" | "omen" | "bless" | "drought" | "revolt" | "storm" | "quake" | "plague" | "eruption" | "genius" | "solarflare" | "risingseas";
 export type StrainId = "fever" | "cough" | "grey";
 export type BeliefKey = "awe" | "fear" | "love";
 
@@ -80,7 +80,7 @@ export interface ChronEntry { tick: number; text: string; kind: ChronKind; x?: n
 
 export interface Fx { kind: "lightning" | "quake" | "eruption" | "omen" | "plague" | "battle" | "lost" | "found" | "uprising" | "age"; x: number; y: number; tick: number; }
 
-export interface Ending { id: "silence" | "farshore" | "unity" | "longage"; tick: number; title: string; text: string; }
+export interface Ending { id: "silence" | "farshore" | "unity" | "longage" | "space" | "green" | "hothouse"; tick: number; title: string; text: string; }
 
 export interface World {
   seed: number; tick: number; rngState: number; nextId: number;
@@ -90,7 +90,7 @@ export interface World {
   energy: number; faith: number;
   horizon: boolean;
   /** Carbon dioxide in the air, in ppm (280 before industry), and the warming it causes, in degrees C. */
-  co2: number; warming: number;
+  co2: number; warming: number; co2Peak: number;
   deposits: Record<IsleId, Record<Res, number>>; depositBase: Record<IsleId, Record<Res, number>>;
   chronicle: ChronEntry[]; events: ChronEntry[]; fx: Fx[];
   contacts: { a: number; b: number; via: string }[];

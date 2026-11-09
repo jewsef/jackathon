@@ -1,7 +1,8 @@
 import { POWERS } from "../sim/powers";
+import agesData from "../../data/ages.json";
 import type { PowerId, StrainId } from "../sim/types";
 
-const HOT = new Set(["storm", "quake", "plague", "eruption", "drought", "revolt"]);
+const HOT = new Set(["storm", "quake", "plague", "eruption", "drought", "revolt", "risingseas", "solarflare"]);
 
 /** The power palette. Selecting a power arms the map; the next click casts it. */
 export class PowersBar {
@@ -30,10 +31,14 @@ export class PowersBar {
     (this.el.querySelector(".strains") as HTMLElement).hidden = p !== "plague";
     this.onArm(p);
   }
-  setEnergy(e: number) {
+  /** Enable what can be afforded; late-game powers stay locked until someone reaches their age. */
+  setEnergy(e: number, maxAge = 99) {
     this.el.querySelectorAll<HTMLButtonElement>(".pw").forEach((b) => {
       const p = POWERS.find((x) => x.id === b.dataset.p)!;
-      b.disabled = e < p.cost;
+      const locked = !!p.minAge && maxAge < p.minAge;
+      b.disabled = e < p.cost || locked;
+      b.classList.toggle("locked", locked);
+      b.title = locked ? `${p.name}: unlocks when a people reaches the ${agesData[p.minAge!]?.name ?? "next age"}.` : `${p.name}: ${p.desc} (${p.cost} energy)`;
     });
   }
 }

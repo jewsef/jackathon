@@ -97,5 +97,35 @@
   "duration": 60,
   "kind": "wrath",
   "desc": "The island's peak wakes. Fire nearby, ash beyond, rich soil later."
+ },
+ {
+  "id": "genius",
+  "name": "Spark of genius",
+  "cost": 8,
+  "radius": 1.2,
+  "duration": 0,
+  "kind": "gift",
+  "minAge": 3,
+  "desc": "A brilliant mind is born in one town. Its tribe leaps toward its next invention."
+ },
+ {
+  "id": "risingseas",
+  "name": "Rising seas",
+  "cost": 16,
+  "radius": 3.0,
+  "duration": 0,
+  "kind": "wrath",
+  "minAge": 5,
+  "desc": "The sea surges over the coasts. Harbours flood, houses are lost, people drown."
+ },
+ {
+  "id": "solarflare",
+  "name": "Solar flare",
+  "cost": 14,
+  "radius": 3.0,
+  "duration": 4,
+  "kind": "wrath",
+  "minAge": 6,
+  "desc": "The sun lashes out. Wires burn, power fails and research stalls for a year in the Electric age and after."
  }
 ]

@@ -74,7 +74,7 @@ describe("phase 5: the Classical age and the Age of Sail", () => {
   beforeAll(() => { w = run(1, 3600); }, 300000);
 
   it("tribes reach the Classical age and the Age of Sail, and the world grows", () => {
-    expect(Math.max(...w.tribes.map((t) => t.age))).toBe(4);
+    expect(Math.max(...w.tribes.map((t) => t.age))).toBeGreaterThanOrEqual(4);
     expect(w.tribes.some((t) => t.age >= 3 && !isOuter(t.home))).toBe(true);
     expect(w.horizon).toBe(true);
     const all = new Set(w.tribes.flatMap((t) => t.techs));

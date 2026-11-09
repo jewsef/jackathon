@@ -53,5 +53,20 @@
   "awe": 0.03,
   "fear": 0.05,
   "love": -0.02
+ },
+ "genius": {
+  "awe": 0.06,
+  "fear": 0.0,
+  "love": 0.04
+ },
+ "risingseas": {
+  "awe": 0.05,
+  "fear": 0.09,
+  "love": -0.04
+ },
+ "solarflare": {
+  "awe": 0.08,
+  "fear": 0.05,
+  "love": -0.02
  }
 }

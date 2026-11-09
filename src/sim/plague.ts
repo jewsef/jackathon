@@ -22,7 +22,7 @@ export function plague(w: World, rng: Rng): World {
     const s = v.sick!, S = STRAINS[s.strain], t = w.tribes[v.tribe], pop = popOf(v);
     const docShare = workers(v, "doctor") / Math.max(1, pop);
     const docAgent = agentsOf(w, (a) => a.village === v.id && a.role === "Doctor").length > 0;
-    const docF = (1 - Math.min(0.5, docShare * 6)) * (has(t, "herbs") ? 0.75 : 1) * (docAgent ? 0.85 : 1) * (has(t, "aqueduct") && (v.stage === "town" || v.stage === "city") ? 0.7 : 1) * (has(t, "vaccines") ? 0.35 : 1) * (1 + v.smog * 0.6);
+    const docF = (1 - Math.min(0.5, docShare * 6)) * (has(t, "herbs") ? 0.75 : 1) * (docAgent ? 0.85 : 1) * (has(t, "aqueduct") && (v.stage === "town" || v.stage === "city") ? 0.7 : 1) * (has(t, "vaccines") ? 0.35 : 1) * (has(t, "antibiotics") ? 0.4 : 1) * (has(t, "genetics") ? 0.7 : 1) * (1 + v.smog * 0.6);
     kill(v, rng.binom(pop, S.mort * docF * (1 - v.immune)), rng);
     const qSrc = has(t, "quarantine") ? 0.3 : 1;
     for (const u of living(w)) {

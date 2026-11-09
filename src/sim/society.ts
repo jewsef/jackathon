@@ -16,7 +16,7 @@ export function workforce(v: Village) {
 }
 /** Productivity from tools and age: stone tools, then bronze. */
 export function toolFactor(w: World, t: Tribe, v?: Village) {
-  return 1 + (has(t, "stonetools") ? 0.18 : 0) + (has(t, "bronze") && (!v || v.stock.bronze > 1) ? 0.15 : 0) + (has(t, "iron") && (!v || v.stock.iron > 1) ? 0.15 : 0) + (has(t, "steel") && (!v || v.stock.steel > 1) ? 0.15 : 0);
+  return 1 + (has(t, "stonetools") ? 0.18 : 0) + (has(t, "bronze") && (!v || v.stock.bronze > 1) ? 0.15 : 0) + (has(t, "iron") && (!v || v.stock.iron > 1) ? 0.15 : 0) + (has(t, "steel") && (!v || v.stock.steel > 1) ? 0.15 : 0) + (has(t, "electricity") ? 0.15 : 0);
 }
 
 export function stageOf(pop: number, planned = false): Stage {
@@ -57,6 +57,7 @@ export function jobTargets(w: World, v: Village, t: Tribe): Record<Job, number> 
   if (has(t, "bronze")) set("smith", 0.02 + (v.stock.copper > 5 ? 0.03 : 0) + (has(t, "steam") ? 0.02 : 0));
   // coal pits once iron furnaces need fuel; factory hands once there are factories
   if (has(t, "iron")) set("miner", 0.04 * dep.coal * (has(t, "steam") ? 1.6 : 0.6));
+  if (has(t, "electricity") && s >= 3) set("scientist", (v.stage === "city" ? 0.05 : 0.025) * (has(t, "computers") ? 1.6 : 1));
   if (has(t, "factory") && s >= 3) set("worker", (v.stage === "city" ? 0.16 : 0.08) * (v.stock.coal > 2 || dep.coal > 0.2 ? 1 : 0.4));
   if (v.coastal) set("boatwright", 0.03 + 0.06 * seaDesire(t, v));
   if (s >= 2) {
@@ -130,7 +131,8 @@ export function society(w: World, rng: Rng): World {
       2.2 * GATHER_SEASON[season] * v.mods.gather * nGather * gatherCap / (gatherCap + nGather) +
       2.1 * FISH_SEASON[season] * v.mods.fish * nFish * fishCap / (fishCap + nFish);
     const cons = A + v.elders * 0.8 + K * 0.45;
-    v.food += prod * (1 + (toolFactor(w, t, v) - 1) * 0.6) * (has(t, "fertilizer") ? 1.3 : 1) * (1 - 0.06 * Math.max(0, w.warming - 1)) - cons;
+    v.food += prod * (1 + (toolFactor(w, t, v) - 1) * 0.6) * (has(t, "fertilizer") ? 1.3 : 1) * (has(t, "combustion") ? 1.2 : 1) * (has(t, "genecrops") ? 1.3 : 1)
+      * (1 - (has(t, "genecrops") ? 0.03 : 0.06) * Math.max(0, w.warming - 1)) - cons;
     v.food *= has(t, "salting") && v.stock.salt > 1 ? 0.98 : has(t, "pottery") ? 0.97 : 0.96;
     v.food = Math.min(v.food, 15 + v.houses * 4 + v.granary * 80);
     if (v.food < 0) {

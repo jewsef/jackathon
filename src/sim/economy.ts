@@ -1,8 +1,9 @@
 import type { World, Village, Tribe, Res } from "./types";
 import { RES } from "./types";
 import type { Rng } from "./rng";
-import { living, popOf, has, defenseCap, chron, villageById, relation } from "./util";
+import { living, popOf, has, defenseCap, chron, villageById, relation, kill } from "./util";
 import { workforce, toolFactor } from "./society";
+import { effectAt } from "./climate";
 
 /** Which material each island builds its houses from, by its main resource. */
 export function houseMaterial(t: Tribe, isle: string): Res {
@@ -46,6 +47,8 @@ export function economy(w: World, rng: Rng): World {
     const sw = dep.stone / Math.max(0.01, dep.stone + dep.clay * (has(t, "pottery") ? 1.4 : 0.3));
     v.stock.stone += q * sw * dep.stone;
     v.stock.clay += q * (1 - sw) * dep.clay * 1.4;
+    // pure sand for silicon, once there is electricity to melt it
+    if (has(t, "electricity")) v.stock.silicon += q * 0.35 * dep.silicon;
     const mi = sat(n("miner"), 40) * tools;
     if (mi > 0) {
       v.stock.flint += mi * 0.7 * dep.flint;
@@ -59,14 +62,18 @@ export function economy(w: World, rng: Rng): World {
       // coal: dug for the iron furnaces, then by the ton once there are steam pumps
       const coalK = has(t, "steam") ? 1.2 : has(t, "iron") ? 0.3 : 0;
       v.stock.coal += mi * 0.6 * dep.coal * coalK; dep.coal = Math.max(base.coal * 0.3, dep.coal - mi * 0.6 * dep.coal * coalK * 0.00025);
-      v.stock.iron += mi * 0.45 * dep.iron * ironK; dep.iron = Math.max(base.iron * 0.25, dep.iron - mi * 0.45 * dep.iron * ironK * 0.0003);
+      v.stock.iron += mi * 0.45 * dep.iron * ironK;
+      // oil wells once there are engines to burn it
+      // oil: skimmed from seeps for lamps and grease after steam, pumped from wells once there are engines
+      const oilK = has(t, "combustion") ? 1 : has(t, "steam") ? 0.25 : 0;
+      if (oilK) { const o = mi * 0.5 * dep.oil * oilK; v.stock.oil += o; dep.oil = Math.max(base.oil * 0.15, dep.oil - o * 0.0003); } dep.iron = Math.max(base.iron * 0.25, dep.iron - mi * 0.45 * dep.iron * ironK * 0.0003);
     }
     // crafting
     if (has(t, "brickmaking") && v.stock.clay > 2 && v.stock.wood > 2) {
       const b = Math.min(v.stock.clay / 2, v.stock.wood / 2, 0.6 * (n("quarrier") + n("builder")) * tools);
       v.stock.clay -= b * 2; v.stock.wood -= b; v.stock.brick += b * 1.5;
     }
-    if (has(t, "bronze") && v.stock.copper > 1 && v.stock.tin > 0.5) {
+    if (has(t, "bronze") && !has(t, "steel") && v.stock.copper > 1 && v.stock.tin > 0.5) { // steel makes bronze obsolete; copper goes to wire
       const b = Math.min(v.stock.copper / 3, v.stock.tin, 0.5 * n("smith") + 0.1);
       v.stock.copper -= b * 3; v.stock.tin -= b; v.stock.bronze += b * 2;
     }
@@ -76,17 +83,30 @@ export function economy(w: World, rng: Rng): World {
       const b = Math.min(v.stock.iron / 2, v.stock.coal / 2, 0.4 * n("smith") + 0.6 * n("worker") + 0.1);
       v.stock.iron -= b * 2; v.stock.coal -= b; v.stock.steel += b * 1.5; burn += b;
     }
+    // clean power cuts the coal a mill needs; a solar flare knocks the power out
+    const clean = (has(t, "solar") ? 0.35 : 1) * (has(t, "nuclear") ? 0.5 : 1);
+    const flare = effectAt(w, "solarflare", v.x, v.y) > 0.3 && has(t, "electricity");
     if (has(t, "factory") && n("worker") > 0) {
-      const fuel = Math.min(v.stock.coal, n("worker") * 0.22);
+      const need = n("worker") * 0.22 * clean;
+      const fuel = Math.min(v.stock.coal, need);
       v.stock.coal -= fuel; burn += fuel;
-      const power = Math.min(1, fuel / Math.max(0.1, n("worker") * 0.22));
+      const power = Math.min(1, fuel / Math.max(0.05, need)) * (has(t, "electricity") ? 1.3 : 1) * (flare ? 0.4 : 1);
       // powered mills spin fibre, fire bricks and forge iron faster
       v.stock.fiber += n("worker") * 0.08 * power; v.stock.brick += has(t, "brickmaking") ? n("worker") * 0.06 * power : 0;
       v.stock.iron += n("worker") * 0.03 * power * dep.iron;
     }
     if (has(t, "steam")) { const pump = Math.min(v.stock.coal, n("miner") * 0.04); v.stock.coal -= pump; burn += pump; }
+    // engines burn oil: cars, tractors and planes
+    if (has(t, "combustion")) { const o = Math.min(v.stock.oil, popOf(v) * 0.0006 * (has(t, "solar") ? 0.5 : 1)); v.stock.oil -= o; burn += o * 0.8; }
     v.smog = Math.min(1, v.smog + burn * 0.012);
     w.co2 += burn * 0.0035;
+    // a reactor accident: rare, and terrible
+    if (has(t, "nuclear") && v.stage === "city" && rng.chance(0.00025)) {
+      const d = kill(v, rng.binom(popOf(v), 0.04), rng);
+      v.morale = Math.max(0, v.morale - 0.3); v.smog = Math.min(1, v.smog + 0.4);
+      chron(w, "climate", `The reactor at ${v.name} fails. ${d} die and the land around it is poisoned.`, v.x, v.y);
+      w.fx.push({ kind: "eruption", x: v.x, y: v.y, tick: w.tick });
+    }
     // tools and weapons wear out
     v.stock.flint *= 0.99; v.stock.bronze *= 0.995; v.stock.iron *= 0.997; v.stock.spice *= 0.99; v.stock.steel *= 0.998;
     // spice is a luxury: it lifts spirits wherever it reaches
@@ -96,7 +116,7 @@ export function economy(w: World, rng: Rng): World {
 
     // construction: houses, granaries, defences and monuments all cost materials
     const pop = popOf(v);
-    const builders = (v.jobs.builder * work + (v.stage === "band" ? 0.4 : 0)) * (1 + (tools - 1) * 0.8) * (has(t, "wheel") ? 1.15 : 1) * (has(t, "roads") ? 1.1 : 1) * (has(t, "railway") ? 1.15 : 1) * (has(t, "factory") ? 1.2 : 1);
+    const builders = (v.jobs.builder * work + (v.stage === "band" ? 0.4 : 0)) * (1 + (tools - 1) * 0.8) * (has(t, "wheel") ? 1.15 : 1) * (has(t, "roads") ? 1.1 : 1) * (has(t, "railway") ? 1.15 : 1) * (has(t, "factory") ? 1.2 : 1) * (has(t, "electricity") ? 1.1 : 1);
     const mat = houseMaterial(t, v.isle);
     if (v.houses < Math.ceil(pop / 5) + 1) {
       const want = builders * 0.2;
@@ -145,7 +165,7 @@ export function economy(w: World, rng: Rng): World {
     for (const r of RES) {
       const mean = vs.reduce((s, v) => s + v.stock[r], 0) / vs.length;
       const T = w.tribes[vs[0].tribe];
-      const rate = has(T, "railway") ? 0.35 : has(T, "roads") ? 0.22 : has(T, "wheel") ? 0.13 : 0.08;
+      const rate = has(T, "combustion") ? 0.45 : has(T, "railway") ? 0.35 : has(T, "roads") ? 0.22 : has(T, "wheel") ? 0.13 : 0.08;
       for (const v of vs) v.stock[r] += (mean - v.stock[r]) * rate;
     }
   }

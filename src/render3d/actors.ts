@@ -10,7 +10,7 @@ import { layoutFor, sampleCrowd, figureState, houseCount, fieldCount, type Figur
 import type { Selection } from "../render/common";
 import type { HeightField } from "./heightfield";
 import { planFor, isPlanned, roadNetwork, villageTracks, roadTier, type TownPlan } from "../render/plan";
-import { houseKit, CIVIC, PALETTE, STYLE_OF, colorOf, eraOf, type Part, type Prim, type Style, type Palette } from "./kits";
+import { houseKit, CIVIC, PALETTE, STYLE_OF, colorOf, eraOf, type Part, type Prim, type Style, type Palette, type Civic } from "./kits";
 
 type Snap = Omit<World, "chronicle">;
 const tmpQ = new THREE.Quaternion(), tmpS = new THREE.Vector3(), tmpP = new THREE.Vector3(), tmpE = new THREE.Euler(), tmpC = new THREE.Color();
@@ -31,7 +31,7 @@ const STRAW = "#e6d49a";
 /** People are simple solid figures, coloured by what they do. */
 export const JOB_COLOR: Record<string, string> = {
   gatherer: "#8fbf6a", farmer: "#e0c04a", fisher: "#4fa3d1", builder: "#d08a4b", woodcutter: "#4f7d3a", quarrier: "#a3a7ad",
-  miner: "#6d5f7a", smith: "#ff7a3d", worker: "#5c6f8a", boatwright: "#3fc0b0", warrior: "#c83a3a", doctor: "#f4f4f4", priest: "#a98ad8",
+  miner: "#6d5f7a", smith: "#ff7a3d", worker: "#5c6f8a", scientist: "#7fd6e8", boatwright: "#3fc0b0", warrior: "#c83a3a", doctor: "#f4f4f4", priest: "#a98ad8",
   leader: "#f2b257", child: "#efe6cf", elder: "#9b938b", idle: "#cfc6b8"
 };
 export const RULER_COLOR = "#ffd84d", HEAD_COLOR = "#ff9f40";
@@ -163,7 +163,11 @@ export class Actors {
   /** Railway lines (polylines on the ground) and the trains running on them. */
   private rails: { pts: [number, number][]; len: number[]; total: number; color: string }[] = [];
   private train: THREE.InstancedMesh; private steamHull: THREE.InstancedMesh; private steamTop: THREE.InstancedMesh;
-  private smogPool: THREE.Sprite[] = []; private smogTex = glowTexture("rgba(70,64,58,0.75)", "rgba(80,74,66,0.3)");
+  private smogPool: THREE.Sprite[] = [];
+  /** Airports (for air traffic) and the roads cars drive on. */
+  private airports: { x: number; y: number; tribe: number; color: string }[] = [];
+  private roadLines: { pts: [number, number][]; len: number[]; total: number; color: string }[] = [];
+  private plane: THREE.InstancedMesh; private car: THREE.InstancedMesh; private smogTex = glowTexture("rgba(70,64,58,0.75)", "rgba(80,74,66,0.3)");
   private K: Record<Prim, THREE.InstancedMesh> = {} as Record<Prim, THREE.InstancedMesh>;
   private kn: Record<string, number> = {};
   private roads: THREE.Mesh; private roadKey = "";
@@ -265,6 +269,10 @@ export class Actors {
     this.steamTop = inst(mergeGeometries([new THREE.BoxGeometry(0.42, 0.12, 0.18).translate(-0.08, 0.2, 0), new THREE.CylinderGeometry(0.045, 0.05, 0.22, 8).translate(0.02, 0.36, 0), new THREE.BoxGeometry(0.02, 0.3, 0.02).translate(0.3, 0.3, 0)])!, 300, lambert());
     this.train = inst(new THREE.BoxGeometry(1, 0.8, 0.6).translate(0, 0.4, 0), 600, lambert());
     G.add(this.steamHull, this.steamTop, this.train);
+    // aircraft (fuselage, wings, tail) and motor cars
+    this.plane = inst(mergeGeometries([new THREE.CylinderGeometry(0.06, 0.04, 1, 6).rotateZ(Math.PI / 2), new THREE.BoxGeometry(0.22, 0.02, 0.9).translate(0.05, 0, 0), new THREE.BoxGeometry(0.12, 0.02, 0.34).translate(-0.42, 0, 0), new THREE.BoxGeometry(0.1, 0.18, 0.02).translate(-0.44, 0.09, 0)])!, 200, lambert());
+    this.car = inst(new THREE.BoxGeometry(1, 0.55, 0.55).translate(0, 0.28, 0), 800, lambert());
+    G.add(this.plane, this.car);
     // routes and known-world rings, drawn on the sea
     this.routes = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineDashedMaterial({ vertexColors: true, dashSize: 0.06, gapSize: 0.06, transparent: true, opacity: 0.7, depthWrite: false }));
     this.known = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.75, depthWrite: false }));
@@ -324,13 +332,13 @@ export class Actors {
       const m = this.K[q.g], i = this.kn[q.g] ?? 0;
       if (i >= m.instanceMatrix.count) continue;
       this.kn[q.g] = i + 1;
-      put(m, i, x + (q.x * c + q.z * sn) * s, gy + q.y * s, z + (-q.x * sn + q.z * c) * s, rot + (q.r ?? 0), q.sx * s, q.sy * s, q.sz * s, colorOf(q.c, pal, accent));
+      put(m, i, x + (q.x * c + q.z * sn) * s, gy + q.y * s, z + (-q.x * sn + q.z * c) * s, rot + (q.r ?? 0), q.sx * s, q.sy * s, q.sz * s, colorOf(q.c, pal, accent), q.rx ?? 0, q.rz ?? 0);
     }
   }
 
   /** Roads between villages and streets inside planned towns, draped on the ground. */
   private buildRoads(w: Snap, live: Village[]) {
-    const key = live.filter((v) => v.stage !== "band").map((v) => `${v.id}${v.stage[0]}${roadTier(w.tribes[v.tribe])}${w.tribes[v.tribe]?.techs.includes("railway") ? "r" : ""}${isPlanned(v, w.tribes[v.tribe]) ? "p" : ""}${v.jobs.quarrier > 0.01 ? "q" : ""}${v.jobs.miner > 0.01 ? "m" : ""}`).join(",");
+    const key = live.filter((v) => v.stage !== "band").map((v) => `${v.id}${v.stage[0]}${roadTier(w.tribes[v.tribe])}${w.tribes[v.tribe]?.techs.includes("railway") ? "r" : ""}${w.tribes[v.tribe]?.techs.includes("combustion") ? "c" : ""}${isPlanned(v, w.tribes[v.tribe]) ? "p" : ""}${v.jobs.quarrier > 0.01 ? "q" : ""}${v.jobs.miner > 0.01 ? "m" : ""}`).join(",");
     if (key === this.roadKey) return;
     this.roadKey = key;
     const P: number[] = [], C: number[] = [];
@@ -358,8 +366,14 @@ export class Actors {
     };
     this.rails = [];
     const RAIL = new THREE.Color("#3a3634");
+    this.roadLines = [];
     for (const r of roadNetwork(this.terrain, live, w.tribes as Tribe[])) {
       ribbon(r.pts, WID[r.tier], COL[r.tier]);
+      const RA = live.find((v) => v.id === r.a);
+      if (RA && w.tribes[RA.tribe]?.techs.includes("combustion")) {
+        const len = [0]; for (let i = 1; i < r.pts.length; i++) len.push(len[i - 1] + Math.hypot(r.pts[i][0] - r.pts[i - 1][0], r.pts[i][1] - r.pts[i - 1][1]));
+        this.roadLines.push({ pts: r.pts, len, total: len[len.length - 1], color: w.tribes[RA.tribe].line });
+      }
       // a railway alongside the road once both towns' tribes have railways
       const A = live.find((v) => v.id === r.a), Bv = live.find((v) => v.id === r.b);
       if (A && Bv && w.tribes[A.tribe]?.techs.includes("railway") && w.tribes[Bv.tribe]?.techs.includes("railway")) {
@@ -394,7 +408,7 @@ export class Actors {
     const n: Record<string, number> = Object.fromEntries(Object.keys(this.B).map((k) => [k, 0]));
     const b = (k: string, x: number, y: number, z: number, rot: number, sx: number, sy: number, sz: number, c: string) => { if (n[k] < 8000) put(this.B[k], n[k]++, x, y, z, rot, sx, sy, sz, c); };
     let ifl = 0, ip = 0;
-    this.chimneys = [];
+    this.chimneys = []; this.airports = [];
     this.kn = {};
     this.buildRoads(w, live);
     for (const v of live) {
@@ -489,6 +503,32 @@ export class Actors {
           this.kit(CIVIC.headframe, mx, my, gy, 0.3, 0.018, pal, accent);
           this.chimneys.push({ x: mx + 0.018, y: my - 0.006, h: gy + 0.026, dark: true });
         }
+      }
+      // the modern ages: power, masts, laboratories, wind and sun, airports and a launch pad
+      if (t && t.age >= 6 && v.stage !== "band" && (v.stage === "town" || v.stage === "city")) {
+        const has = (x: string) => t.techs.includes(x);
+        const base = (v.coastal ? Math.atan2(v.y - v.py, v.x - v.px) : hash3(v.id, 2, 9) * 6.283) + Math.PI * 0.6;
+        const spot = (dist: number, turn: number): [number, number] | null => {
+          const a = base + turn, x = v.x + Math.cos(a) * dist, y = v.y + Math.sin(a) * dist * 0.85;
+          return this.hf.elevAt(x, y) > 0.004 && this.hf.elevAt(x, y) < 0.2 ? [x, y] : null;
+        };
+        const at = (c: Civic, d: number, turn: number, s: number, rot = 0) => { const p = spot(d, turn); if (p) this.kit(CIVIC[c], p[0], p[1], this.hf.groundY(p[0], p[1]), rot - base, s, pal, accent); return p; };
+        const capital = !!w.agents.find((a) => a.id === t.gov?.ruler && a.village === v.id);
+        if (has("radio")) at("mast", L.R * 0.9, -0.8, 0.02);
+        if (v.stage === "city" && has("electricity")) {
+          const pp = at(has("nuclear") ? "nuclear" : "powerplant", L.R * 1.45, 0.2, 0.024);
+          if (pp && !has("nuclear") && !has("solar")) { const gy = this.hf.groundY(pp[0], pp[1]); this.chimneys.push({ x: pp[0], y: pp[1], h: gy + 0.07, dark: true }); }
+        }
+        if (has("computers") || has("genetics")) at(has("genetics") ? "greenhouse" : "lab", L.R * 0.95, 0.9, has("genetics") ? 0.016 : 0.02);
+        if (has("solar")) {
+          at("solarfield", L.R * 1.35, -0.35, 0.022);
+          for (let k = 0; k < 4; k++) at("turbine", L.R * 1.7 + k * 0.03, -1.1 + k * 0.28, 0.02);
+        }
+        if (has("flight") && (capital || v.stage === "city")) {
+          const p = at("airport", L.R * 1.9, 0.5, 0.022, Math.PI / 2);
+          if (p) this.airports.push({ x: p[0], y: p[1], tribe: t.id, color: t.line });
+        }
+        if (has("spaceflight") && capital) at("launchpad", L.R * 1.6, -0.25, 0.026);
       }
       // windmills among the fields in the Age of Sail
       if ((t?.age ?? 0) >= 4 && fieldCount(v, L) > 3) for (const i of [2, 7]) {
@@ -675,7 +715,7 @@ export class Actors {
     }
 
     // boats: voyages (with crews), route traffic, fishing boats; moving boats leave a wake
-    let nh = 0, nf = 0, ns = 0, no = 0, nw = 0, nsh = 0, nst = 0;
+    let nh = 0, nf = 0, ns = 0, no = 0, nw = 0, nsh = 0, nst = 0, npl = 0;
     const puff = (x: number, y: number, h: number, dark: boolean) => {
       const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: dark ? this.smokeTex : this.hearthSmokeTex, transparent: true, depthWrite: false, opacity: 0.5 }));
       s.position.set(x, h, y); this.smoke.push({ s, t0: time, ash: false, dark }); this.group.add(s);
@@ -685,6 +725,12 @@ export class Actors {
       if (nh + nf > 590) return;
       const rock = Math.sin(time * 1.6 + x * 9) * 0.12, yy = Math.sin(time * 1.3 + x * 7 + y * 5) * 0.002;
       const yaw = -head;
+      if (tier >= 8) {
+        if (npl >= 190) return;
+        const alt = 0.12 + 0.04 * Math.sin(time * 0.3 + x);
+        put(this.plane, npl++, x, alt, y, yaw, size * 1.2, size * 1.2, size * 1.2, "#eef0f2", 0, 0.05 * Math.sin(time + x));
+        return;
+      }
       if (tier >= 7) {
         if (nst >= 300) return;
         const s = size * 1.6;
@@ -768,6 +814,30 @@ export class Actors {
       }
     });
     finish(this.train, ntr);
+    // air traffic between a tribe's airports: climb, cruise, descend
+    for (let i = 0; i < this.airports.length; i++) for (let j = 0; j < this.airports.length; j++) {
+      const A = this.airports[i], Bp = this.airports[j];
+      if (i === j || A.tribe !== Bp.tribe || npl > 190) continue;
+      const D = Math.hypot(Bp.x - A.x, Bp.y - A.y); if (D < 0.3) continue;
+      const u = ((time * 0.25) / D + (i * 0.31 + j * 0.17)) % 1, x = A.x + (Bp.x - A.x) * u, y = A.y + (Bp.y - A.y) * u;
+      if (!inView(x, y, 0.3)) continue;
+      const alt = 0.02 + Math.min(0.2, Math.sin(u * Math.PI) * D * 0.25);
+      put(this.plane, npl++, x, alt, y, -Math.atan2(Bp.y - A.y, Bp.x - A.x), 0.03, 0.03, 0.03, "#eef0f2", 0, 0);
+    }
+    finish(this.plane, npl);
+    // motor cars on the roads
+    let ncar = 0;
+    if (z > 2.5) this.roadLines.forEach((r, i) => {
+      if (r.total < 0.05) return;
+      for (let k = 0; k < 3 && ncar < 790; k++) {
+        const fwd = k % 2 === 0, u = ((time * 0.05) / r.total + k * 0.33 + i * 0.13) % 1, d = (fwd ? u : 1 - u) * r.total;
+        const [x, y, head] = railAt(r, d);
+        if (!inView(x, y, 0.05)) continue;
+        const side = fwd ? 0.0016 : -0.0016;
+        put(this.car, ncar++, x - Math.sin(head) * side, this.hf.groundY(x, y) + 0.0012, y + Math.cos(head) * side, -head + (fwd ? 0 : Math.PI), 0.004, 0.003, 0.0025, k === 0 ? r.color : k === 1 ? "#c8ccd0" : "#3a4a6a");
+      }
+    });
+    finish(this.car, ncar);
     // coal smog hanging over industrial towns
     let nsm = 0;
     if (z > 1.2) for (const v of w.villages) {

@@ -25,12 +25,20 @@ const WARM_STEPS: [number, string][] = [
 
 /** Coal smoke and carbon: the air of each town, and the warming of the whole world. */
 export function pollution(w: World, rng: Rng) {
-  // the sea and forests slowly take carbon back
-  w.co2 += (280 - w.co2) * 0.0004;
+  // the sea and forests slowly take carbon back; engineered forests and machines take more
+  const capture = w.tribes.filter((t) => t.alive && t.techs.includes("carboncapture")).length;
+  w.co2 += (280 - w.co2) * (0.0004 + Math.min(0.012, capture * 0.003));
+  w.co2Peak = Math.max(w.co2Peak ?? 280, w.co2);
   const before = w.warming;
   w.warming = Math.max(0, 3 * Math.log2(w.co2 / 280));
   for (const [deg, text] of WARM_STEPS) if (before < deg && w.warming >= deg) chron(w, "climate", text);
   for (const v of living(w)) {
+    // a warmer sea runs higher: storm surges flood the harbours
+    if (v.coastal && w.warming > 1 && rng.chance(0.0008 * w.warming)) {
+      const d = kill(v, rng.binom(popOf(v), 0.01), rng);
+      v.houses = Math.max(1, v.houses * 0.92);
+      chron(w, "climate", `A storm surge floods the harbour at ${v.name}. ${d ? d + " drown." : "The water stands in the streets for days."}`, v.x, v.y);
+    }
     if (v.smog <= 0.001) { v.smog = 0; continue; }
     // rain washes the air, wind blows the smoke away; your weather helps
     const clean = 0.9 - effectAt(w, "rain", v.x, v.y) * 0.4 - effectAt(w, "wind", v.x, v.y) * 0.35 - effectAt(w, "storm", v.x, v.y) * 0.3;

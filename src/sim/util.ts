@@ -61,6 +61,7 @@ export const villageById = (w: World, id: number): Village | undefined => w.vill
 export const tribePop = (w: World, t: number) => w.villages.reduce((s, v) => s + (v.tribe === t ? popOf(v) : 0), 0);
 export const has = (t: Tribe, tech: string) => t.techs.includes(tech);
 export function boatTier(t: Tribe): number {
+  if (has(t, "flight")) return 8;
   if (has(t, "steamship")) return 7;
   if (has(t, "carrack")) return 6;
   if (has(t, "navigation")) return 5;
@@ -71,7 +72,7 @@ export function boatTier(t: Tribe): number {
   return 0;
 }
 export function weaponTier(t: Tribe): number {
-  return (has(t, "bow") ? 1 : 0) + (has(t, "shields") ? 1 : 0) + (has(t, "warcanoe") ? 0.5 : 0) + (has(t, "iron") ? 1 : 0) + (has(t, "gunpowder") ? 1.5 : 0) + (has(t, "rifles") ? 1.5 : 0);
+  return (has(t, "bow") ? 1 : 0) + (has(t, "shields") ? 1 : 0) + (has(t, "warcanoe") ? 0.5 : 0) + (has(t, "iron") ? 1 : 0) + (has(t, "gunpowder") ? 1.5 : 0) + (has(t, "rifles") ? 1.5 : 0) + (has(t, "flight") ? 1 : 0) + (has(t, "missiles") ? 2 : 0);
 }
 export function defenseCap(t: Tribe): number {
   return (has(t, "palisade") ? 1 : 0) + (has(t, "palisade") && has(t, "bow") ? 1 : 0) + (has(t, "shields") ? 1 : 0) + (has(t, "warcanoe") ? 1 : 0) + (has(t, "stonefort") ? 1 : 0) + (has(t, "gunpowder") && has(t, "masonry") ? 1 : 0);

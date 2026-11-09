@@ -6,8 +6,8 @@ import { freeSite, newVillage, newAgent } from "./world";
 import { effectAt } from "./climate";
 import { seaDesire } from "./society";
 
-const BOAT = ["log", "raft", "dugout canoe", "outrigger", "sail-canoe", "star-guided sail-canoe", "ocean ship", "steamship"];
-const SPEED = [0.45, 0.6, 0.85, 1.1, 1.5, 1.8, 2.6, 3.6];
+const BOAT = ["log", "raft", "dugout canoe", "outrigger", "sail-canoe", "star-guided sail-canoe", "ocean ship", "steamship", "aeroplane"];
+const SPEED = [0.45, 0.6, 0.85, 1.1, 1.5, 1.8, 2.6, 3.6, 7];
 
 export function addRoute(w: World, a: number, b: number, kind: "trade" | "marriage" | "kin", tier: number) {
   const r = w.routes.find((x) => (x.a === a && x.b === b) || (x.a === b && x.b === a));
@@ -198,6 +198,7 @@ export function voyages(w: World, rng: Rng): World {
     if (has(t, "lighthouse")) risk *= 0.75;
     if (has(t, "compass")) risk *= 0.8;
     if (voy.tier >= 7) risk *= 0.5;
+    if (voy.tier >= 8) risk *= 0.3;
     if (voy.purpose === "drift") risk *= 0.5;
     if (rng.chance(risk) || voy.crew <= 0) {
       if (voy.tier <= 1) t.drivers.raftLoss++; else t.drivers.capsize++;

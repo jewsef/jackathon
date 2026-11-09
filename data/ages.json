@@ -5,5 +5,7 @@
   {"id": 3, "name": "Classical age", "requires": ["iron"], "desc": "Iron, coins, written law and philosophy. Cities with temples, theatres and aqueducts."},
   {"id": 4, "name": "Age of Sail", "requires": ["carrack"], "desc": "Ocean ships, compasses and cannon. The edge of the map is only the beginning."},
   {"id": 5, "name": "Industrial age", "requires": ["steam"], "desc": "Coal, steam, factories and railways. The towns grow huge, the air turns grey, and the climate starts to change."},
-  {"id": 6, "name": "Electric age", "requires": ["__locked"], "desc": "Coming in a later phase."}
+  {"id": 6, "name": "Electric age", "requires": ["electricity"], "desc": "Dynamos, light bulbs, motors and radio. Cities glow at night."},
+  {"id": 7, "name": "Information age", "requires": ["computers"], "desc": "Computers, the internet, clean power and flight. The world shrinks to a screen."},
+  {"id": 8, "name": "Biotech age", "requires": ["genetics"], "desc": "Rewritten crops, longer lives, and the power to pull carbon from the sky, or to leave it behind."}
 ]

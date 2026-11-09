@@ -98,6 +98,7 @@ export function sampleCrowd(v: Village, L: Layout, max = 48): Figure[] {
       else if (job === "quarrier") { tx = L.quarry.x + (r1 - 0.5) * 0.03; ty = L.quarry.y + (r2 - 0.5) * 0.03; }
       else if (job === "miner") { tx = L.mine.x + (r1 - 0.5) * 0.02; ty = L.mine.y + (r2 - 0.5) * 0.02; }
       else if (job === "worker") { const a = Math.atan2(v.y - v.py, v.x - v.px) + (r1 - 0.5) * 0.9; tx = v.x + Math.cos(a) * L.R * 1.1; ty = v.y + Math.sin(a) * L.R * 0.94; }
+      else if (job === "scientist") { tx = v.x + (r1 - 0.5) * 0.06; ty = v.y + (r2 - 0.5) * 0.06; }
       else if (job === "smith") { tx = L.forge.x + (r1 - 0.5) * 0.01; ty = L.forge.y + (r2 - 0.5) * 0.01; }
       out.push({ job, sex: hash3(k, 6, v.id) < 0.5 ? "m" : "f", hx: h.x, hy: h.y, tx, ty, ph: hash3(k, 7, v.id) * 10, sp: 0.06 + hash3(k, 8, v.id) * 0.05 });
     }
