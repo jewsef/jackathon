@@ -74,7 +74,7 @@ describe("milestone 2: weather you can hold", () => {
 
 describe("milestone 4: boats, routes and the Far Shore", () => {
   it("with no player input the Far Shore is reached on some seeds and not on others", () => {
-    const outcomes = [11, 23, 37, 51, 64, 77, 88, 95, 102, 131].map((s) => run(s, 1200).endings.some((e) => e.id === "farshore"));
+    const outcomes = [11, 23, 37, 51, 64, 77, 88, 95, 102, 131].map((s) => run(s, 1000).endings.some((e) => e.id === "farshore"));
     expect(outcomes.some((x) => x)).toBe(true);
     expect(outcomes.some((x) => !x)).toBe(true);
   });

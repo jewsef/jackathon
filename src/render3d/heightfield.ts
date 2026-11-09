@@ -1,8 +1,8 @@
 import type { Terrain } from "../sim/terrain";
 import { WX, WY, SEA } from "../sim/terrain";
 
-/** Vertical exaggeration: elevation units to world units. The islands read as a tilted diorama. */
-export const VSCALE = 1.4;
+/** Vertical exaggeration: elevation units to world units. Mild, so plains read as plains. */
+export const VSCALE = 0.85;
 
 /**
  * A sampled copy of the terrain's elevation (height minus sea level) on a regular grid,
@@ -18,16 +18,17 @@ export class HeightField {
   }
 
   static build(t: Terrain, nx = 961, ny = 541, oct = 6): HeightField {
-    const data = new Float32Array(nx * ny), C = 6;
+    const data = new Float32Array(nx * ny), C = 2;
     const dx = WX / (nx - 1), dy = WY / (ny - 1);
-    const cw = Math.ceil(nx / C) + 2, ch = Math.ceil(ny / C) + 2, B = new Float32Array(cw * ch);
-    for (let j = 0; j < ch; j++) for (let i = 0; i < cw; i++) B[j * cw + i] = t.islandBase(i * C * dx, j * C * dy);
+    const cw = Math.ceil(nx / C) + 2, ch = Math.ceil(ny / C) + 2, B = new Float32Array(cw * ch), R = new Float32Array(cw * ch);
+    for (let j = 0; j < ch; j++) for (let i = 0; i < cw; i++) { const [b, r] = t.shape(i * C * dx, j * C * dy); B[j * cw + i] = b; R[j * cw + i] = r; }
     for (let j = 0; j < ny; j++) {
       const fj = j / C, j0 = Math.floor(fj), tj = fj - j0;
       for (let i = 0; i < nx; i++) {
         const fi = i / C, i0 = Math.floor(fi), ti = fi - i0, a = j0 * cw + i0;
         const b = B[a] * (1 - ti) * (1 - tj) + B[a + 1] * ti * (1 - tj) + B[a + cw] * (1 - ti) * tj + B[a + cw + 1] * ti * tj;
-        data[j * nx + i] = b + t.detail(i * dx, j * dy, oct) - SEA;
+        const r = R[a] * (1 - ti) * (1 - tj) + R[a + 1] * ti * (1 - tj) + R[a + cw] * (1 - ti) * tj + R[a + cw + 1] * ti * tj;
+        data[j * nx + i] = b + t.detail(i * dx, j * dy, oct) * r - SEA;
       }
     }
     return new HeightField(nx, ny, data);

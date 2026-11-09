@@ -4,7 +4,7 @@ import { HeightField } from "../src/render3d/heightfield";
 
 describe("3D height field (phase 1)", () => {
   it("matches the simulation's terrain, so the 3D world is the same world", () => {
-    const t = getTerrain(4127), hf = HeightField.build(t, 481, 271);
+    const t = getTerrain(4127), hf = HeightField.build(t, 961, 541);
     let worst = 0, landAgree = 0, n = 0;
     for (let k = 0; k < 400; k++) {
       const x = ((k * 37) % 400) / 400 * WX, y = ((k * 91) % 400) / 400 * WY;
@@ -16,7 +16,7 @@ describe("3D height field (phase 1)", () => {
     expect(landAgree / n).toBeGreaterThan(0.98);
   });
   it("puts every founding village on dry land", () => {
-    const t = getTerrain(4127), hf = HeightField.build(t, 481, 271);
+    const t = getTerrain(4127), hf = HeightField.build(t, 961, 541);
     for (const id of ["hearth", "kelp", "thorn", "gull", "far"] as const) {
       const s = t.sites(id)[0];
       expect(hf.surfaceY(s.x, s.y)).toBeGreaterThan(0);

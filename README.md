@@ -92,6 +92,22 @@ export function tick(w: World, acts: Action[]): World {
 ### Society
 Jobs: gatherer, farmer, fisher, builder, woodcutter, quarrier, miner, smith, leader, doctor, sky-speaker, warrior, boatwright (plus elders). Up close every person is a small solid figure coloured by job; rulers are gold and faction heads orange. Shares shift each season toward the biggest need. Settlements grow through band → camp → village → town. Small islands become one family within a few generations (**kinship**), so tribes must **marry out** across the sea. Marriages mix bloodlines (tail colours) and build alliances. Scarcity, plague blame, crowding and ambitious leaders cause raids and wars; weapons and defences (bow, palisade, shield wall, war canoe, stone fort) are only built under threat.
 
+### Land
+Every island has its own landform (`FORM` in `src/sim/terrain.ts`), so the land itself shapes how people live there:
+
+| Island | Landform | Flat land | Highest point (as drawn) |
+|---|---|---|---|
+| Hearth | Farm plains with low central downs | ~70% | ~1 km |
+| Kelp Isle | An atoll: sand and grass around a shallow lagoon | ~70% | ~0.2 km |
+| Thornholm | Rolling forested hills and valleys | ~25% | ~1.1 km |
+| Gull Rock | Sea cliffs, then a flat grassy plateau | ~75% | ~0.7 km |
+| The Far Shore | Coastal plains either side of a snow-capped range | ~30% | ~2.8 km |
+| The Iron Coast | Upland moors and ore-bearing ridges | ~35% | ~1.8 km |
+| The Spice Isles | An old shield volcano with a crater lake | ~50% | ~1.2 km |
+| The Great Land | Prairie, with a mountain range in the east | ~75% | ~1.5 km |
+
+Coasts have bays and headlands and a narrow band of shallows. Fine detail is scaled by how rough the ground is, so plains stay walkable and mountains stay rugged. Harbours always open onto the sea, never the lagoon.
+
 ### Resources and ages
 Each island has its own deposits (`data/deposits.json`): Hearth clay, Kelp Isle salt and fibre, Thornholm hardwood and tin, Gull Rock stone and herbs, the Far Shore flint and copper. Woodcutters, quarriers and miners extract them; forests regrow but mines run down. Smiths turn copper and tin into bronze, and kilns turn clay into brick. Houses, granaries, walls and temples cost materials, so a stone-poor island builds in wood or fibre. Stockpiles are shared between a tribe's villages on one island and traded along routes. A tech needs both an idea and the materials (bronze needs copper **and** tin, which never sit on the same island), so each tribe advances at its own speed. Ages: Early humans → Stone Age (stone tools) → Bronze Age (bronze) → Classical age (iron) → Age of Sail (ocean ships).
 

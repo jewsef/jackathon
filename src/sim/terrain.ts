@@ -3,6 +3,15 @@ import { fbm, clamp, sstep } from "./noise";
 
 export type IsleId = "hearth" | "kelp" | "thorn" | "gull" | "far" | "iron" | "spice" | "great";
 export const ISLE_IDS: IsleId[] = ["hearth", "kelp", "thorn", "gull", "far", "iron", "spice", "great"];
+/** Each island's landform: what kind of land it is, which shapes how people can live on it. */
+export type Form = "plains" | "lowland" | "hills" | "plateau" | "spine" | "shield" | "highland" | "continent";
+export const FORM: Record<IsleId, Form> = { hearth: "plains", kelp: "lowland", thorn: "hills", gull: "plateau", far: "spine", iron: "highland", spice: "shield", great: "continent" };
+/** The coast sits at this fraction of each island's nominal radius. */
+const COAST = 0.6;
+/** Bays and headlands: wobble the distance to the coast instead of roughening the land. */
+const coastWobble = (x: number, y: number, s: number) => 1 + (fbm(x * 1.2, y * 1.2, s + 201, 4) - 0.5) * 0.62 + (fbm(x * 4.5, y * 4.5, s + 202, 3) - 0.5) * 0.24;
+/** Ridged noise for mountain crests. */
+const ridge = (x: number, y: number, s: number) => { const n = 1 - Math.abs(fbm(x, y, s, 4) * 2 - 1); return n * n; };
 /** The lands beyond the horizon: only ocean-going ships can reach them. */
 export const OUTER: IsleId[] = ["iron", "spice", "great"];
 export const isOuter = (i: IsleId) => i === "iron" || i === "spice" || i === "great";
@@ -64,21 +73,79 @@ export class Terrain {
     this.byId = Object.fromEntries(this.isles.map((i) => [i.id, i])) as Record<IsleId, IsleDef>;
   }
 
-  /** Smooth large-scale shape: island domes plus continental shelves. */
-  islandBase(x: number, y: number): number {
+  /**
+   * The land's large-scale shape at a point, and how rough the ground is there (0.1 on plains,
+   * up to 1 in mountains). Every island has its own landform: farm plains, an atoll with a lagoon,
+   * rolling hills, a cliff plateau, a mountain spine, highlands, an old volcano, a prairie.
+   */
+  shape(x: number, y: number): [number, number] {
     const S = this.seed;
-    const wx = x + (fbm(x * 0.32 + 3, y * 0.32, S + 11, 3) - 0.5) * 1.1;
-    const wy = y + (fbm(x * 0.32, y * 0.32 + 9, S + 12, 3) - 0.5) * 1.1;
-    let land = 0, shelf = 0;
+    const wx = x + (fbm(x * 0.32 + 3, y * 0.32, S + 11, 3) - 0.5) * 0.8;
+    const wy = y + (fbm(x * 0.32, y * 0.32 + 9, S + 12, 3) - 0.5) * 0.8;
+    const wob = coastWobble(x, y, S);
+    let best = -0.33, rough = 0.15;
     for (const I of this.isles) {
-      const dx = (wx - I.cx) / I.rx, dy = (wy - I.cy) / I.ry, d = Math.sqrt(dx * dx + dy * dy);
-      const s = sstep(0, 1, 1 - d) * I.amp; if (s > land) land = s;
-      const sh = sstep(0, 1, 1 - d / I.sh); if (sh > shelf) shelf = sh;
+      const dx = (wx - I.cx) / I.rx / COAST, dy = (wy - I.cy) / I.ry / COAST;
+      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) continue;
+      const d = Math.sqrt(dx * dx + dy * dy) * wob;
+      let e: number, r = 0.12;
+      if (d >= 1) {
+        // a narrow shelf of shallow water, then the deep sea
+        e = -0.008 - 0.07 * sstep(1, 1.2, d) - 0.25 * sstep(1.12, 1.55 + (I.sh / COAST - 1) * 0.15, d);
+      } else {
+        const u = 1 - d, beach = sstep(0, 0.07, u), rg = ridge(x * 1.1, y * 1.1, S + 77);
+        // gentle rolling ground everywhere: walkable, but never a table top
+        const swell = (fbm(x * 0.9, y * 0.9, S + 303, 3) - 0.5) * 0.04 * sstep(0.08, 0.3, u);
+        switch (FORM[I.id]) {
+          case "plains": { // wide farmland, low downs in the middle
+            const hills = sstep(0.3, 0.9, u);
+            e = beach * (0.016 + 0.04 * u) + hills * (0.03 + 0.08 * rg + 0.05 * fbm(x * 2.2, y * 2.2, S + 404, 3)); r = 0.1 + 0.4 * hills; break;
+          }
+          case "lowland": { // sand and grass around a shallow lagoon
+            const lag = sstep(0.5, 0.68, u);
+            e = beach * (0.014 + 0.03 * u) * (1 - lag) - 0.022 * lag; r = 0.08; break;
+          }
+          case "hills": { // rolling forested hills and valleys
+            e = beach * (0.02 + 0.08 * u + 0.07 * fbm(x * 1.6, y * 1.6, S + 91, 3) * sstep(0.15, 0.6, u)); r = 0.3; break;
+          }
+          case "plateau": { // sea cliffs, then a flat grassy top
+            e = sstep(0, 0.16, u) * 0.095 + 0.02 * u; r = 0.1 + 0.25 * (1 - sstep(0, 0.2, u)); break;
+          }
+          case "spine": { // coastal plains either side of a mountain range
+            const a = Math.abs(dx) / Math.max(0.2, Math.sqrt(Math.max(0, 1 - dy * dy)));
+            const mtn = sstep(0.2, 0.75, 1 - a) * sstep(0.05, 0.4, u);
+            e = beach * (0.016 + 0.04 * u) + mtn * (0.1 + 0.24 * rg); r = 0.1 + 0.9 * mtn; break;
+          }
+          case "shield": { // a gentle old volcano with a crater lake
+            e = beach * (0.014 + 0.2 * Math.pow(u, 2.2)) - 0.05 * sstep(0.9, 1, u); r = 0.15 + 0.3 * sstep(0.6, 1, u); break;
+          }
+          case "highland": { // upland moors and ore-bearing ridges
+            const up = sstep(0.1, 0.5, u);
+            e = beach * 0.022 + up * (0.08 + 0.14 * rg * sstep(0.35, 1, u)); r = 0.2 + 0.7 * up; break;
+          }
+          default: { // the Great Land: prairie, with a mountain range in the east
+            const east = sstep(0.15, 0.65, dx) * sstep(0.12, 0.5, u);
+            e = beach * (0.016 + 0.04 * u) + east * (0.1 + 0.22 * rg); r = 0.1 + 0.8 * east; break;
+          }
+        }
+        if (FORM[I.id] !== "lowland") e += swell;
+      }
+      if (e > best) { best = e; rough = r; }
     }
-    return 0.17 + land + shelf * 0.13;
+    return [SEA + best, rough];
   }
+  islandBase(x: number, y: number): number { return this.shape(x, y)[0]; }
+  /** Inland water (Kelp Isle's lagoon, crater lakes): wet, but no way out to sea. */
+  inland(x: number, y: number): boolean {
+    const id = this.isleAt(x, y);
+    if (!id) return false;
+    const I = this.byId[id], dx = (x - I.cx) / I.rx / COAST, dy = (y - I.cy) / I.ry / COAST;
+    return Math.sqrt(dx * dx + dy * dy) < 0.75;
+  }
+  /** Open sea: water that boats can sail out of. */
+  openSea(x: number, y: number): boolean { return this.elev(x, y, 5) < 0 && !this.inland(x, y); }
   detail(x: number, y: number, oct: number): number { return (fbm(x * 0.6, y * 0.6, this.seed, oct) - 0.5) * 0.42; }
-  heightAt(x: number, y: number, oct = 6): number { return this.islandBase(x, y) + this.detail(x, y, oct); }
+  heightAt(x: number, y: number, oct = 6): number { const [b, r] = this.shape(x, y); return b + this.detail(x, y, oct) * r; }
   moistAt(x: number, y: number): number { return clamp((fbm(x * 0.45 + 30, y * 0.45 + 4, this.seed + 500, 3) - 0.3) / 0.4, 0, 1); }
   elev(x: number, y: number, oct = 6): number { return this.heightAt(x, y, oct) - SEA; }
   isLand(x: number, y: number): boolean { return this.elev(x, y, 5) > 0; }
@@ -94,13 +161,13 @@ export class Terrain {
   }
 
   /** Spiral search for the nearest point whose elevation lies in [lo, hi]. */
-  findSpot(x: number, y: number, lo: number, hi: number, maxR = 1.8): [number, number] | null {
+  findSpot(x: number, y: number, lo: number, hi: number, maxR = 1.8, sea = false): [number, number] | null {
     for (let r = 0; r < maxR; r += 0.025) {
       const steps = Math.max(1, Math.round(r * 50));
       for (let s = 0; s < steps; s++) {
         const a = (s / steps) * Math.PI * 2 + r * 3, px = x + Math.cos(a) * r, py = y + Math.sin(a) * r;
         const el = this.elev(px, py, 6);
-        if (el > lo && el < hi) return [px, py];
+        if (el > lo && el < hi && (!sea || !this.inland(px, py))) return [px, py];
       }
     }
     return null;
@@ -119,7 +186,7 @@ export class Terrain {
         let coastal = false;
         for (let k = 0; k < 8 && !coastal; k++) {
           const a = (k / 8) * Math.PI * 2;
-          if (this.elev(x + Math.cos(a) * 0.16, y + Math.sin(a) * 0.16, 5) < 0) coastal = true;
+          if (this.openSea(x + Math.cos(a) * 0.16, y + Math.sin(a) * 0.16)) coastal = true;
         }
         const m = this.moistAt(x, y), fert = clamp(0.45 + m * 0.5 - Math.max(0, el - 0.09) * 3, 0.2, 1);
         cands.push({ x, y, px: x, py: y, coastal, fert, isle: id, q: fert + (coastal ? 0.25 : 0) + (el < 0.07 ? 0.1 : 0) });
@@ -129,7 +196,7 @@ export class Terrain {
     const out: Site[] = [], minD = id === "gull" || id === "kelp" ? 0.42 : 0.6;
     for (const c of cands) {
       if (out.every((o) => Math.hypot(o.x - c.x, o.y - c.y) >= minD)) {
-        const p = c.coastal ? this.findSpot(c.x, c.y, -0.06, -0.012, 0.6) : null;
+        const p = c.coastal ? this.findSpot(c.x, c.y, -0.06, -0.012, 0.6, true) : null;
         out.push({ x: c.x, y: c.y, px: p ? p[0] : c.x, py: p ? p[1] : c.y, coastal: c.coastal, fert: c.fert, isle: id });
       }
       if (out.length >= 12) break;

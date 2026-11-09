@@ -22,11 +22,11 @@ export interface Region { canvas: HTMLCanvasElement; x0: number; y0: number; ww:
 export function renderRegion(t: Terrain, x0: number, y0: number, ww: number, wh: number, pw: number, ph: number, wantTrees: boolean, avoid: { x: number; y: number; r: number }[] = []): Region {
   const sx = ww / pw, sy = wh / ph, gw = pw + 2, gh = ph + 2;
   const oct = clamp(Math.round(6 + Math.log2(Math.max(1, 1 / (sx * 60)))), 6, 11);
-  const C = 8, cw = Math.ceil(gw / C) + 2, ch = Math.ceil(gh / C) + 2;
-  const B = new Float32Array(cw * ch), MO = new Float32Array(cw * ch);
+  const C = Math.max(2, Math.min(8, Math.round(0.05 / sx))), cw = Math.ceil(gw / C) + 2, ch = Math.ceil(gh / C) + 2;
+  const B = new Float32Array(cw * ch), MO = new Float32Array(cw * ch), RR = new Float32Array(cw * ch);
   for (let j = 0; j < ch; j++) for (let i = 0; i < cw; i++) {
     const qx = x0 + (i * C - 0.5) * sx, qy = y0 + (j * C - 0.5) * sy;
-    B[j * cw + i] = t.islandBase(qx, qy); MO[j * cw + i] = t.moistAt(qx, qy);
+    const [bb, rr] = t.shape(qx, qy); B[j * cw + i] = bb; RR[j * cw + i] = rr; MO[j * cw + i] = t.moistAt(qx, qy);
   }
   const G = new Float32Array(gw * gh), MM = new Float32Array(gw * gh);
   for (let j = 0; j < gh; j++) {
@@ -35,7 +35,7 @@ export function renderRegion(t: Terrain, x0: number, y0: number, ww: number, wh:
       const fi = i / C, i0 = Math.floor(fi), ti = fi - i0, a = j0 * cw + i0;
       const w00 = (1 - ti) * (1 - tj), w10 = ti * (1 - tj), w01 = (1 - ti) * tj, w11 = ti * tj;
       MM[j * gw + i] = MO[a] * w00 + MO[a + 1] * w10 + MO[a + cw] * w01 + MO[a + cw + 1] * w11;
-      G[j * gw + i] = B[a] * w00 + B[a + 1] * w10 + B[a + cw] * w01 + B[a + cw + 1] * w11 + t.detail(x0 + (i - 0.5) * sx, y0 + (j - 0.5) * sy, oct);
+      G[j * gw + i] = B[a] * w00 + B[a + 1] * w10 + B[a + cw] * w01 + B[a + cw + 1] * w11 + t.detail(x0 + (i - 0.5) * sx, y0 + (j - 0.5) * sy, oct) * (RR[a] * w00 + RR[a + 1] * w10 + RR[a + cw] * w01 + RR[a + cw + 1] * w11);
     }
   }
   const canvas = document.createElement("canvas"); canvas.width = pw; canvas.height = ph;
